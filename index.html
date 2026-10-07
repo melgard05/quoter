@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roll-Off Quoter</title>
+
+<!-- ===== PWA / installable app ===== -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2f6b41">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="application-name" content="Roll-Off Quoter">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RO Quoter">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+  :root{
+    --paper:#f3f0e8;
+    --surface:#ffffff;
+    --ink:#1d201a;
+    --muted:#6c7065;
+    --line:#e2ded2;
+    --line-strong:#cdc8b8;
+    --pine:#2f6b41;
+    --pine-dk:#234e30;
+    --rust:#c2592b;
+    --blue:#2c5d86;
+    --ok:#2f6b41;
+    --err:#b23b2e;
+    --shadow:0 1px 2px rgba(28,31,26,.05),0 8px 24px rgba(28,31,26,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Hanken Grotesk',ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:15px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(rgba(28,31,26,.018) 1px,transparent 1px);
+    background-size:22px 22px;
+    padding-bottom:92px;               /* room for the sticky total bar */
+  }
+  .mono{font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-feature-settings:"tnum"}
+
+  /* ---- header ---- */
+  header{
+    background:linear-gradient(135deg,var(--pine),var(--pine-dk));
+    color:#fff;padding:16px 22px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .hd-left{display:flex;align-items:center;gap:14px}
+  .hd-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+  .hd-build{display:inline-block;margin-left:8px;font-size:10.5px;font-weight:700;opacity:.72;
+    vertical-align:middle;background:rgba(255,255,255,.16);padding:1px 7px;border-radius:999px}
+  h1{font-size:23px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .hd-sub{font-size:12.5px;opacity:.85;font-weight:500;margin-top:2px}
+  .hd-mascot{height:62px;width:auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))}
+
+  /* ---- layout ---- */
+  .wrap{max-width:720px;margin:0 auto;padding:18px 16px 10px}
+
+  /* ---- cards ---- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);margin-bottom:15px;overflow:hidden}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:13px 17px;border-bottom:1px solid var(--line);background:#faf8f2}
+  .card-h .ch-l{display:flex;align-items:center;gap:10px;min-width:0}
+  .card-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--pine);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+  .card-t{font-size:15px;font-weight:800;color:var(--ink)}
+  .card-sub{font-size:11.5px;font-weight:600;color:var(--muted)}
+  .card-amt{flex:none;font-size:17px;font-weight:800;color:var(--ink)}
+  .card-b{padding:15px 17px}
+
+  .tag{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    border-radius:999px;padding:2px 8px;white-space:nowrap}
+  .tag-soon{background:#efece3;color:var(--muted)}
+  .tag-ok{background:var(--pine);color:#fff}
+  .tag-cty{background:#eef3f7;color:var(--blue);border:1px solid #cfe0ee}
+
+  .soon{color:var(--muted);font-size:13.5px;line-height:1.55}
+  .soon b{color:var(--ink);font-weight:700}
+
+  /* ---- hauling detail ---- */
+  .kv{display:flex;flex-wrap:wrap;gap:4px 22px;margin-bottom:10px}
+  .kv > div{min-width:120px}
+  .kv .k{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+  .kv .v{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .lnk{background:none;border:0;color:var(--pine);font-weight:700;font-size:12.5px;cursor:pointer;
+    text-decoration:underline;font-family:inherit;padding:0}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-weight:800;font-size:14px;
+    border:0;border-radius:10px;padding:11px 18px;cursor:pointer}
+  .btn-primary{background:var(--pine);color:#fff}
+  .btn-primary:hover{background:var(--pine-dk)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line-strong)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .notice{background:#fff;border:1px dashed var(--line-strong);border-radius:12px;
+    padding:16px 17px;margin-bottom:15px;font-size:14px;color:var(--ink)}
+  .notice b{font-weight:800}
+
+  /* ---- summary ---- */
+  .sum-row{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:4px 0}
+  .sum-row.muted{color:var(--muted)}
+  .sum-total{display:flex;justify-content:space-between;margin-top:8px;padding-top:9px;
+    border-top:1.5px solid var(--line-strong);font-size:18px;font-weight:800;color:var(--pine)}
+
+  /* ---- sticky total bar ---- */
+  .totalbar{position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:linear-gradient(135deg,var(--pine),var(--pine-dk));color:#fff;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:13px 20px;box-shadow:0 -6px 22px rgba(0,0,0,.22)}
+  .totalbar .tb-l{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+  .totalbar .tb-v{font-size:26px;font-weight:800;letter-spacing:-.01em}
+
+  /* ---- update banner ---- */
+  @keyframes ub-slide{from{transform:translate(-50%,-120%);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+  .update-bar{position:fixed;left:50%;top:14px;transform:translate(-50%,0);z-index:400;
+    max-width:620px;width:calc(100% - 28px);background:linear-gradient(100deg,#f7a022,#ef7d18);
+    color:#231402;display:none;align-items:center;gap:13px;padding:12px 15px;border-radius:13px;
+    border:2px solid #fff3;box-shadow:0 14px 40px rgba(0,0,0,.4);font-size:14px;font-weight:700}
+  .update-bar.on{display:flex;animation:ub-slide .38s cubic-bezier(.2,.9,.3,1.3)}
+  .update-bar .ub-txt{flex:1;min-width:0}
+  .update-bar button{flex:none;font-family:inherit;font-weight:800;font-size:13px;border:0;
+    border-radius:8px;padding:8px 14px;cursor:pointer}
+  .update-bar .ub-go{background:#1d3b26;color:#fff}
+  .update-bar .ub-x{background:rgba(35,20,2,.14);color:#231402;padding:8px 11px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-left">
+    <div>
+      <div class="hd-eyebrow">Steve's Sanitation<span class="hd-build" id="buildBadge"></span></div>
+      <h1>Roll-Off Quoter</h1>
+      <div class="hd-sub">Hauling · Rental · Disposal · Taxes</div>
+    </div>
+  </div>
+  <img class="hd-mascot" id="mascot" alt="Tippy" src="icon-512.png" style="display:none">
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- hand-off notice (shown only when no hauling data arrived) -->
+    <div class="notice" id="noHaul" style="display:none">
+      <b>No hauling data yet.</b> Open the Mileage Quoter, calculate a haul, and tap
+      <b>Create Quote</b> there to send it here with the address, miles, and price filled in.
+      <div style="margin-top:11px">
+        <a class="btn btn-primary" id="openMileage" href="../ro/">Open Mileage Quoter →</a>
+      </div>
+    </div>
+
+    <!-- ===== 1. HAULING ===== -->
+    <div class="card" id="cardHaul">
+      <div class="card-h">
+        <div class="ch-l">
+          <div class="card-n">1</div>
+          <div>
+            <div class="card-t">Hauling</div>
+            <div class="card-sub" id="haulSub">From the Mileage Quoter</div>
+          </div>
+        </div>
+        <div class="card-amt mono" id="haulAmt">$0.00</div>
+      </div>
+      <div class="card-b" id="haulBody">
+        <div class="soon">Waiting for hauling data…</div>
+      </div>
+    </div>
+
+    <!-- ===== 2. RENTAL ===== -->
+    <div class="card">
+      <div class="card-h">
+        <div class="ch-l">
+          <div class="card-n" style="background:var(--blue)">2</div>
+          <div>
+            <div class="card-t">Daily Rental</div>
+            <div class="card-sub">By size · taxable / non-taxable</div>
+          </div>
+        </div>
+        <span class="tag tag-soon">Coming next</span>
+      </div>
+      <div class="card-b">
+        <div class="soon">Pick a <b>container size</b> and <b>number of days</b>; the app applies the
+        daily rate and flags it taxable or non-taxable. <b>Send me the rental sizes and daily rates</b>
+        (and which are taxable) and this fills in.</div>
+      </div>
+    </div>
+
+    <!-- ===== 3. DISPOSAL ===== -->
+    <div class="card">
+      <div class="card-h">
+        <div class="ch-l">
+          <div class="card-n" style="background:var(--rust)">3</div>
+          <div>
+            <div class="card-t">Disposal</div>
+            <div class="card-sub">Itemized · taxable / non-taxable</div>
+          </div>
+        </div>
+        <span class="tag tag-soon">Coming next</span>
+      </div>
+      <div class="card-b">
+        <div class="soon">Add individual disposal <b>line items</b> from a catalog, each with its own
+        price and tax status, with a running subtotal. <b>Send me the disposal item list</b>
+        (name, price, taxable or not — a CSV is perfect) and I'll build the catalog.</div>
+      </div>
+    </div>
+
+    <!-- ===== 4. TAXES ===== -->
+    <div class="card">
+      <div class="card-h">
+        <div class="ch-l">
+          <div class="card-n" style="background:#7a5bb0">4</div>
+          <div>
+            <div class="card-t">Solid Waste &amp; Environmental Tax</div>
+            <div class="card-sub">SW (commercial / residential) + environmental</div>
+          </div>
+        </div>
+        <span class="tag tag-soon">Coming next</span>
+      </div>
+      <div class="card-b">
+        <div class="soon"><b>Solid Waste Tax</b> (commercial or residential) plus <b>Environmental Tax</b>
+        (per yard or per ton), applied to the taxable portion above. <b>Send me the two SW rates and the
+        environmental per-yard / per-ton amounts</b> and this wires in.</div>
+      </div>
+    </div>
+
+    <!-- ===== SUMMARY ===== -->
+    <div class="card">
+      <div class="card-h">
+        <div class="ch-l"><div class="card-n" style="background:#1d201a">Σ</div>
+          <div class="card-t">Quote Summary</div></div>
+      </div>
+      <div class="card-b">
+        <div class="sum-row"><span>Hauling</span><span class="mono" id="sHaul">$0.00</span></div>
+        <div class="sum-row muted"><span>Daily rental</span><span class="mono">—</span></div>
+        <div class="sum-row muted"><span>Disposal</span><span class="mono">—</span></div>
+        <div class="sum-row muted"><span>Taxes</span><span class="mono">—</span></div>
+        <div class="sum-total"><span>Quote total</span><span class="mono" id="sTotal">$0.00</span></div>
+        <div style="margin-top:14px">
+          <button class="btn btn-ghost" disabled>Generate quote sheet (coming soon)</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="totalbar">
+  <span class="tb-l">Quote total</span>
+  <span class="tb-v mono" id="tbTotal">$0.00</span>
+</div>
+
+<!-- update banner -->
+<div class="update-bar" id="updateBar" role="alert">
+  <span class="ub-txt"><b>New version available</b> — refresh to update.</span>
+  <button class="ub-go" id="updateGo">Refresh</button>
+  <button class="ub-x" id="updateX">Later</button>
+</div>
+
+<script>
+/* ============================================================
+   Roll-Off Quoter — skeleton
+   Receives the hauling result from the Mileage Quoter (/ro) via
+   URL params, then builds rental / disposal / tax on top of it.
+   Hand-off params:
+     dest   — destination address
+     county — Becker | Otter Tail | Wadena | (blank)
+     miles  — one-way miles
+     haul   — hauling total (dollars)
+     basis  — which origin basis produced it (label)
+   ============================================================ */
+const APP_VERSION = 'v0.1 (2026-10-07)';
+
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+const el = id => document.getElementById(id);
+const usd = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+
+/* running quote model — only hauling is live in the skeleton */
+const Q = { haul:null, rental:0, disposal:0, tax:0 };
+
+function readHandoff(){
+  const p = new URLSearchParams(location.search);
+  if(!p.has('haul') && !p.has('dest')) return null;
+  const miles = parseFloat(p.get('miles'));
+  const total = parseFloat(p.get('haul'));
+  return {
+    dest  : (p.get('dest')  || '').trim(),
+    county: (p.get('county')|| '').trim(),
+    miles : isFinite(miles) ? miles : null,
+    total : isFinite(total) ? total : 0,
+    basis : (p.get('basis') || '').trim()
+  };
+}
+
+function renderHaul(){
+  const h = Q.haul;
+  if(!h){
+    el('noHaul').style.display = 'block';
+    el('haulSub').textContent = 'No data yet';
+    el('haulBody').innerHTML =
+      '<div class="soon">Open the Mileage Quoter and tap <b>Create Quote</b> to bring a haul over.</div>';
+    return;
+  }
+  el('noHaul').style.display = 'none';
+  el('haulSub').textContent = 'From the Mileage Quoter';
+  el('haulAmt').textContent = usd.format(h.total);
+
+  const cty = h.county ? `<span class="tag tag-cty">${esc(h.county)} County</span>` : '';
+  el('haulBody').innerHTML = `
+    <div class="kv">
+      <div><div class="k">Destination</div><div class="v">${esc(h.dest)||'—'} ${cty}</div></div>
+    </div>
+    <div class="kv">
+      <div><div class="k">One way</div><div class="v">${h.miles!=null?h.miles.toFixed(1)+' mi':'—'}</div></div>
+      <div><div class="k">Basis</div><div class="v">${esc(h.basis)||'—'}</div></div>
+      <div><div class="k">Haul total</div><div class="v mono">${usd.format(h.total)}</div></div>
+    </div>
+    <button class="lnk" id="editHaul">↻ Recalculate in the Mileage Quoter</button>`;
+  const eb = el('editHaul');
+  if(eb) eb.addEventListener('click', ()=>{ location.href = mileageUrl(h.dest); });
+}
+
+function mileageUrl(dest){
+  // deep-link back to the mileage quoter with the address prefilled
+  return '../ro/' + (dest ? ('?dest=' + encodeURIComponent(dest)) : '');
+}
+
+function recompute(){
+  const haul = Q.haul ? Q.haul.total : 0;
+  const total = haul + Q.rental + Q.disposal + Q.tax;
+  el('sHaul').textContent  = usd.format(haul);
+  el('sTotal').textContent = usd.format(total);
+  el('tbTotal').textContent= usd.format(total);
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>(
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---- boot ---- */
+(function(){
+  const b = el('buildBadge'); if(b) b.textContent = APP_VERSION;
+  const m = el('mascot'); if(m){ m.onload=()=>{m.style.display='block';}; }
+
+  Q.haul = readHandoff();
+  // keep the last haul so a reload (which drops the query string) still shows it
+  if(Q.haul){ store.set('rq_haul', JSON.stringify(Q.haul)); }
+  else {
+    try{ const s = JSON.parse(store.get('rq_haul')||'null'); if(s) Q.haul = s; }catch(e){}
+  }
+  renderHaul();
+  recompute();
+})();
+
+/* ---- PWA + update detection ---- */
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  const bar = el('updateBar');
+  let reloading = false;
+  function show(w){
+    if(!bar) return;
+    bar.classList.add('on');
+    el('updateGo').onclick = ()=>{ if(w) w.postMessage({type:'SKIP_WAITING'});
+      setTimeout(()=>{ if(!reloading){reloading=true;location.reload();} },400); };
+    el('updateX').onclick = ()=> bar.classList.remove('on');
+  }
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      if(reg.waiting && navigator.serviceWorker.controller) show(reg.waiting);
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing; if(!nw) return;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state==='installed' && navigator.serviceWorker.controller) show(nw);
+        });
+      });
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.visibilityState==='visible') reg.update().catch(()=>{});
+      });
+    }).catch(()=>{});
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(reloading) return; reloading = true; location.reload();
+    });
+  });
+})();
+</script>
+</body>
+</html>
