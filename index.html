@@ -4,8 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Roll-Off Quoter</title>
-
-<!-- ===== PWA / installable app ===== -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2f6b41">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -14,110 +12,115 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="RO Quoter">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-
   :root{
-    --paper:#f3f0e8;
-    --surface:#ffffff;
-    --ink:#1d201a;
-    --muted:#6c7065;
-    --line:#e2ded2;
-    --line-strong:#cdc8b8;
-    --pine:#2f6b41;
-    --pine-dk:#234e30;
-    --rust:#c2592b;
-    --blue:#2c5d86;
-    --ok:#2f6b41;
-    --err:#b23b2e;
+    --paper:#f3f0e8;--surface:#ffffff;--ink:#1d201a;--muted:#6c7065;
+    --line:#e2ded2;--line-strong:#cdc8b8;--pine:#2f6b41;--pine-dk:#234e30;
+    --rust:#c2592b;--blue:#2c5d86;--err:#b23b2e;
     --shadow:0 1px 2px rgba(28,31,26,.05),0 8px 24px rgba(28,31,26,.06);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:var(--paper);
-    color:var(--ink);
+  body{background:var(--paper);color:var(--ink);
     font-family:'Hanken Grotesk',ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif;
-    font-size:15px;line-height:1.5;
-    -webkit-font-smoothing:antialiased;
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
     background-image:radial-gradient(rgba(28,31,26,.018) 1px,transparent 1px);
-    background-size:22px 22px;
-    padding-bottom:92px;               /* room for the sticky total bar */
-  }
+    background-size:22px 22px;padding-bottom:96px}
   .mono{font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-feature-settings:"tnum"}
 
-  /* ---- header ---- */
-  header{
-    background:linear-gradient(135deg,var(--pine),var(--pine-dk));
-    color:#fff;padding:16px 22px;
-    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  }
-  .hd-left{display:flex;align-items:center;gap:14px}
+  header{background:linear-gradient(135deg,var(--pine),var(--pine-dk));color:#fff;padding:16px 22px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
   .hd-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
   .hd-build{display:inline-block;margin-left:8px;font-size:10.5px;font-weight:700;opacity:.72;
     vertical-align:middle;background:rgba(255,255,255,.16);padding:1px 7px;border-radius:999px}
   h1{font-size:23px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
   .hd-sub{font-size:12.5px;opacity:.85;font-weight:500;margin-top:2px}
-  .hd-mascot{height:62px;width:auto;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))}
 
-  /* ---- layout ---- */
-  .wrap{max-width:720px;margin:0 auto;padding:18px 16px 10px}
+  .wrap{max-width:720px;margin:0 auto;padding:16px 16px 10px}
 
-  /* ---- cards ---- */
+  /* customer-type toggle */
+  .custbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--surface);border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow);padding:12px 15px;margin-bottom:15px}
+  .custbar .lbl{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .seg{display:inline-flex;background:#efece3;border-radius:10px;padding:3px}
+  .seg button{font-family:inherit;font-weight:800;font-size:13.5px;border:0;background:none;
+    color:var(--muted);padding:8px 15px;border-radius:8px;cursor:pointer}
+  .seg button.on{background:var(--pine);color:#fff}
+  .custbar .rate{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--ink)}
+  .custbar .rate b{color:var(--pine)}
+
   .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;
     box-shadow:var(--shadow);margin-bottom:15px;overflow:hidden}
   .card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:13px 17px;border-bottom:1px solid var(--line);background:#faf8f2}
+    padding:12px 16px;border-bottom:1px solid var(--line);background:#faf8f2}
   .card-h .ch-l{display:flex;align-items:center;gap:10px;min-width:0}
-  .card-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--pine);color:#fff;
+  .card-n{flex:none;width:25px;height:25px;border-radius:50%;background:var(--pine);color:#fff;
     display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
-  .card-t{font-size:15px;font-weight:800;color:var(--ink)}
+  .card-t{font-size:15px;font-weight:800}
   .card-sub{font-size:11.5px;font-weight:600;color:var(--muted)}
-  .card-amt{flex:none;font-size:17px;font-weight:800;color:var(--ink)}
-  .card-b{padding:15px 17px}
+  .card-amt{flex:none;font-size:17px;font-weight:800}
+  .card-b{padding:14px 16px}
 
-  .tag{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
-    border-radius:999px;padding:2px 8px;white-space:nowrap}
-  .tag-soon{background:#efece3;color:var(--muted)}
-  .tag-ok{background:var(--pine);color:#fff}
+  label.fld{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:5px}
+  select,input[type=number]{width:100%;padding:9px 11px;border:1px solid var(--line-strong);
+    border-radius:9px;font-family:inherit;font-size:14px;color:var(--ink);background:#fcfbf7}
+  select:focus,input:focus{outline:none;border-color:var(--pine);box-shadow:0 0 0 3px rgba(47,107,65,.13)}
+  .row{display:flex;gap:11px;flex-wrap:wrap}
+  .row > div{flex:1;min-width:110px}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;cursor:pointer;margin-top:10px}
+  .chk input{width:17px;height:17px;accent-color:var(--pine)}
+
+  .tag{font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 7px;white-space:nowrap}
+  .tag-tax{background:#fbe6d9;color:#9c4418}
+  .tag-non{background:#e7efe9;color:var(--pine)}
+
+  .kv{display:flex;flex-wrap:wrap;gap:3px 20px}
+  .kv > div{min-width:110px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+  .kv .v{font-size:14px;font-weight:700}
   .tag-cty{background:#eef3f7;color:var(--blue);border:1px solid #cfe0ee}
 
-  .soon{color:var(--muted);font-size:13.5px;line-height:1.55}
-  .soon b{color:var(--ink);font-weight:700}
+  .line{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .line:first-child{border-top:0}
+  .line .l-d{flex:1;min-width:0}
+  .line .l-name{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .line .l-meta{font-size:11.5px;color:var(--muted)}
+  .line .l-qty{width:66px;flex:none}
+  .line .l-qty input{padding:6px 8px;text-align:center}
+  .line .l-amt{width:74px;flex:none;text-align:right;font-weight:800;font-size:14px}
+  .line .l-x{flex:none;width:26px;height:26px;border-radius:7px;border:0;cursor:pointer;
+    background:#f0ece2;color:var(--muted);font-size:16px;line-height:1}
+  .line .l-x:hover{background:#dcb6b1;color:#7a2e26}
+  .sub{display:flex;justify-content:space-between;margin-top:10px;padding-top:9px;
+    border-top:1.5px solid var(--line-strong);font-weight:800;font-size:14.5px}
 
-  /* ---- hauling detail ---- */
-  .kv{display:flex;flex-wrap:wrap;gap:4px 22px;margin-bottom:10px}
-  .kv > div{min-width:120px}
-  .kv .k{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
-  .kv .v{font-size:14.5px;font-weight:700;color:var(--ink)}
-  .lnk{background:none;border:0;color:var(--pine);font-weight:700;font-size:12.5px;cursor:pointer;
-    text-decoration:underline;font-family:inherit;padding:0}
-  .btn{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-weight:800;font-size:14px;
-    border:0;border-radius:10px;padding:11px 18px;cursor:pointer}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-weight:800;font-size:13.5px;
+    border:0;border-radius:9px;padding:9px 15px;cursor:pointer}
   .btn-primary{background:var(--pine);color:#fff}
-  .btn-primary:hover{background:var(--pine-dk)}
   .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line-strong)}
   .btn:disabled{opacity:.5;cursor:not-allowed}
 
-  .notice{background:#fff;border:1px dashed var(--line-strong);border-radius:12px;
-    padding:16px 17px;margin-bottom:15px;font-size:14px;color:var(--ink)}
+  .notice{background:#fff;border:1px dashed var(--line-strong);border-radius:12px;padding:15px 16px;
+    margin-bottom:15px;font-size:14px}
   .notice b{font-weight:800}
 
-  /* ---- summary ---- */
+  .taxrow{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:5px 0}
+  .taxrow .r-sub{font-size:11.5px;color:var(--muted);font-weight:600}
   .sum-row{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:4px 0}
   .sum-row.muted{color:var(--muted)}
   .sum-total{display:flex;justify-content:space-between;margin-top:8px;padding-top:9px;
     border-top:1.5px solid var(--line-strong);font-size:18px;font-weight:800;color:var(--pine)}
 
-  /* ---- sticky total bar ---- */
   .totalbar{position:fixed;left:0;right:0;bottom:0;z-index:40;
     background:linear-gradient(135deg,var(--pine),var(--pine-dk));color:#fff;
-    display:flex;align-items:center;justify-content:space-between;gap:14px;
-    padding:13px 20px;box-shadow:0 -6px 22px rgba(0,0,0,.22)}
-  .totalbar .tb-l{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
-  .totalbar .tb-v{font-size:26px;font-weight:800;letter-spacing:-.01em}
+    display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 20px;
+    box-shadow:0 -6px 22px rgba(0,0,0,.22)}
+  .totalbar .tb-l{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.85}
+  .totalbar .tb-sub{font-size:11px;opacity:.8;font-weight:600}
+  .totalbar .tb-v{font-size:25px;font-weight:800;letter-spacing:-.01em}
 
-  /* ---- update banner ---- */
   @keyframes ub-slide{from{transform:translate(-50%,-120%);opacity:0}to{transform:translate(-50%,0);opacity:1}}
   .update-bar{position:fixed;left:50%;top:14px;transform:translate(-50%,0);z-index:400;
     max-width:620px;width:calc(100% - 28px);background:linear-gradient(100deg,#f7a022,#ef7d18);
@@ -125,8 +128,7 @@
     border:2px solid #fff3;box-shadow:0 14px 40px rgba(0,0,0,.4);font-size:14px;font-weight:700}
   .update-bar.on{display:flex;animation:ub-slide .38s cubic-bezier(.2,.9,.3,1.3)}
   .update-bar .ub-txt{flex:1;min-width:0}
-  .update-bar button{flex:none;font-family:inherit;font-weight:800;font-size:13px;border:0;
-    border-radius:8px;padding:8px 14px;cursor:pointer}
+  .update-bar button{flex:none;font-family:inherit;font-weight:800;font-size:13px;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
   .update-bar .ub-go{background:#1d3b26;color:#fff}
   .update-bar .ub-x{background:rgba(35,20,2,.14);color:#231402;padding:8px 11px}
 </style>
@@ -134,117 +136,132 @@
 <body>
 
 <header>
-  <div class="hd-left">
-    <div>
-      <div class="hd-eyebrow">Steve's Sanitation<span class="hd-build" id="buildBadge"></span></div>
-      <h1>Roll-Off Quoter</h1>
-      <div class="hd-sub">Hauling · Rental · Disposal · Taxes</div>
-    </div>
+  <div>
+    <div class="hd-eyebrow">Steve's Sanitation<span class="hd-build" id="buildBadge"></span></div>
+    <h1>Roll-Off Quoter</h1>
+    <div class="hd-sub">Hauling · Rental · Disposal · Taxes</div>
   </div>
-  <img class="hd-mascot" id="mascot" alt="Tippy" src="icon-512.png" style="display:none">
+  <button class="btn btn-ghost" id="clearBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">New quote</button>
 </header>
 
 <main>
   <div class="wrap">
 
-    <!-- hand-off notice (shown only when no hauling data arrived) -->
+    <!-- customer type -->
+    <div class="custbar">
+      <span class="lbl">Customer</span>
+      <div class="seg" id="custSeg">
+        <button data-cust="commercial">Commercial</button>
+        <button data-cust="residential">Residential</button>
+      </div>
+      <span class="rate" id="swtRateLbl">Solid Waste Tax <b>17%</b></span>
+    </div>
+
+    <!-- handoff notice -->
     <div class="notice" id="noHaul" style="display:none">
       <b>No hauling data yet.</b> Open the Mileage Quoter, calculate a haul, and tap
-      <b>Create Quote</b> there to send it here with the address, miles, and price filled in.
-      <div style="margin-top:11px">
-        <a class="btn btn-primary" id="openMileage" href="../ro/">Open Mileage Quoter →</a>
-      </div>
+      <b>Create Quote</b> to send it here.
+      <div style="margin-top:11px"><a class="btn btn-primary" href="../ro/">Open Mileage Quoter →</a></div>
     </div>
 
-    <!-- ===== 1. HAULING ===== -->
-    <div class="card" id="cardHaul">
+    <!-- 1. HAULING -->
+    <div class="card">
       <div class="card-h">
-        <div class="ch-l">
-          <div class="card-n">1</div>
-          <div>
-            <div class="card-t">Hauling</div>
-            <div class="card-sub" id="haulSub">From the Mileage Quoter</div>
-          </div>
-        </div>
+        <div class="ch-l"><div class="card-n">1</div>
+          <div><div class="card-t">Hauling</div><div class="card-sub" id="haulSub">From the Mileage Quoter</div></div></div>
         <div class="card-amt mono" id="haulAmt">$0.00</div>
       </div>
-      <div class="card-b" id="haulBody">
-        <div class="soon">Waiting for hauling data…</div>
-      </div>
+      <div class="card-b" id="haulBody"><div class="card-sub">Waiting for hauling data…</div></div>
     </div>
 
-    <!-- ===== 2. RENTAL ===== -->
+    <!-- 2. RENTAL -->
     <div class="card">
       <div class="card-h">
-        <div class="ch-l">
-          <div class="card-n" style="background:var(--blue)">2</div>
-          <div>
-            <div class="card-t">Daily Rental</div>
-            <div class="card-sub">By size · taxable / non-taxable</div>
-          </div>
-        </div>
-        <span class="tag tag-soon">Coming next</span>
+        <div class="ch-l"><div class="card-n" style="background:var(--blue)">2</div>
+          <div><div class="card-t">Daily Rental</div><div class="card-sub">By size &middot; taxable / non-taxable</div></div></div>
+        <div class="card-amt mono" id="rentalAmt">$0.00</div>
       </div>
       <div class="card-b">
-        <div class="soon">Pick a <b>container size</b> and <b>number of days</b>; the app applies the
-        daily rate and flags it taxable or non-taxable. <b>Send me the rental sizes and daily rates</b>
-        (and which are taxable) and this fills in.</div>
-      </div>
-    </div>
-
-    <!-- ===== 3. DISPOSAL ===== -->
-    <div class="card">
-      <div class="card-h">
-        <div class="ch-l">
-          <div class="card-n" style="background:var(--rust)">3</div>
+        <div class="row">
           <div>
-            <div class="card-t">Disposal</div>
-            <div class="card-sub">Itemized · taxable / non-taxable</div>
+            <label class="fld" for="rSize">Container size</label>
+            <select id="rSize">
+              <option value="">— none —</option>
+              <option value="0">10/20 yd &mdash; $3.30/day</option>
+              <option value="1">30/40 yd &mdash; $5.00/day</option>
+            </select>
+          </div>
+          <div>
+            <label class="fld" for="rDays">Days</label>
+            <input type="number" id="rDays" min="0" step="1" value="0" inputmode="numeric">
           </div>
         </div>
-        <span class="tag tag-soon">Coming next</span>
-      </div>
-      <div class="card-b">
-        <div class="soon">Add individual disposal <b>line items</b> from a catalog, each with its own
-        price and tax status, with a running subtotal. <b>Send me the disposal item list</b>
-        (name, price, taxable or not — a CSV is perfect) and I'll build the catalog.</div>
+        <label class="chk"><input type="checkbox" id="rTax" checked> Apply Solid Waste Tax to rental</label>
       </div>
     </div>
 
-    <!-- ===== 4. TAXES ===== -->
+    <!-- 3. DISPOSAL -->
     <div class="card">
       <div class="card-h">
-        <div class="ch-l">
-          <div class="card-n" style="background:#7a5bb0">4</div>
-          <div>
-            <div class="card-t">Solid Waste &amp; Environmental Tax</div>
-            <div class="card-sub">SW (commercial / residential) + environmental</div>
+        <div class="ch-l"><div class="card-n" style="background:var(--rust)">3</div>
+          <div><div class="card-t">Disposal</div><div class="card-sub">Itemized &middot; taxable / non-taxable</div></div></div>
+        <div class="card-amt mono" id="dispAmt">$0.00</div>
+      </div>
+      <div class="card-b">
+        <div class="row" style="align-items:flex-end">
+          <div style="flex:2">
+            <label class="fld" for="dSel">Add disposal item</label>
+            <select id="dSel"></select>
           </div>
+          <div style="flex:0 0 80px">
+            <label class="fld" for="dQty">Qty</label>
+            <input type="number" id="dQty" min="0" step="any" value="1" inputmode="decimal">
+          </div>
+          <div style="flex:0 0 auto"><button class="btn btn-primary" id="dAdd">Add</button></div>
         </div>
-        <span class="tag tag-soon">Coming next</span>
-      </div>
-      <div class="card-b">
-        <div class="soon"><b>Solid Waste Tax</b> (commercial or residential) plus <b>Environmental Tax</b>
-        (per yard or per ton), applied to the taxable portion above. <b>Send me the two SW rates and the
-        environmental per-yard / per-ton amounts</b> and this wires in.</div>
+        <div id="dLines" style="margin-top:12px"></div>
       </div>
     </div>
 
-    <!-- ===== SUMMARY ===== -->
+    <!-- 4. TAXES -->
     <div class="card">
       <div class="card-h">
-        <div class="ch-l"><div class="card-n" style="background:#1d201a">Σ</div>
-          <div class="card-t">Quote Summary</div></div>
+        <div class="ch-l"><div class="card-n" style="background:#7a5bb0">4</div>
+          <div><div class="card-t">Solid Waste &amp; Environmental Tax</div><div class="card-sub">Auto from taxable items + environmental</div></div></div>
+        <div class="card-amt mono" id="taxAmt">$0.00</div>
       </div>
+      <div class="card-b">
+        <div class="taxrow">
+          <div><div>Solid Waste Tax <span id="swtRateInline">(17%)</span></div>
+            <div class="r-sub">on taxable subtotal <span class="mono" id="swtBase">$0.00</span></div></div>
+          <div class="mono" style="font-weight:800" id="swtAmt">$0.00</div>
+        </div>
+        <div style="border-top:1px solid var(--line);margin:10px 0"></div>
+        <div class="row">
+          <div><label class="fld" for="envYd">Environmental &mdash; yards &times; $0.60</label>
+            <input type="number" id="envYd" min="0" step="any" value="0" inputmode="decimal"></div>
+          <div><label class="fld" for="envTn">Environmental &mdash; tons &times; $2.00</label>
+            <input type="number" id="envTn" min="0" step="any" value="0" inputmode="decimal"></div>
+        </div>
+        <div class="taxrow" style="margin-top:8px">
+          <div>Environmental Tax</div>
+          <div class="mono" style="font-weight:800" id="envAmt">$0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="card">
+      <div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">&Sigma;</div>
+        <div class="card-t">Quote Summary</div></div></div>
       <div class="card-b">
         <div class="sum-row"><span>Hauling</span><span class="mono" id="sHaul">$0.00</span></div>
-        <div class="sum-row muted"><span>Daily rental</span><span class="mono">—</span></div>
-        <div class="sum-row muted"><span>Disposal</span><span class="mono">—</span></div>
-        <div class="sum-row muted"><span>Taxes</span><span class="mono">—</span></div>
+        <div class="sum-row"><span>Daily rental</span><span class="mono" id="sRental">$0.00</span></div>
+        <div class="sum-row"><span>Disposal</span><span class="mono" id="sDisp">$0.00</span></div>
+        <div class="sum-row"><span>Solid Waste Tax</span><span class="mono" id="sSwt">$0.00</span></div>
+        <div class="sum-row"><span>Environmental Tax</span><span class="mono" id="sEnv">$0.00</span></div>
         <div class="sum-total"><span>Quote total</span><span class="mono" id="sTotal">$0.00</span></div>
-        <div style="margin-top:14px">
-          <button class="btn btn-ghost" disabled>Generate quote sheet (coming soon)</button>
-        </div>
+        <div style="margin-top:14px"><button class="btn btn-ghost" disabled>Generate quote sheet (coming soon)</button></div>
       </div>
     </div>
 
@@ -252,11 +269,10 @@
 </main>
 
 <div class="totalbar">
-  <span class="tb-l">Quote total</span>
+  <div><div class="tb-l">Quote total</div><div class="tb-sub" id="tbSub">&mdash;</div></div>
   <span class="tb-v mono" id="tbTotal">$0.00</span>
 </div>
 
-<!-- update banner -->
 <div class="update-bar" id="updateBar" role="alert">
   <span class="ub-txt"><b>New version available</b> — refresh to update.</span>
   <button class="ub-go" id="updateGo">Refresh</button>
@@ -264,130 +280,187 @@
 </div>
 
 <script>
-/* ============================================================
-   Roll-Off Quoter — skeleton
-   Receives the hauling result from the Mileage Quoter (/ro) via
-   URL params, then builds rental / disposal / tax on top of it.
-   Hand-off params:
-     dest   — destination address
-     county — Becker | Otter Tail | Wadena | (blank)
-     miles  — one-way miles
-     haul   — hauling total (dollars)
-     basis  — which origin basis produced it (label)
-   ============================================================ */
-const APP_VERSION = 'v0.1 (2026-10-07)';
+const APP_VERSION = 'v0.2 (2026-10-07)';
+const DATA = {"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"tax":false},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"tax":false},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"tax":false},{"code":"BATT","desc":"BATTERIES","rate":1.0,"tax":false},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"tax":true},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"tax":true},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"tax":true},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"tax":false},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"tax":false},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"tax":false},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"tax":false},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"tax":false},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"tax":true},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"tax":false},{"code":"COUCH","desc":"COUCH","rate":18.0,"tax":true},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"tax":false},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"tax":false},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"tax":false},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"tax":false},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"tax":true},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"tax":true},{"code":"LIN","desc":"LINER","rate":55.0,"tax":true},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"tax":true},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"tax":false},{"code":"METAL","desc":"METAL","rate":5.0,"tax":false},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"tax":false},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"tax":true},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"tax":true},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"tax":true},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"tax":true},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"tax":false},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"tax":true},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"tax":false},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"tax":false},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"tax":true},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"tax":true}]};
 
-const store = {
-  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
-  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},
+             set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+const el=id=>document.getElementById(id);
+const usd=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+const money=n=>usd.format(Math.round((n+Number.EPSILON)*100)/100);
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* running quote model */
+let Q = {
+  customer:'commercial',
+  haul:null, haulTax:false,
+  rental:{ size:'', days:0, tax:true },
+  disposal:[],            // {code,desc,rate,tax,qty}
+  env:{ yards:0, tons:0 }
 };
-const el = id => document.getElementById(id);
-const usd = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
 
-/* running quote model — only hauling is live in the skeleton */
-const Q = { haul:null, rental:0, disposal:0, tax:0 };
+function saveState(){ store.set('rq_state', JSON.stringify(Q)); }
+function loadState(){
+  try{ const s=JSON.parse(store.get('rq_state')||'null'); if(s&&typeof s==='object') Q=Object.assign(Q,s); }catch(e){}
+}
 
+/* ---- hand-off from the mileage quoter ---- */
 function readHandoff(){
-  const p = new URLSearchParams(location.search);
+  const p=new URLSearchParams(location.search);
   if(!p.has('haul') && !p.has('dest')) return null;
-  const miles = parseFloat(p.get('miles'));
-  const total = parseFloat(p.get('haul'));
-  return {
-    dest  : (p.get('dest')  || '').trim(),
-    county: (p.get('county')|| '').trim(),
-    miles : isFinite(miles) ? miles : null,
-    total : isFinite(total) ? total : 0,
-    basis : (p.get('basis') || '').trim()
-  };
+  const miles=parseFloat(p.get('miles')), total=parseFloat(p.get('haul'));
+  return { dest:(p.get('dest')||'').trim(), county:(p.get('county')||'').trim(),
+           miles:isFinite(miles)?miles:null, total:isFinite(total)?total:0,
+           basis:(p.get('basis')||'').trim() };
 }
 
 function renderHaul(){
-  const h = Q.haul;
-  if(!h){
-    el('noHaul').style.display = 'block';
-    el('haulSub').textContent = 'No data yet';
-    el('haulBody').innerHTML =
-      '<div class="soon">Open the Mileage Quoter and tap <b>Create Quote</b> to bring a haul over.</div>';
-    return;
-  }
-  el('noHaul').style.display = 'none';
-  el('haulSub').textContent = 'From the Mileage Quoter';
-  el('haulAmt').textContent = usd.format(h.total);
-
-  const cty = h.county ? `<span class="tag tag-cty">${esc(h.county)} County</span>` : '';
-  el('haulBody').innerHTML = `
-    <div class="kv">
-      <div><div class="k">Destination</div><div class="v">${esc(h.dest)||'—'} ${cty}</div></div>
-    </div>
+  const h=Q.haul;
+  if(!h){ el('noHaul').style.display='block'; el('haulSub').textContent='No data yet';
+    el('haulBody').innerHTML='<div class="card-sub">Open the Mileage Quoter and tap <b>Create Quote</b>.</div>'; return; }
+  el('noHaul').style.display='none'; el('haulSub').textContent='From the Mileage Quoter';
+  const cty=h.county?`<span class="tag tag-cty">${esc(h.county)} County</span>`:'';
+  el('haulBody').innerHTML=`
+    <div class="kv" style="margin-bottom:9px"><div style="min-width:100%"><div class="k">Destination</div>
+      <div class="v">${esc(h.dest)||'—'} ${cty}</div></div></div>
     <div class="kv">
       <div><div class="k">One way</div><div class="v">${h.miles!=null?h.miles.toFixed(1)+' mi':'—'}</div></div>
       <div><div class="k">Basis</div><div class="v">${esc(h.basis)||'—'}</div></div>
-      <div><div class="k">Haul total</div><div class="v mono">${usd.format(h.total)}</div></div>
     </div>
-    <button class="lnk" id="editHaul">↻ Recalculate in the Mileage Quoter</button>`;
-  const eb = el('editHaul');
-  if(eb) eb.addEventListener('click', ()=>{ location.href = mileageUrl(h.dest); });
+    <label class="chk"><input type="checkbox" id="hTax" ${Q.haulTax?'checked':''}> Apply Solid Waste Tax to hauling</label>`;
+  const ht=el('hTax'); if(ht) ht.addEventListener('change',()=>{ Q.haulTax=ht.checked; recompute(); });
 }
 
-function mileageUrl(dest){
-  // deep-link back to the mileage quoter with the address prefilled
-  return '../ro/' + (dest ? ('?dest=' + encodeURIComponent(dest)) : '');
+/* ---- disposal catalog ---- */
+function buildCatalog(){
+  const sel=el('dSel');
+  const items=DATA.disposal.slice().sort((a,b)=>a.desc.localeCompare(b.desc));
+  sel.innerHTML=items.map(d=>`<option value="${d.code}">${esc(d.desc)} — ${money(d.rate)}${d.tax?' (tax)':''}</option>`).join('');
+}
+function addDisposal(){
+  const code=el('dSel').value;
+  const item=DATA.disposal.find(d=>d.code===code);
+  if(!item) return;
+  let qty=parseFloat(el('dQty').value); if(!isFinite(qty)||qty<=0) qty=1;
+  Q.disposal.push({code:item.code,desc:item.desc,rate:item.rate,tax:item.tax,qty});
+  el('dQty').value='1';
+  renderDisposal(); recompute();
+}
+function renderDisposal(){
+  const box=el('dLines');
+  if(!Q.disposal.length){ box.innerHTML='<div class="card-sub">No disposal items added yet.</div>'; return; }
+  box.innerHTML=Q.disposal.map((d,i)=>`
+    <div class="line">
+      <div class="l-d">
+        <div class="l-name">${esc(d.desc)}</div>
+        <div class="l-meta">${money(d.rate)} each · <span class="tag ${d.tax?'tag-tax':'tag-non'}">${d.tax?'Taxable':'Non-tax'}</span></div>
+      </div>
+      <div class="l-qty"><input type="number" min="0" step="any" value="${d.qty}" data-qi="${i}" inputmode="decimal"></div>
+      <div class="l-amt mono">${money(d.rate*d.qty)}</div>
+      <button class="l-x" data-dx="${i}" title="Remove">×</button>
+    </div>`).join('');
+  box.querySelectorAll('[data-qi]').forEach(inp=>inp.addEventListener('input',()=>{
+    let v=parseFloat(inp.value); Q.disposal[+inp.dataset.qi].qty=isFinite(v)&&v>=0?v:0; recompute(); }));
+  box.querySelectorAll('[data-dx]').forEach(b=>b.addEventListener('click',()=>{
+    Q.disposal.splice(+b.dataset.dx,1); renderDisposal(); recompute(); }));
 }
 
+/* ---- the math ---- */
 function recompute(){
-  const haul = Q.haul ? Q.haul.total : 0;
-  const total = haul + Q.rental + Q.disposal + Q.tax;
-  el('sHaul').textContent  = usd.format(haul);
-  el('sTotal').textContent = usd.format(total);
-  el('tbTotal').textContent= usd.format(total);
+  const haul   = Q.haul ? Q.haul.total : 0;
+  const rentalRate = Q.rental.size!=='' ? DATA.rental[+Q.rental.size].rate : 0;
+  const rental = rentalRate * (Q.rental.days||0);
+  const disp   = Q.disposal.reduce((s,d)=>s+d.rate*(d.qty||0),0);
+
+  const swtRate = DATA.swt[Q.customer];
+  const taxBase = (Q.haulTax?haul:0) + (Q.rental.tax?rental:0)
+                + Q.disposal.reduce((s,d)=>s+(d.tax?d.rate*(d.qty||0):0),0);
+  const swt = taxBase * swtRate;
+  const env = (Q.env.yards||0)*DATA.env.perYard + (Q.env.tons||0)*DATA.env.perTon;
+  const total = haul + rental + disp + swt + env;
+
+  el('haulAmt').textContent=money(haul);
+  el('rentalAmt').textContent=money(rental);
+  el('dispAmt').textContent=money(disp);
+  el('taxAmt').textContent=money(swt+env);
+  el('swtBase').textContent=money(taxBase);
+  el('swtAmt').textContent=money(swt);
+  el('envAmt').textContent=money(env);
+  el('swtRateInline').textContent='('+(swtRate*100).toFixed(swtRate*100%1?2:0)+'%)';
+
+  el('sHaul').textContent=money(haul);
+  el('sRental').textContent=money(rental);
+  el('sDisp').textContent=money(disp);
+  el('sSwt').textContent=money(swt);
+  el('sEnv').textContent=money(env);
+  el('sTotal').textContent=money(total);
+  el('tbTotal').textContent=money(total);
+  el('tbSub').textContent=(Q.customer==='commercial'?'Commercial':'Residential')
+    + (Q.haul&&Q.haul.county?' · '+Q.haul.county+' Co':'');
+  saveState();
 }
 
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>(
-  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function setCustomer(c){
+  Q.customer=c;
+  document.querySelectorAll('#custSeg button').forEach(b=>b.classList.toggle('on',b.dataset.cust===c));
+  const r=DATA.swt[c]; const pct=(r*100).toFixed(r*100%1?2:0)+'%';
+  el('swtRateLbl').innerHTML='Solid Waste Tax <b>'+pct+'</b>';
+  recompute();
+}
 
 /* ---- boot ---- */
 (function(){
-  const b = el('buildBadge'); if(b) b.textContent = APP_VERSION;
-  const m = el('mascot'); if(m){ m.onload=()=>{m.style.display='block';}; }
+  const b=el('buildBadge'); if(b) b.textContent=APP_VERSION;
+  loadState();
 
-  Q.haul = readHandoff();
-  // keep the last haul so a reload (which drops the query string) still shows it
-  if(Q.haul){ store.set('rq_haul', JSON.stringify(Q.haul)); }
-  else {
-    try{ const s = JSON.parse(store.get('rq_haul')||'null'); if(s) Q.haul = s; }catch(e){}
-  }
+  const ho=readHandoff();
+  if(ho){ Q.haul=ho; }           // fresh haul from the mileage app
+  saveState();
+
+  // reflect loaded state into the controls
+  setCustomer(Q.customer||'commercial');
+  el('rSize').value=Q.rental.size||'';
+  el('rDays').value=Q.rental.days||0;
+  el('rTax').checked=Q.rental.tax!==false;
+  el('envYd').value=Q.env.yards||0;
+  el('envTn').value=Q.env.tons||0;
+
+  buildCatalog();
   renderHaul();
+  renderDisposal();
   recompute();
+
+  // wire controls
+  document.querySelectorAll('#custSeg button').forEach(bn=>bn.addEventListener('click',()=>setCustomer(bn.dataset.cust)));
+  el('rSize').addEventListener('change',()=>{ Q.rental.size=el('rSize').value; recompute(); });
+  el('rDays').addEventListener('input',()=>{ let v=parseInt(el('rDays').value,10); Q.rental.days=isFinite(v)&&v>=0?v:0; recompute(); });
+  el('rTax').addEventListener('change',()=>{ Q.rental.tax=el('rTax').checked; recompute(); });
+  el('dAdd').addEventListener('click',addDisposal);
+  el('envYd').addEventListener('input',()=>{ let v=parseFloat(el('envYd').value); Q.env.yards=isFinite(v)&&v>=0?v:0; recompute(); });
+  el('envTn').addEventListener('input',()=>{ let v=parseFloat(el('envTn').value); Q.env.tons=isFinite(v)&&v>=0?v:0; recompute(); });
+  el('clearBtn').addEventListener('click',()=>{
+    if(!confirm('Start a new quote? This clears everything, including the hauling line.')) return;
+    Q={customer:Q.customer,haul:null,haulTax:false,rental:{size:'',days:0,tax:true},disposal:[],env:{yards:0,tons:0}};
+    saveState(); location.href=location.pathname;   // drop any handoff query string
+  });
 })();
 
 /* ---- PWA + update detection ---- */
 (function(){
   if(!('serviceWorker' in navigator)) return;
-  const bar = el('updateBar');
-  let reloading = false;
-  function show(w){
-    if(!bar) return;
-    bar.classList.add('on');
-    el('updateGo').onclick = ()=>{ if(w) w.postMessage({type:'SKIP_WAITING'});
+  const bar=el('updateBar'); let reloading=false;
+  function show(w){ if(!bar) return; bar.classList.add('on');
+    el('updateGo').onclick=()=>{ if(w) w.postMessage({type:'SKIP_WAITING'});
       setTimeout(()=>{ if(!reloading){reloading=true;location.reload();} },400); };
-    el('updateX').onclick = ()=> bar.classList.remove('on');
-  }
-  window.addEventListener('load', ()=>{
+    el('updateX').onclick=()=>bar.classList.remove('on'); }
+  window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then(reg=>{
       if(reg.waiting && navigator.serviceWorker.controller) show(reg.waiting);
-      reg.addEventListener('updatefound', ()=>{
-        const nw = reg.installing; if(!nw) return;
-        nw.addEventListener('statechange', ()=>{
-          if(nw.state==='installed' && navigator.serviceWorker.controller) show(nw);
-        });
-      });
-      document.addEventListener('visibilitychange', ()=>{
-        if(document.visibilityState==='visible') reg.update().catch(()=>{});
-      });
+      reg.addEventListener('updatefound',()=>{ const nw=reg.installing; if(!nw) return;
+        nw.addEventListener('statechange',()=>{ if(nw.state==='installed'&&navigator.serviceWorker.controller) show(nw); }); });
+      document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') reg.update().catch(()=>{}); });
     }).catch(()=>{});
-    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-      if(reloading) return; reloading = true; location.reload();
-    });
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(reloading) return; reloading=true; location.reload(); });
   });
 })();
 </script>
