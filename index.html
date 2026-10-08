@@ -567,9 +567,12 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.17 (2026-10-08)';
+const APP_VERSION='v0.18 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.18',d:'Oct 8, 2026',items:[
+    'The item search list now closes after you add an item, so it no longer covers the line you just added'
+  ]},
   {v:'v0.17',d:'Oct 8, 2026',items:[
     'Disposal dropdown no longer gets cut off — it now floats above the box',
     'Added a Help guide (❔ Help in the header) covering every feature'
@@ -870,9 +873,10 @@ function addDisposal(){
   if(!item){ notify('Type to pick an item, or use ＋ Custom item'); return; }
   let qty=parseFloat(el('dQty').value); if(!isFinite(qty)||qty<=0)qty=1;
   Q.disposal.push({code:item.code,desc:item.desc,rate:item.rate,taxType:item.taxType,qty});
-  el('dQty').value='1'; el('dSearch').value=''; dPick=null; hideMenu();
+  el('dQty').value='1'; el('dSearch').value=''; dPick=null;
+  el('dSearch').blur(); hideMenu();   // keep the menu closed so it doesn't cover the new line
   if(item.taxType==='SWT'&&!Q.custChosen){openCustModal();}
-  renderDisposal();recompute(); el('dSearch').focus();
+  renderDisposal();recompute();
 }
 function toggleCustom(show){
   const box=el('customBox'); const on = show==null ? box.style.display==='none' : show;
