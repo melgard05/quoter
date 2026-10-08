@@ -280,6 +280,10 @@
           <div style="flex:0 0 104px"><label class="fld" for="custZip">ZIP</label><input type="text" id="custZip" placeholder="56573" maxlength="10" inputmode="numeric"></div>
         </div>
         <div class="card-sub" id="zipNote" style="margin-top:5px;min-height:14px"></div>
+        <div class="row" style="margin-top:4px">
+          <div><label class="fld" for="custEmail">Email <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— for sending the quote</span></label>
+            <input type="email" id="custEmail" placeholder="customer@email.com" autocapitalize="none" spellcheck="false"></div>
+        </div>
         <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <span class="fld" style="margin:0">Tax class</span>
           <div class="seg" id="custSeg">
@@ -372,6 +376,8 @@
         <div style="margin-top:14px;display:flex;gap:9px;flex-wrap:wrap">
           <button class="btn btn-primary" id="saveQuoteBtn">Save quote</button>
           <button class="btn btn-ghost" id="savedQuotesBtn">Saved quotes</button>
+          <button class="btn btn-ghost" id="sheetBtn">Quote sheet</button>
+          <button class="btn btn-ghost" id="emailBtn">Email</button>
         </div>
         <div class="card-sub" id="savedState" style="margin-top:8px;min-height:14px"></div>
       </div></div>
@@ -460,9 +466,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.11 (2026-10-08)';
+const APP_VERSION='v0.12 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.12',d:'Oct 8, 2026',items:[
+    'Quote sheet button — a clean, printable quote you can save as a PDF',
+    'Email button — opens a ready-to-send draft in your own work email with the quote filled in',
+    'Optional customer email field (fills the “To” line)'
+  ]},
   {v:'v0.11',d:'Oct 8, 2026',items:[
     'Solid Waste Tax breakdown now shows the tax amount for hauling, rental and MSW items',
     'The SWT subtotal moved to the bottom of the breakdown'
@@ -617,7 +628,7 @@ function quoteHasContent(){
 }
 
 function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
-  custStreet:'',custCity:'',custState:'',custZip:'',haul:null,
+  custStreet:'',custCity:'',custState:'',custZip:'',custEmail:'',haul:null,
   haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,savedId:null};}
 function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
 function haulIsAdjusted(){return Q.haul&&!Q.haul.manual&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
@@ -982,6 +993,7 @@ function loadQuote(r){
   el('custName').value=Q.custName||'';
   el('custStreet').value=Q.custStreet||''; el('custCity').value=Q.custCity||'';
   el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
+  el('custEmail').value=Q.custEmail||'';
   el('rSize').value=Q.rental.size||''; el('rDays').value=Q.rental.days||0;
   buildCatalog(); renderHaul(); renderDisposal(); recompute(); syncSaveBtn();
   window.scrollTo(0,0); notify('Loaded'+(Q.custName?(' — '+Q.custName):''));
@@ -993,6 +1005,124 @@ function deleteQuote(id){
     if(Q.savedId===id){ Q.savedId=null; saveState(); syncSaveBtn(); }
     renderSavedList(); notify('Quote deleted');
   }).catch(e=>{ console.error('delete failed',e); notify('Delete failed'); });
+}
+
+/* ===== quote sheet + email ===== */
+const COMPANY={name:"Steve's Sanitation",addr:['140 6th Ave NE','Perham, MN 56573']};
+function fmtQty(q){return (Math.round((q||0)*100)/100).toString();}
+function quoteItems(){
+  const T=calcTotals();
+  const items=[];
+  const haul=effectiveHaul();
+  if(haul>0||(Q.haul&&Q.haul.dest)) items.push({label:'Hauling',detail:(Q.haul&&Q.haul.dest)||'',amount:haul});
+  if(Q.rental.size!==''&&(Q.rental.days||0)>0){
+    const rr=DATA.rental[+Q.rental.size];
+    items.push({label:'Daily rental',detail:rr.size+' · '+Q.rental.days+' day'+((Q.rental.days||0)==1?'':'s')+' @ '+money(rr.rate)+'/day',amount:rr.rate*(Q.rental.days||0)});
+  }
+  Q.disposal.forEach(d=>{ if((d.qty||0)>0) items.push({label:d.desc,detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
+  return {T,items,haul};
+}
+function custAddrLines(){
+  return [Q.custStreet,[Q.custCity,Q.custState].filter(Boolean).join(', ')+(Q.custZip?' '+Q.custZip:'')]
+    .map(x=>(x||'').trim()).filter(Boolean);
+}
+function quoteSheetHtml(){
+  const {T,items}=quoteItems();
+  const logo=new URL('icon-512.png',location.href).href;
+  const date=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const custLines=[Q.custName].concat(custAddrLines());
+  if(Q.custEmail) custLines.push(Q.custEmail);
+  const custBlock=custLines.map(x=>(x||'').trim()).filter(Boolean).map(esc).join('<br>')||'—';
+  const site=(Q.haul&&Q.haul.dest)?esc(Q.haul.dest):'';
+  const rows=items.map(it=>`<tr><td><div class="il">${esc(it.label)}</div>${it.detail?`<div class="id">${esc(it.detail)}</div>`:''}</td><td class="amt">${money(it.amount)}</td></tr>`).join('');
+  let taxRows='';
+  if(T.hasSWT) taxRows+=`<tr><td>Solid Waste Tax <span class="mut">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td class="amt">${money(T.swt)}</td></tr>`;
+  if(T.env>0) taxRows+=`<tr><td>Environmental Tax</td><td class="amt">${money(T.env)}</td></tr>`;
+  const taxClass=(Q.customer==='commercial'?'Commercial':'Residential');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Quote — ${esc(Q.custName||COMPANY.name)}</title>
+<style>
+  @page{margin:0.6in}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1d201a;margin:0;padding:28px;max-width:760px;margin:0 auto;font-size:14px;line-height:1.5}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:3px solid #2f6b41;padding-bottom:16px}
+  .co{display:flex;gap:12px;align-items:center}
+  .co img{height:54px;width:54px;border-radius:9px}
+  .co h1{font-size:21px;margin:0;color:#234e30}
+  .co .ca{font-size:12px;color:#6c7065;margin-top:2px}
+  .qh{text-align:right}
+  .qh .qt{font-size:24px;font-weight:800;letter-spacing:.04em;color:#2f6b41}
+  .qh .qd{font-size:12px;color:#6c7065;margin-top:3px}
+  .meta{display:flex;gap:30px;flex-wrap:wrap;margin:20px 0 8px}
+  .meta h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#6c7065;margin:0 0 5px}
+  .meta .blk{font-size:13.5px}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:#6c7065;border-bottom:2px solid #e2ded2;padding:7px 4px}
+  th.amt,td.amt{text-align:right;white-space:nowrap}
+  td{padding:9px 4px;border-bottom:1px solid #eee;vertical-align:top}
+  .il{font-weight:700}
+  .id{font-size:11.5px;color:#6c7065;margin-top:1px}
+  .amt{font-variant-numeric:tabular-nums}
+  tfoot td{border-bottom:0;padding:5px 4px}
+  tfoot .sub td{color:#6c7065}
+  tfoot .tot td{border-top:2px solid #cdc8b8;font-size:18px;font-weight:800;color:#2f6b41;padding-top:10px}
+  .mut{color:#6c7065;font-weight:500;font-size:12px}
+  .foot{margin-top:26px;font-size:11.5px;color:#6c7065;border-top:1px solid #e2ded2;padding-top:12px}
+  .pbar{margin:0 0 18px;text-align:right}
+  .pbar button{font-family:inherit;font-weight:800;font-size:13px;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;background:#2f6b41;color:#fff}
+  @media print{.pbar{display:none}body{padding:0}}
+</style></head><body>
+<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
+<div class="top">
+  <div class="co"><img src="${logo}" alt=""><div><h1>${esc(COMPANY.name)}</h1><div class="ca">${COMPANY.addr.map(esc).join(' · ')}</div></div></div>
+  <div class="qh"><div class="qt">QUOTE</div><div class="qd">${date}</div></div>
+</div>
+<div class="meta">
+  <div><h3>Prepared for</h3><div class="blk">${custBlock}</div></div>
+  ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
+  <div><h3>Tax class</h3><div class="blk">${taxClass} · SWT ${pct(T.rate)}</div></div>
+</div>
+<table>
+  <thead><tr><th>Description</th><th class="amt">Amount</th></tr></thead>
+  <tbody>${rows||'<tr><td class="mut">No line items</td><td></td></tr>'}</tbody>
+  <tfoot>
+    ${taxRows}
+    <tr class="tot"><td>Total</td><td class="amt">${money(T.total)}</td></tr>
+  </tfoot>
+</table>
+<div class="foot">Quote valid for 30 days. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
+</body></html>`;
+}
+function openSheet(){
+  const {T}=quoteItems();
+  if(T.total<=0){ notify('Build a quote first'); return; }
+  const w=window.open('','_blank'); if(!w){ notify('Allow pop-ups to open the quote sheet'); return; }
+  w.document.write(quoteSheetHtml()); w.document.close();
+}
+function emailText(){
+  const {T,items}=quoteItems();
+  const pad=(s,amt)=>{ s=String(s); const w=Math.max(2,40-s.length); return s+' '.repeat(w)+amt; };
+  const L=[];
+  L.push(COMPANY.name+" — Roll-Off Quote");
+  L.push('Date: '+new Date().toLocaleDateString('en-US'));
+  L.push('');
+  if(Q.custName) L.push('Prepared for: '+Q.custName);
+  custAddrLines().forEach(a=>L.push(a));
+  if(Q.haul&&Q.haul.dest){ L.push(''); L.push('Site address: '+Q.haul.dest); }
+  L.push(''); L.push('------------------------------------------------');
+  items.forEach(it=>L.push(pad(it.label+(it.detail?' ('+it.detail+')':''),money(it.amount))));
+  if(T.hasSWT) L.push(pad('Solid Waste Tax ('+pct(T.rate)+' on '+money(T.swtBase)+')',money(T.swt)));
+  if(T.env>0) L.push(pad('Environmental Tax',money(T.env)));
+  L.push('------------------------------------------------');
+  L.push(pad('TOTAL',money(T.total)));
+  L.push(''); L.push('Thank you,'); L.push(COMPANY.name);
+  return L.join('\n');
+}
+function emailQuote(){
+  const {T}=quoteItems();
+  if(T.total<=0){ notify('Build a quote first'); return; }
+  const subj=COMPANY.name+' — Roll-Off Quote'+(Q.custName?(' for '+Q.custName):'');
+  const to=encodeURIComponent((Q.custEmail||'').trim());
+  location.href='mailto:'+to+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(emailText());
 }
 
 /* ideas — synced via Firestore (local fallback when offline) */
@@ -1051,6 +1181,7 @@ let appStarted=false;
   el('custStreet').addEventListener('input',()=>{Q.custStreet=el('custStreet').value;saveState();});
   el('custCity').addEventListener('input',()=>{Q.custCity=el('custCity').value;saveState();});
   el('custState').addEventListener('input',()=>{Q.custState=el('custState').value.toUpperCase();saveState();});
+  el('custEmail').addEventListener('input',()=>{Q.custEmail=el('custEmail').value;saveState();});
   el('custZip').addEventListener('input',()=>{
     Q.custZip=el('custZip').value; saveState();
     clearTimeout(window._zipTimer);
@@ -1076,6 +1207,8 @@ let appStarted=false;
   el('ncCode').addEventListener('keydown',e=>{if(e.key==='Enter')el('ncDesc').focus();});
   el('saveQuoteBtn').addEventListener('click',saveQuote);
   el('savedQuotesBtn').addEventListener('click',openSaved);
+  el('sheetBtn').addEventListener('click',openSheet);
+  el('emailBtn').addEventListener('click',emailQuote);
   el('savedTopBtn').addEventListener('click',openSaved);
   el('savedClose').addEventListener('click',closeSaved);
   el('dupBtn').addEventListener('click',()=>{
@@ -1129,6 +1262,7 @@ function startApp(){
     el('custName').value=Q.custName||'';
     el('custStreet').value=Q.custStreet||''; el('custCity').value=Q.custCity||'';
     el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
+    el('custEmail').value=Q.custEmail||'';
     el('rSize').value=Q.rental.size||'';el('rDays').value=Q.rental.days||0;
     buildCatalog();renderHaul();renderDisposal();recompute();syncSaveBtn();
   });
