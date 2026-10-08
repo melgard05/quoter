@@ -188,6 +188,34 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .saved-row .sv-amt{flex:0 0 auto;font-size:16px;font-weight:800;color:var(--pine)}
   .saved-row .sv-btns{flex:0 0 auto;display:flex;gap:7px}
+
+  /* ---- type-ahead combo for disposal items ---- */
+  .combo-menu{display:none;position:absolute;left:0;right:0;top:100%;z-index:60;margin-top:4px;background:#fff;
+    border:1px solid var(--line-strong);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.16);max-height:264px;overflow-y:auto}
+  .combo-menu.on{display:block}
+  .combo-opt{display:flex;align-items:center;gap:9px;padding:9px 11px;cursor:pointer;border-top:1px solid var(--line)}
+  .combo-opt:first-child{border-top:0}
+  .combo-opt:hover,.combo-opt.hi{background:#eef3ef}
+  .combo-opt .co-desc{flex:1;min-width:0;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .combo-opt .co-rate{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted)}
+  .combo-opt .co-tax{flex:0 0 auto}
+  .combo-empty{padding:11px;font-size:12.5px;color:var(--muted)}
+  .combo-custom-link{display:inline-block;font-size:12.5px;font-weight:800;color:var(--pine);cursor:pointer;text-decoration:underline}
+  .custom-box{margin-top:11px;padding:12px;border:1px dashed var(--line-strong);border-radius:11px;background:#faf8f2}
+  .tag.t-custom{background:#efe7f6;color:#5b3b8c}
+
+  /* ---- SWT component breakdown ---- */
+  .swt-break{margin-top:6px}
+  .sb-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:2px 0}
+  .sb-row .sb-l{flex:0 0 88px;color:var(--muted);font-weight:700}
+  .sb-row .sb-v{flex:0 0 76px;text-align:right;font-weight:700}
+  .sb-row .sb-f{flex:1;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--pine)}
+  .sb-row.ex .sb-v{text-decoration:line-through;color:var(--muted)}
+  .sb-row.ex .sb-f{color:var(--muted)}
+  .sb-row.base{border-top:1px solid var(--line);margin-top:3px;padding-top:4px}
+  .sb-row.base .sb-l{color:var(--ink);font-weight:800}
+  .sb-row.base .sb-f{color:var(--muted)}
+  .sb-none{font-size:12px;color:var(--muted);font-weight:600}
 </style>
 
 <!-- ===== Firebase (compat SDK — gives a global `firebase`) ===== -->
@@ -284,9 +312,31 @@
       <div class="card-amt mono" id="dispAmt">$0.00</div></div>
       <div class="card-b">
         <div class="row" style="align-items:flex-end">
-          <div style="flex:2"><label class="fld" for="dSel">Add item</label><select id="dSel"></select></div>
-          <div style="flex:0 0 80px"><label class="fld" for="dQty">Qty</label><input type="number" id="dQty" min="0" step="any" value="1" inputmode="decimal"></div>
+          <div style="flex:2 1 150px;position:relative">
+            <label class="fld" for="dSearch">Add item</label>
+            <input type="text" id="dSearch" placeholder="Type to search items…" autocomplete="off" spellcheck="false">
+            <div class="combo-menu" id="dMenu"></div>
+          </div>
+          <div style="flex:0 0 72px"><label class="fld" for="dQty">Qty</label><input type="number" id="dQty" min="0" step="any" value="1" inputmode="decimal"></div>
           <div style="flex:0 0 auto"><button class="btn btn-primary" id="dAdd">Add</button></div>
+        </div>
+        <div style="margin-top:9px"><a class="combo-custom-link" id="customToggle">＋ Custom item not in the list</a></div>
+        <div id="customBox" class="custom-box" style="display:none">
+          <div class="row" style="align-items:flex-end">
+            <div style="flex:2 1 150px"><label class="fld" for="cDesc">Description</label><input type="text" id="cDesc" placeholder="What it is"></div>
+            <div style="flex:0 0 100px"><label class="fld" for="cRate">Rate ($)</label><input type="number" id="cRate" min="0" step="any" placeholder="0.00" inputmode="decimal"></div>
+            <div style="flex:0 0 66px"><label class="fld" for="cQty">Qty</label><input type="number" id="cQty" min="0" step="any" value="1" inputmode="decimal"></div>
+          </div>
+          <div style="margin-top:10px"><label class="fld" for="cTax">Tax type</label>
+            <select id="cTax">
+              <option value="None">No tax</option>
+              <option value="SWT">Solid Waste Tax</option>
+              <option value="ENV-YD">Environmental — $0.60 / yd</option>
+              <option value="ENV-TON">Environmental — $2.00 / ton</option>
+            </select></div>
+          <div style="margin-top:11px;display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" id="cAdd">Add custom item</button>
+            <button class="btn btn-ghost btn-sm" id="cCancel">Cancel</button></div>
         </div>
         <div id="dLines" style="margin-top:12px"></div></div></div>
 
@@ -296,9 +346,8 @@
       <div class="card-amt mono" id="taxAmt">$0.00</div></div>
       <div class="card-b">
         <div id="swtBanner"></div>
-        <div class="taxrow"><div><div>Solid Waste Tax <span id="swtRateInline">(17%)</span></div>
-          <div class="r-sub">on <span class="mono" id="swtBase">$0.00</span></div>
-          <div class="taxed-on" id="taxedOn"></div></div>
+        <div class="taxrow"><div style="flex:1;min-width:0"><div>Solid Waste Tax <span id="swtRateInline">(17%)</span></div>
+          <div class="swt-break" id="swtBreak"></div></div>
           <div class="mono" style="font-weight:800" id="swtAmt">$0.00</div></div>
         <div style="border-top:1px solid var(--line);margin:10px 0"></div>
         <div class="taxrow"><div><div>Environmental Tax</div>
@@ -407,9 +456,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.9 (2026-10-08)';
+const APP_VERSION='v0.10 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.10',d:'Oct 8, 2026',items:[
+    'Disposal “Add item” is now type-to-search — start typing to filter the list',
+    'Add a custom one-off item with your own description, rate and tax type',
+    'Solid Waste Tax now shows the taxable amount from hauling, rental and MSW items separately'
+  ]},
   {v:'v0.9',d:'Oct 8, 2026',items:[
     'Save quotes to the cloud and reload them anytime (📁 Saved)',
     'Saved quotes are shared across the team, with customer, total, who saved it and when',
@@ -616,24 +670,83 @@ function renderHaul(){
 
 const TTAG={'SWT':'<span class="tag t-swt">SWT</span>','ENV-YD':'<span class="tag t-env">Env $0.60/yd</span>',
   'ENV-TON':'<span class="tag t-env">Env $2/ton</span>','None':'<span class="tag t-non">No tax</span>'};
-function buildCatalog(){
-  const items=CODES.filter(c=>c.active!==false).slice().sort((a,b)=>a.desc.localeCompare(b.desc));
-  el('dSel').innerHTML=items.map(d=>`<option value="${d.code}">${esc(d.desc)} — ${money(d.rate)}</option>`).join('');
+/* ---- type-ahead combo for the disposal catalog ---- */
+let dPick=null, dFiltered=[], dActiveIdx=-1;
+function activeCodes(){ return CODES.filter(c=>c.active!==false).slice().sort((a,b)=>a.desc.localeCompare(b.desc)); }
+function comboFilter(q){
+  q=(q||'').trim().toLowerCase();
+  const all=activeCodes();
+  if(!q) return all;
+  // match on description OR code; rank by whether it starts with the text
+  const starts=[], has=[];
+  all.forEach(c=>{
+    const d=c.desc.toLowerCase(), cd=c.code.toLowerCase();
+    if(d.startsWith(q)||cd.startsWith(q)) starts.push(c);
+    else if(d.includes(q)||cd.includes(q)) has.push(c);
+  });
+  return starts.concat(has);
 }
+function renderMenu(){
+  const menu=el('dMenu'); if(!menu) return;
+  dFiltered=comboFilter(el('dSearch').value);
+  if(dActiveIdx>=dFiltered.length) dActiveIdx=dFiltered.length-1;
+  if(!dFiltered.length){
+    menu.innerHTML='<div class="combo-empty">No matches — use <b>＋ Custom item</b> below.</div>';
+    menu.classList.add('on'); return;
+  }
+  menu.innerHTML=dFiltered.map((c,i)=>`<div class="combo-opt${i===dActiveIdx?' hi':''}" data-ci="${i}">
+    <span class="co-desc">${esc(c.desc)}</span><span class="co-rate mono">${money(c.rate)}</span>
+    <span class="co-tax">${TTAG[c.taxType]||''}</span></div>`).join('');
+  menu.classList.add('on');
+  menu.querySelectorAll('[data-ci]').forEach(o=>o.addEventListener('mousedown',e=>{
+    e.preventDefault(); pickCombo(dFiltered[+o.dataset.ci]); }));
+}
+function pickCombo(c){ if(!c)return; dPick=c; el('dSearch').value=c.desc; hideMenu(); el('dQty').focus(); }
+function hideMenu(){ const m=el('dMenu'); if(m)m.classList.remove('on'); dActiveIdx=-1; }
+function comboKey(e){
+  if(e.key==='ArrowDown'){ e.preventDefault(); if(!el('dMenu').classList.contains('on'))renderMenu();
+    dActiveIdx=Math.min(dActiveIdx+1,dFiltered.length-1); renderMenu(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); dActiveIdx=Math.max(dActiveIdx-1,0); renderMenu(); }
+  else if(e.key==='Enter'){ e.preventDefault();
+    const pick = dActiveIdx>=0 ? dFiltered[dActiveIdx] : (dFiltered[0]||null);
+    if(pick){ pickCombo(pick); } }
+  else if(e.key==='Escape'){ hideMenu(); }
+}
+function buildCatalog(){ dPick=null; if(el('dSearch')) el('dSearch').value=''; hideMenu(); }
 function addDisposal(){
-  const item=CODES.find(d=>d.code===el('dSel').value);if(!item)return;
-  let qty=parseFloat(el('dQty').value);if(!isFinite(qty)||qty<=0)qty=1;
+  let item=dPick;
+  if(!item){ const f=comboFilter(el('dSearch').value); if(f.length) item=f[0]; }
+  if(!item){ notify('Type to pick an item, or use ＋ Custom item'); return; }
+  let qty=parseFloat(el('dQty').value); if(!isFinite(qty)||qty<=0)qty=1;
   Q.disposal.push({code:item.code,desc:item.desc,rate:item.rate,taxType:item.taxType,qty});
-  el('dQty').value='1';
+  el('dQty').value='1'; el('dSearch').value=''; dPick=null; hideMenu();
   if(item.taxType==='SWT'&&!Q.custChosen){openCustModal();}
-  renderDisposal();recompute();
+  renderDisposal();recompute(); el('dSearch').focus();
+}
+function toggleCustom(show){
+  const box=el('customBox'); const on = show==null ? box.style.display==='none' : show;
+  box.style.display=on?'block':'none';
+  if(on) el('cDesc').focus();
+}
+function addCustom(){
+  const desc=(el('cDesc').value||'').trim();
+  let rate=parseFloat(el('cRate').value), qty=parseFloat(el('cQty').value);
+  const tax=el('cTax').value;
+  if(!desc){ notify('Enter a description'); return; }
+  if(!isFinite(rate)||rate<0){ notify('Enter a rate'); return; }
+  if(!isFinite(qty)||qty<=0) qty=1;
+  Q.disposal.push({code:'CUSTOM',desc:desc,rate:rate,taxType:tax,qty:qty,custom:true});
+  el('cDesc').value='';el('cRate').value='';el('cQty').value='1';el('cTax').value='None';
+  toggleCustom(false);
+  if(tax==='SWT'&&!Q.custChosen){openCustModal();}
+  renderDisposal();recompute(); notify('Custom item added');
 }
 function renderDisposal(){
   const box=el('dLines');
   if(!Q.disposal.length){box.innerHTML='<div class="card-sub">No disposal items added yet.</div>';return;}
   box.innerHTML=Q.disposal.map((d,i)=>`<div class="line"><div class="l-d">
     <div class="l-name">${esc(d.desc)}</div>
-    <div class="l-meta">${money(d.rate)} each ${TTAG[d.taxType]||''}</div></div>
+    <div class="l-meta">${money(d.rate)} each ${TTAG[d.taxType]||''}${d.custom?' <span class="tag t-custom">custom</span>':''}</div></div>
     <div class="l-qty"><input type="number" min="0" step="any" value="${d.qty}" data-qi="${i}" inputmode="decimal"></div>
     <div class="l-amt mono">${money(d.rate*d.qty)}</div>
     <button class="l-x" data-dx="${i}" title="Remove">×</button></div>`).join('');
@@ -659,6 +772,19 @@ function calcTotals(){
   const swt=swtBase*rate;
   return {haul,rental,disp,swtItems,env,hasSWT,rate,swtBase,swt,total:haul+rental+disp+swt+env};
 }
+/* per-component breakdown of what the Solid Waste Tax is figured on */
+function swtBreakHtml(T){
+  if(!T.hasSWT) return '<span class="sb-none">No MSW item on the quote — no Solid Waste Tax.</span>';
+  const ov=Q.override;
+  const row=(label,amt,included)=>`<div class="sb-row${included?'':' ex'}">`
+    +`<span class="sb-l">${label}</span><span class="sb-v mono">${money(amt)}</span>`
+    +`<span class="sb-f">${included?'taxed':'excluded'}</span></div>`;
+  return row('Hauling',T.haul,!ov)
+    +row('Rental',T.rental,!ov)
+    +row('MSW items',T.swtItems,true)
+    +`<div class="sb-row base"><span class="sb-l">Taxable base</span>`
+    +`<span class="sb-v mono">${money(T.swtBase)}</span><span class="sb-f">× ${pct(T.rate)}</span></div>`;
+}
 function recompute(){
   const T=calcTotals();
   const {haul,rental,disp,env,hasSWT,rate,swtBase,swt,total}=T;
@@ -668,30 +794,27 @@ function recompute(){
   el('rentalAmt').textContent=money(rental);
   el('dispAmt').textContent=money(disp);
   el('taxAmt').textContent=money(swt+env);
-  el('swtBase').textContent=money(swtBase);
   el('swtAmt').textContent=money(swt);
   el('envAmt').textContent=money(env);
   el('swtRateInline').textContent='('+pct(rate)+')';
   el('envSub').textContent=env>0?'from demolition yards / tons on the quote':'auto from demolition yards / tons';
+  el('swtBreak').innerHTML=swtBreakHtml(T);
 
-  // SWT banner + what's-taxed readout
-  const banner=el('swtBanner'),taxed=el('taxedOn');
+  // SWT banner
+  const banner=el('swtBanner');
   if(hasSWT){
     if(Q.override){
       banner.className='swtbanner over';
       banner.innerHTML=`<span>⚠️</span><div class="bw"><b>SWT overridden for this quote.</b> Hauling &amp; rental are NOT taxed — MSW items only (MN one-third rule). Environmental tax still applies.</div>
         <button class="btn btn-ghost btn-sm" id="ovBtn">Undo override</button>`;
-      taxed.innerHTML='<span>SWT on: MSW items ✓</span><span style="opacity:.5">Hauling ✕</span><span style="opacity:.5">Rental ✕</span>';
     }else{
       banner.className='swtbanner full';
       banner.innerHTML=`<span>✓</span><div class="bw"><b>Solid Waste Tax applies to the full ticket</b> — hauling, rental, and MSW items.</div>
         <button class="btn btn-ghost btn-sm" id="ovBtn">Override for this quote</button>`;
-      taxed.innerHTML='<span>SWT on: Hauling ✓</span><span>Rental ✓</span><span>MSW items ✓</span>';
     }
     const ov=el('ovBtn');if(ov)ov.addEventListener('click',()=>{Q.override=!Q.override;recompute();});
   }else{
     banner.className='';banner.innerHTML='';
-    taxed.innerHTML='<span style="opacity:.6">No MSW item on the quote — no Solid Waste Tax</span>';
     Q.override=false;
   }
 
@@ -921,6 +1044,13 @@ let appStarted=false;
   el('rSize').addEventListener('change',()=>{Q.rental.size=el('rSize').value;recompute();});
   el('rDays').addEventListener('input',()=>{let v=parseInt(el('rDays').value,10);Q.rental.days=isFinite(v)&&v>=0?v:0;recompute();});
   el('dAdd').addEventListener('click',addDisposal);
+  el('dSearch').addEventListener('input',()=>{ dPick=null; dActiveIdx=-1; renderMenu(); });
+  el('dSearch').addEventListener('focus',renderMenu);
+  el('dSearch').addEventListener('keydown',comboKey);
+  el('dSearch').addEventListener('blur',()=>setTimeout(hideMenu,150));
+  el('customToggle').addEventListener('click',()=>toggleCustom());
+  el('cAdd').addEventListener('click',addCustom);
+  el('cCancel').addEventListener('click',()=>toggleCustom(false));
   document.querySelectorAll('#custModal [data-pick]').forEach(b=>b.addEventListener('click',()=>{setCustomer(b.dataset.pick,true);closeCustModal();}));
   el('ideaSend').addEventListener('click',submitIdea);
   el('ideaView').addEventListener('click',viewIdeas);
