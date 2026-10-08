@@ -1,6 +1,6 @@
 /* Roll-Off Quoter service worker. BUMP CACHE on every deploy (keep in step
    with APP_VERSION in index.html) so the update banner fires. */
-const CACHE = 'roq-v0.10';
+const CACHE = 'roq-v0.11';
 const SHELL = './';
 
 self.addEventListener('install', e => { /* wait, don't auto-skip — banner handles it */ });
