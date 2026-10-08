@@ -205,16 +205,21 @@
   .tag.t-custom{background:#efe7f6;color:#5b3b8c}
 
   /* ---- SWT component breakdown ---- */
-  .swt-break{margin-top:6px}
-  .sb-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:2px 0}
-  .sb-row .sb-l{flex:0 0 88px;color:var(--muted);font-weight:700}
-  .sb-row .sb-v{flex:0 0 76px;text-align:right;font-weight:700}
-  .sb-row .sb-f{flex:1;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--pine)}
-  .sb-row.ex .sb-v{text-decoration:line-through;color:var(--muted)}
+  .swt-break{margin-top:7px}
+  .sb-row{display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 0}
+  .sb-row .sb-l{flex:1 1 56px;min-width:0;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sb-row .sb-v{flex:0 0 64px;text-align:right;font-weight:700}
+  .sb-row .sb-f{flex:0 0 52px;text-align:center;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--pine)}
+  .sb-row .sb-t{flex:0 0 64px;text-align:right;font-weight:700}
+  .sb-row.ex .sb-v,.sb-row.ex .sb-t{text-decoration:line-through;color:var(--muted)}
   .sb-row.ex .sb-f{color:var(--muted)}
-  .sb-row.base{border-top:1px solid var(--line);margin-top:3px;padding-top:4px}
+  .sb-row.sb-head{padding-bottom:1px}
+  .sb-row.sb-head span{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .sb-row.base{border-top:1px solid var(--line);margin-top:4px;padding-top:6px}
   .sb-row.base .sb-l{color:var(--ink);font-weight:800}
+  .sb-row.base .sb-v{color:var(--ink)}
   .sb-row.base .sb-f{color:var(--muted)}
+  .sb-row.base .sb-t{color:var(--pine);font-weight:800;font-size:13.5px}
   .sb-none{font-size:12px;color:var(--muted);font-weight:600}
 </style>
 
@@ -346,9 +351,8 @@
       <div class="card-amt mono" id="taxAmt">$0.00</div></div>
       <div class="card-b">
         <div id="swtBanner"></div>
-        <div class="taxrow"><div style="flex:1;min-width:0"><div>Solid Waste Tax <span id="swtRateInline">(17%)</span></div>
+        <div style="padding:4px 0"><div style="font-weight:700;font-size:13.5px">Solid Waste Tax <span id="swtRateInline">(17%)</span></div>
           <div class="swt-break" id="swtBreak"></div></div>
-          <div class="mono" style="font-weight:800" id="swtAmt">$0.00</div></div>
         <div style="border-top:1px solid var(--line);margin:10px 0"></div>
         <div class="taxrow"><div><div>Environmental Tax</div>
           <div class="r-sub" id="envSub">auto from demolition yards / tons</div></div>
@@ -456,9 +460,13 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.10 (2026-10-08)';
+const APP_VERSION='v0.11 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.11',d:'Oct 8, 2026',items:[
+    'Solid Waste Tax breakdown now shows the tax amount for hauling, rental and MSW items',
+    'The SWT subtotal moved to the bottom of the breakdown'
+  ]},
   {v:'v0.10',d:'Oct 8, 2026',items:[
     'Disposal “Add item” is now type-to-search — start typing to filter the list',
     'Add a custom one-off item with your own description, rate and tax type',
@@ -775,15 +783,23 @@ function calcTotals(){
 /* per-component breakdown of what the Solid Waste Tax is figured on */
 function swtBreakHtml(T){
   if(!T.hasSWT) return '<span class="sb-none">No MSW item on the quote — no Solid Waste Tax.</span>';
-  const ov=Q.override;
-  const row=(label,amt,included)=>`<div class="sb-row${included?'':' ex'}">`
-    +`<span class="sb-l">${label}</span><span class="sb-v mono">${money(amt)}</span>`
-    +`<span class="sb-f">${included?'taxed':'excluded'}</span></div>`;
-  return row('Hauling',T.haul,!ov)
+  const ov=Q.override, r=T.rate;
+  const row=(label,amt,included)=>{
+    const tax=included?amt*r:0;
+    return `<div class="sb-row${included?'':' ex'}">`
+      +`<span class="sb-l">${label}</span>`
+      +`<span class="sb-v mono">${money(amt)}</span>`
+      +`<span class="sb-f">${included?'taxed':'excluded'}</span>`
+      +`<span class="sb-t mono">${money(tax)}</span></div>`;
+  };
+  return '<div class="sb-row sb-head"><span class="sb-l"></span><span class="sb-v">Taxable</span><span class="sb-f"></span><span class="sb-t">Tax</span></div>'
+    +row('Hauling',T.haul,!ov)
     +row('Rental',T.rental,!ov)
     +row('MSW items',T.swtItems,true)
-    +`<div class="sb-row base"><span class="sb-l">Taxable base</span>`
-    +`<span class="sb-v mono">${money(T.swtBase)}</span><span class="sb-f">× ${pct(T.rate)}</span></div>`;
+    +`<div class="sb-row base"><span class="sb-l">Solid Waste Tax</span>`
+    +`<span class="sb-v mono">${money(T.swtBase)}</span>`
+    +`<span class="sb-f">× ${pct(r)}</span>`
+    +`<span class="sb-t mono">${money(T.swt)}</span></div>`;
 }
 function recompute(){
   const T=calcTotals();
@@ -794,7 +810,6 @@ function recompute(){
   el('rentalAmt').textContent=money(rental);
   el('dispAmt').textContent=money(disp);
   el('taxAmt').textContent=money(swt+env);
-  el('swtAmt').textContent=money(swt);
   el('envAmt').textContent=money(env);
   el('swtRateInline').textContent='('+pct(rate)+')';
   el('envSub').textContent=env>0?'from demolition yards / tons on the quote':'auto from demolition yards / tons';
