@@ -188,6 +188,9 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .saved-row .sv-amt{flex:0 0 auto;font-size:16px;font-weight:800;color:var(--pine)}
   .saved-row .sv-btns{flex:0 0 auto;display:flex;gap:7px}
+  .saved-row .sv-check{flex:0 0 auto;width:18px;height:18px;cursor:pointer;accent-color:var(--pine)}
+  .sv-lab{display:inline-block;font-size:10.5px;font-weight:800;background:#eef3ef;color:var(--pine);border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:middle}
+  .saved-bar{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
 
   /* ---- type-ahead combo for disposal items ---- */
   .combo-menu{display:none;position:absolute;left:0;right:0;top:100%;z-index:60;margin-top:4px;background:#fff;
@@ -373,6 +376,10 @@
         <div class="sum-row"><span>Solid Waste Tax</span><span class="mono" id="sSwt">$0.00</span></div>
         <div class="sum-row"><span>Environmental Tax</span><span class="mono" id="sEnv">$0.00</span></div>
         <div class="sum-total"><span>Quote total</span><span class="mono" id="sTotal">$0.00</span></div>
+        <div style="margin-top:12px">
+          <label class="fld" for="qLabel">Label this option <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— optional, e.g. “30 yd + demo”. Shows when sending multiple options.</span></label>
+          <input type="text" id="qLabel" placeholder="Option name">
+        </div>
         <div style="margin-top:12px;display:flex;align-items:center;gap:9px">
           <label class="fld" for="validDays" style="margin:0">Quote good for</label>
           <input type="number" id="validDays" min="0" step="1" value="30" style="width:72px;text-align:center" inputmode="numeric">
@@ -482,9 +489,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.15 (2026-10-08)';
+const APP_VERSION='v0.16 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.16',d:'Oct 8, 2026',items:[
+    'Send several saved quotes as options in one go — tick them in Saved Quotes, then Quote sheet or Email',
+    'Combined quote sheet shows an options-at-a-glance summary plus each option in full',
+    'Optional “Label this option” field (e.g. 30 yd + demo) to name each option'
+  ]},
   {v:'v0.15',d:'Oct 8, 2026',items:[
     'Email sending setting now takes your work email address (more reliable across Gmail accounts)'
   ]},
@@ -657,7 +669,7 @@ function quoteHasContent(){
 
 function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
   custStreet:'',custCity:'',custState:'',custZip:'',custEmail:'',haul:null,
-  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,savedId:null};}
+  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,label:'',savedId:null};}
 function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
 function haulIsAdjusted(){return Q.haul&&!Q.haul.manual&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
 let Q=freshQuote();
@@ -804,21 +816,7 @@ function renderDisposal(){
 }
 
 /* pure totals — used by both the live display and when saving a quote */
-function calcTotals(){
-  const haul=effectiveHaul();
-  const rentalRate=Q.rental.size!==''?DATA.rental[+Q.rental.size].rate:0;
-  const rental=rentalRate*(Q.rental.days||0);
-  let disp=0,swtItems=0,env=0;
-  Q.disposal.forEach(d=>{const lt=d.rate*(d.qty||0);disp+=lt;
-    if(d.taxType==='SWT')swtItems+=lt;
-    else if(d.taxType==='ENV-YD')env+=(d.qty||0)*DATA.env.perYard;
-    else if(d.taxType==='ENV-TON')env+=(d.qty||0)*DATA.env.perTon;});
-  const hasSWT=Q.disposal.some(d=>d.taxType==='SWT'&&(d.qty||0)>0);
-  const rate=DATA.swt[Q.customer];
-  const swtBase=hasSWT?(Q.override?swtItems:swtItems+rental+haul):0;
-  const swt=swtBase*rate;
-  return {haul,rental,disp,swtItems,env,hasSWT,rate,swtBase,swt,total:haul+rental+disp+swt+env};
-}
+function calcTotals(){ return calcTotalsForQ(Q); }
 /* per-component breakdown of what the Solid Waste Tax is figured on */
 function swtBreakHtml(T){
   if(!T.hasSWT) return '<span class="sb-none">No MSW item on the quote — no Solid Waste Tax.</span>';
@@ -972,6 +970,7 @@ function saveQuote(){
     site:[Q.custStreet,Q.custCity].filter(Boolean).join(', '),
     street:Q.custStreet||'', city:Q.custCity||'', state:Q.custState||'', zip:Q.custZip||'',
     customer:Q.customer||'commercial',
+    label:Q.label||'',
     total:T.total,
     by:currentEmail(),
     ts:Date.now(),
@@ -987,15 +986,44 @@ function saveQuote(){
 }
 function openSaved(){ el('savedScreen').classList.add('open'); renderSavedList(); }
 function closeSaved(){ el('savedScreen').classList.remove('open'); }
+let savedRows=[];
 function savedRowHtml(r){
   const when=new Date(r.ts||Date.now()).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   const title=esc(r.name||r.site||'(no name)');
+  const lab=r.label?' <span class="sv-lab">'+esc(r.label)+'</span>':'';
   const sub=[(r.name&&r.site)?esc(r.site):'', esc(r.by||''), when].filter(Boolean).join(' · ');
   return '<div class="saved-row">'
-    +'<div class="sv-main"><div class="sv-name">'+title+'</div><div class="sv-sub">'+sub+'</div></div>'
+    +'<input type="checkbox" class="sv-check" data-sel="'+esc(r.id)+'" title="Select for combined quote / email">'
+    +'<div class="sv-main"><div class="sv-name">'+title+lab+'</div><div class="sv-sub">'+sub+'</div></div>'
     +'<div class="sv-amt mono">'+money(r.total||0)+'</div>'
     +'<div class="sv-btns"><button class="btn btn-primary btn-sm" data-load="'+esc(r.id)+'">Load</button>'
     +'<button class="btn btn-ghost btn-sm" data-del="'+esc(r.id)+'">Delete</button></div></div>';
+}
+function updateSelCount(){
+  const n=document.querySelectorAll('#savedList [data-sel]:checked').length;
+  const s=el('selCount'); if(s) s.textContent = n ? (n+' selected') : 'Tick options to combine';
+}
+function selectedSavedQuotes(){
+  const ids=[...document.querySelectorAll('#savedList [data-sel]:checked')].map(c=>c.dataset.sel);
+  const out=[];
+  ids.forEach(id=>{ const r=savedRows.find(x=>x.id===id); if(!r)return;
+    try{ const q=JSON.parse(r.data); if(!q.label && r.label) q.label=r.label; out.push(q); }catch(e){} });
+  return out;
+}
+function combineSheet(){
+  const list=selectedSavedQuotes();
+  if(!list.length){ notify('Tick one or more quotes first'); return; }
+  openWin(list.length===1 ? quoteSheetHtmlFor(list[0]) : combinedSheetHtml(list));
+}
+function combineEmail(){
+  const list=selectedSavedQuotes();
+  if(!list.length){ notify('Tick one or more quotes first'); return; }
+  const c0=list[0], name=c0.custName||'', to=(c0.custEmail||'').trim();
+  if(list.length===1){
+    openGmail(to, COMPANY.name+' — Roll-Off Quote'+(name?(' for '+name):''), emailTextFor(c0));
+  }else{
+    openGmail(to, COMPANY.name+' — Quote options'+(name?(' for '+name):''), combinedEmailText(list));
+  }
 }
 function renderSavedList(){
   const box=el('savedList');
@@ -1003,12 +1031,21 @@ function renderSavedList(){
   box.innerHTML='<div class="card-sub">Loading…</div>';
   db.collection('quotes').orderBy('ts','desc').limit(200).get().then(snap=>{
     const rows=[]; snap.forEach(d=>rows.push(Object.assign({id:d.id},d.data())));
+    savedRows=rows;
     if(!rows.length){ box.innerHTML='<div class="card-sub">No saved quotes yet. Build a quote and tap <b>Save quote</b>.</div>'; return; }
-    box.innerHTML=rows.map(savedRowHtml).join('');
+    box.innerHTML='<div class="saved-bar"><span class="card-sub" id="selCount">Tick options to combine</span>'
+      +'<span style="flex:1"></span>'
+      +'<button class="btn btn-ghost btn-sm" id="combineSheet">Quote sheet</button>'
+      +'<button class="btn btn-primary btn-sm" id="combineEmail">Email</button></div>'
+      + rows.map(savedRowHtml).join('');
+    el('combineSheet').addEventListener('click',combineSheet);
+    el('combineEmail').addEventListener('click',combineEmail);
+    box.querySelectorAll('[data-sel]').forEach(c=>c.addEventListener('change',updateSelCount));
     box.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
       const r=rows.find(x=>x.id===b.dataset.load); if(r) loadQuote(r);
     }));
     box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteQuote(b.dataset.del)));
+    updateSelCount();
   }).catch(e=>{ console.error('quotes load failed',e); box.innerHTML='<div class="card-sub">Couldn’t load saved quotes — check your connection.</div>'; });
 }
 function loadQuote(r){
@@ -1023,6 +1060,7 @@ function loadQuote(r){
   el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
   el('custEmail').value=Q.custEmail||'';
   el('validDays').value=(Q.validDays!=null?Q.validDays:30);
+  el('qLabel').value=Q.label||'';
   el('rSize').value=Q.rental.size||''; el('rDays').value=Q.rental.days||0;
   buildCatalog(); renderHaul(); renderDisposal(); recompute(); syncSaveBtn();
   window.scrollTo(0,0); notify('Loaded'+(Q.custName?(' — '+Q.custName):''));
@@ -1040,42 +1078,48 @@ function deleteQuote(id){
 const COMPANY={name:"Steve's Sanitation",addr:['140 6th Ave NE','Perham, MN 56573'],
   phone:'(218) 346-4834',fax:'(218) 346-4799',web:'stevessanitation.com'};
 function fmtQty(q){return (Math.round((q||0)*100)/100).toString();}
-function quoteValidDays(){ const d=parseInt(Q.validDays,10); return (isFinite(d)&&d>=0)?d:30; }
-function quoteItems(){
-  const T=calcTotals();
-  const items=[];
-  const haul=effectiveHaul();
-  if(haul>0||(Q.haul&&Q.haul.dest)) items.push({label:'Hauling',detail:(Q.haul&&Q.haul.dest)||'',amount:haul});
-  if(Q.rental.size!==''&&(Q.rental.days||0)>0){
-    const rr=DATA.rental[+Q.rental.size];
-    items.push({label:'Daily rental',detail:rr.size+' · '+Q.rental.days+' day'+((Q.rental.days||0)==1?'':'s')+' @ '+money(rr.rate)+'/day',amount:rr.rate*(Q.rental.days||0)});
+function validDaysFor(q){ const d=parseInt(q&&q.validDays,10); return (isFinite(d)&&d>=0)?d:30; }
+function quoteValidDays(){ return validDaysFor(Q); }
+function effHaul(q){ return (q&&q.haul)?(q.haulOverride!=null?q.haulOverride:q.haul.total):0; }
+/* totals for ANY quote object (so saved quotes can be rendered off-screen) */
+function calcTotalsForQ(q){
+  const haul=effHaul(q);
+  const r=q.rental||{};
+  const rentalRate=(r.size!==''&&r.size!=null)?DATA.rental[+r.size].rate:0;
+  const rental=rentalRate*(r.days||0);
+  let disp=0,swtItems=0,env=0;
+  (q.disposal||[]).forEach(d=>{const lt=d.rate*(d.qty||0);disp+=lt;
+    if(d.taxType==='SWT')swtItems+=lt;
+    else if(d.taxType==='ENV-YD')env+=(d.qty||0)*DATA.env.perYard;
+    else if(d.taxType==='ENV-TON')env+=(d.qty||0)*DATA.env.perTon;});
+  const hasSWT=(q.disposal||[]).some(d=>d.taxType==='SWT'&&(d.qty||0)>0);
+  const rate=(DATA.swt[q.customer]!=null)?DATA.swt[q.customer]:DATA.swt.commercial;
+  const swtBase=hasSWT?(q.override?swtItems:swtItems+rental+haul):0;
+  const swt=swtBase*rate;
+  return {haul,rental,disp,swtItems,env,hasSWT,rate,swtBase,swt,total:haul+rental+disp+swt+env};
+}
+function quoteItemsForQ(q){
+  const T=calcTotalsForQ(q);
+  const items=[]; const haul=T.haul;
+  if(haul>0||(q.haul&&q.haul.dest)) items.push({label:'Hauling',detail:(q.haul&&q.haul.dest)||'',amount:haul});
+  const r=q.rental||{};
+  if(r.size!==''&&r.size!=null&&(r.days||0)>0){
+    const rr=DATA.rental[+r.size];
+    items.push({label:'Daily rental',detail:rr.size+' · '+r.days+' day'+((r.days||0)==1?'':'s')+' @ '+money(rr.rate)+'/day',amount:rr.rate*(r.days||0)});
   }
-  Q.disposal.forEach(d=>{ if((d.qty||0)>0) items.push({label:d.desc,detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
+  (q.disposal||[]).forEach(d=>{ if((d.qty||0)>0) items.push({label:d.desc,detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
   return {T,items,haul};
 }
-function custAddrLines(){
-  return [Q.custStreet,[Q.custCity,Q.custState].filter(Boolean).join(', ')+(Q.custZip?' '+Q.custZip:'')]
+function quoteItems(){ return quoteItemsForQ(Q); }
+function custAddrLinesFor(q){
+  return [q.custStreet,[q.custCity,q.custState].filter(Boolean).join(', ')+(q.custZip?' '+q.custZip:'')]
     .map(x=>(x||'').trim()).filter(Boolean);
 }
-function quoteSheetHtml(){
-  const {T,items}=quoteItems();
-  const logo=new URL('letterhead.png',location.href).href;
-  const date=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const days=quoteValidDays();
-  const custLines=[Q.custName].concat(custAddrLines());
-  if(Q.custEmail) custLines.push(Q.custEmail);
-  const custBlock=custLines.map(x=>(x||'').trim()).filter(Boolean).map(esc).join('<br>')||'—';
-  const site=(Q.haul&&Q.haul.dest)?esc(Q.haul.dest):'';
-  const rows=items.map(it=>`<tr><td><div class="il">${esc(it.label)}</div>${it.detail?`<div class="id">${esc(it.detail)}</div>`:''}</td><td class="amt">${money(it.amount)}</td></tr>`).join('');
-  let taxRows='';
-  if(T.hasSWT) taxRows+=`<tr><td>Solid Waste Tax <span class="mut">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td class="amt">${money(T.swt)}</td></tr>`;
-  if(T.env>0) taxRows+=`<tr><td>Environmental Tax</td><td class="amt">${money(T.env)}</td></tr>`;
-  const taxClass=(Q.customer==='commercial'?'Commercial':'Residential');
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Quote — ${esc(Q.custName||COMPANY.name)}</title>
-<style>
+function custAddrLines(){ return custAddrLinesFor(Q); }
+const SHEET_CSS=`
   @page{margin:0.6in}
   *{box-sizing:border-box}
-  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1d201a;margin:0;padding:28px;max-width:760px;margin:0 auto;font-size:14px;line-height:1.5}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1d201a;margin:0 auto;padding:28px;max-width:760px;font-size:14px;line-height:1.5}
   .lh{display:block;width:100%;height:auto}
   .qrow{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
   .qrow .qt{font-size:22px;font-weight:800;letter-spacing:.06em;color:#2f6b41}
@@ -1091,86 +1135,159 @@ function quoteSheetHtml(){
   .id{font-size:11.5px;color:#6c7065;margin-top:1px}
   .amt{font-variant-numeric:tabular-nums}
   tfoot td{border-bottom:0;padding:5px 4px}
-  tfoot .sub td{color:#6c7065}
-  tfoot .tot td{border-top:2px solid #cdc8b8;font-size:18px;font-weight:800;color:#2f6b41;padding-top:10px}
+  tfoot .tot td{border-top:2px solid #cdc8b8;font-size:17px;font-weight:800;color:#2f6b41;padding-top:10px}
   .mut{color:#6c7065;font-weight:500;font-size:12px}
   .foot{margin-top:26px;font-size:11.5px;color:#6c7065;border-top:1px solid #e2ded2;padding-top:12px}
   .pbar{margin:0 0 18px;text-align:right}
   .pbar button{font-family:inherit;font-weight:800;font-size:13px;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;background:#2f6b41;color:#fff}
+  .sumtab{margin-top:16px}
+  .sumtab td.amt{font-weight:800;color:#2f6b41}
+  .opt{margin-top:26px;page-break-inside:avoid}
+  .opt .oh{font-size:15px;color:#234e30;margin:0;padding:8px 11px;background:#eef3ef;border-radius:7px}
   @media print{.pbar{display:none}body{padding:0}}
-</style></head><body>
-<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
-<img class="lh" src="${logo}" alt="${esc(COMPANY.name)}">
-<div class="qrow"><div class="qt">QUOTE</div><div class="qd">${date}</div></div>
-<div class="meta">
-  <div><h3>Prepared for</h3><div class="blk">${custBlock}</div></div>
-  ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
-  <div><h3>Tax class</h3><div class="blk">${taxClass} · SWT ${pct(T.rate)}</div></div>
-</div>
-<table>
-  <thead><tr><th>Description</th><th class="amt">Amount</th></tr></thead>
-  <tbody>${rows||'<tr><td class="mut">No line items</td><td></td></tr>'}</tbody>
-  <tfoot>
-    ${taxRows}
-    <tr class="tot"><td>Total</td><td class="amt">${money(T.total)}</td></tr>
-  </tfoot>
-</table>
-<div class="foot">This quote is good for ${days} day${days==1?'':'s'}. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
-</body></html>`;
+`;
+function logoUrl(){ return new URL('letterhead.png',location.href).href; }
+function today(){ return new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
+function headHtml(title){ return '<!doctype html><html><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>'+SHEET_CSS+'</style></head><body>'; }
+function custBlockFor(q){
+  const lines=[q.custName].concat(custAddrLinesFor(q));
+  if(q.custEmail) lines.push(q.custEmail);
+  return lines.map(x=>(x||'').trim()).filter(Boolean).map(esc).join('<br>')||'—';
+}
+function sheetTableFor(q,totalLabel){
+  const {T,items}=quoteItemsForQ(q);
+  const rows=items.map(it=>`<tr><td><div class="il">${esc(it.label)}</div>${it.detail?`<div class="id">${esc(it.detail)}</div>`:''}</td><td class="amt">${money(it.amount)}</td></tr>`).join('');
+  let taxRows='';
+  if(T.hasSWT) taxRows+=`<tr><td>Solid Waste Tax <span class="mut">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td class="amt">${money(T.swt)}</td></tr>`;
+  if(T.env>0) taxRows+=`<tr><td>Environmental Tax</td><td class="amt">${money(T.env)}</td></tr>`;
+  return `<table><thead><tr><th>Description</th><th class="amt">Amount</th></tr></thead>
+    <tbody>${rows||'<tr><td class="mut">No line items</td><td></td></tr>'}</tbody>
+    <tfoot>${taxRows}<tr class="tot"><td>${esc(totalLabel||'Total')}</td><td class="amt">${money(T.total)}</td></tr></tfoot></table>`;
+}
+function quoteSheetHtmlFor(q){
+  const {T}=quoteItemsForQ(q);
+  const site=(q.haul&&q.haul.dest)?esc(q.haul.dest):'';
+  const taxClass=(q.customer==='commercial'?'Commercial':'Residential');
+  const days=validDaysFor(q);
+  return headHtml('Quote — '+(q.custName||COMPANY.name))
+    +`<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
+    <img class="lh" src="${logoUrl()}" alt="${esc(COMPANY.name)}">
+    <div class="qrow"><div class="qt">QUOTE</div><div class="qd">${today()}</div></div>
+    <div class="meta">
+      <div><h3>Prepared for</h3><div class="blk">${custBlockFor(q)}</div></div>
+      ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
+      <div><h3>Tax class</h3><div class="blk">${taxClass} · SWT ${pct(T.rate)}</div></div>
+    </div>
+    ${sheetTableFor(q,'Total')}
+    <div class="foot">This quote is good for ${days} day${days==1?'':'s'}. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
+    </body></html>`;
+}
+function combinedSheetHtml(list){
+  const c0=list[0]||{};
+  const site=(c0.haul&&c0.haul.dest)?esc(c0.haul.dest):'';
+  const days=validDaysFor(c0);
+  const sumRows=list.map((q,i)=>{const {T}=quoteItemsForQ(q);
+    const lbl='Option '+(i+1)+(q.label?(' — '+esc(q.label)):'');
+    return `<tr><td>${lbl}</td><td class="amt">${money(T.total)}</td></tr>`;}).join('');
+  const sections=list.map((q,i)=>{
+    const head='Option '+(i+1)+(q.label?(' — '+esc(q.label)):'');
+    return `<div class="opt"><h3 class="oh">${head}</h3>${sheetTableFor(q,'Option total')}</div>`;}).join('');
+  return headHtml('Quote options — '+(c0.custName||COMPANY.name))
+    +`<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
+    <img class="lh" src="${logoUrl()}" alt="${esc(COMPANY.name)}">
+    <div class="qrow"><div class="qt">QUOTE OPTIONS</div><div class="qd">${today()}</div></div>
+    <div class="meta">
+      <div><h3>Prepared for</h3><div class="blk">${custBlockFor(c0)}</div></div>
+      ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
+    </div>
+    <table class="sumtab"><thead><tr><th>Options at a glance</th><th class="amt">Total</th></tr></thead><tbody>${sumRows}</tbody></table>
+    ${sections}
+    <div class="foot">These quotes are good for ${days} day${days==1?'':'s'}. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
+    </body></html>`;
+}
+function openWin(html){
+  const w=window.open('','_blank'); if(!w){ notify('Allow pop-ups to open the quote sheet'); return false; }
+  w.document.write(html); w.document.close(); return true;
 }
 function openSheet(){
   const {T}=quoteItems();
   if(T.total<=0){ notify('Build a quote first'); return; }
-  const w=window.open('','_blank'); if(!w){ notify('Allow pop-ups to open the quote sheet'); return; }
-  w.document.write(quoteSheetHtml()); w.document.close();
+  openWin(quoteSheetHtmlFor(Q));
 }
-function emailText(){
-  const {T,items}=quoteItems();
+/* the itemized body for one quote (optionally headed by an option label) */
+function emailItemsFor(q,optionLabel){
+  const {T,items}=quoteItemsForQ(q);
   const pad=(s,amt)=>{ s=String(s); const w=Math.max(2,40-s.length); return s+' '.repeat(w)+amt; };
+  const L=[];
+  if(optionLabel) L.push('— '+optionLabel+' —');
+  items.forEach(it=>L.push(pad(it.label+(it.detail?' ('+it.detail+')':''),money(it.amount))));
+  if(T.hasSWT) L.push(pad('Solid Waste Tax ('+pct(T.rate)+' on '+money(T.swtBase)+')',money(T.swt)));
+  if(T.env>0) L.push(pad('Environmental Tax',money(T.env)));
+  L.push(pad(optionLabel?'Option total':'TOTAL',money(T.total)));
+  return L.join('\n');
+}
+function emailTextFor(q){
   const L=[];
   L.push(COMPANY.name+" — Roll-Off Quote");
   L.push('Date: '+new Date().toLocaleDateString('en-US'));
   L.push('');
-  if(Q.custName) L.push('Prepared for: '+Q.custName);
-  custAddrLines().forEach(a=>L.push(a));
-  if(Q.haul&&Q.haul.dest){ L.push(''); L.push('Site address: '+Q.haul.dest); }
+  if(q.custName) L.push('Prepared for: '+q.custName);
+  custAddrLinesFor(q).forEach(a=>L.push(a));
+  if(q.haul&&q.haul.dest){ L.push(''); L.push('Site address: '+q.haul.dest); }
   L.push(''); L.push('------------------------------------------------');
-  items.forEach(it=>L.push(pad(it.label+(it.detail?' ('+it.detail+')':''),money(it.amount))));
-  if(T.hasSWT) L.push(pad('Solid Waste Tax ('+pct(T.rate)+' on '+money(T.swtBase)+')',money(T.swt)));
-  if(T.env>0) L.push(pad('Environmental Tax',money(T.env)));
+  L.push(emailItemsFor(q));
   L.push('------------------------------------------------');
-  L.push(pad('TOTAL',money(T.total)));
-  const days=quoteValidDays();
+  const days=validDaysFor(q);
   L.push(''); L.push('This quote is good for '+days+' day'+(days==1?'':'s')+'.');
   L.push(''); L.push('Thank you,');
-  L.push(COMPANY.name);
-  L.push(COMPANY.addr.join(', '));
-  L.push('Phone '+COMPANY.phone+' · '+COMPANY.web);
+  L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web);
   return L.join('\n');
 }
-function emailQuote(){
-  const {T}=quoteItems();
-  if(T.total<=0){ notify('Build a quote first'); return; }
-  const subj=COMPANY.name+' — Roll-Off Quote'+(Q.custName?(' for '+Q.custName):'');
-  const to=(Q.custEmail||'').trim();
-  const body=emailText();
-  // Open Gmail compose. If several Gmail accounts are signed in, Gmail picks the
-  // first one unless we aim at a specific slot with /u/<N>/. That number is set
-  // per-device in Settings → Email sending.
-  // Point at a specific account: a number → /u/N/ (slot within this profile),
-  // an email → ?authuser=<email>. Only works within the Chrome profile the
-  // quoter is open in — separate profiles each keep their own Gmail session.
+function emailText(){ return emailTextFor(Q); }
+function combinedEmailText(list){
+  const c0=list[0]||{};
+  const L=[];
+  L.push(COMPANY.name+" — Roll-Off Quote Options");
+  L.push('Date: '+new Date().toLocaleDateString('en-US'));
+  L.push('');
+  if(c0.custName) L.push('Prepared for: '+c0.custName);
+  custAddrLinesFor(c0).forEach(a=>L.push(a));
+  if(c0.haul&&c0.haul.dest){ L.push(''); L.push('Site address: '+c0.haul.dest); }
+  L.push(''); L.push('OPTIONS AT A GLANCE');
+  list.forEach((q,i)=>{const {T}=quoteItemsForQ(q);
+    L.push('  Option '+(i+1)+(q.label?(' — '+q.label):'')+': '+money(T.total));});
+  L.push('');
+  list.forEach((q,i)=>{
+    L.push('------------------------------------------------');
+    L.push(emailItemsFor(q,'Option '+(i+1)+(q.label?(' — '+q.label):'')));
+    L.push('');
+  });
+  const days=validDaysFor(c0);
+  L.push('These quotes are good for '+days+' day'+(days==1?'':'s')+'.');
+  L.push(''); L.push('Thank you,');
+  L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web);
+  return L.join('\n');
+}
+/* Open a Gmail compose window prefilled. Account targeting (number → /u/N/,
+   email → ?authuser) from Settings → Email sending. Falls back to mailto:. */
+function openGmail(to,subj,body){
   const sel=(store.get('rq_gmail_u')||'').trim();
   let base='https://mail.google.com/mail/', auth='';
   if(/^\d+$/.test(sel)) base='https://mail.google.com/mail/u/'+sel+'/';
   else if(sel.indexOf('@')>0) auth='authuser='+encodeURIComponent(sel)+'&';
   const gmail=base+'?'+auth+'view=cm&fs=1&tf=1'
-    +'&to='+encodeURIComponent(to)
+    +'&to='+encodeURIComponent(to||'')
     +'&su='+encodeURIComponent(subj)
     +'&body='+encodeURIComponent(body);
   const w=window.open(gmail,'_blank','noopener');
-  if(!w){ location.href='mailto:'+encodeURIComponent(to)
+  if(!w){ location.href='mailto:'+encodeURIComponent(to||'')
     +'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body); }
+}
+function emailQuote(){
+  const {T}=quoteItems();
+  if(T.total<=0){ notify('Build a quote first'); return; }
+  const subj=COMPANY.name+' — Roll-Off Quote'+(Q.custName?(' for '+Q.custName):'');
+  openGmail((Q.custEmail||'').trim(), subj, emailText());
 }
 
 /* ideas — synced via Firestore (local fallback when offline) */
@@ -1259,6 +1376,7 @@ let appStarted=false;
   el('emailBtn').addEventListener('click',emailQuote);
   el('validDays').addEventListener('input',()=>{
     let v=parseInt(el('validDays').value,10); Q.validDays=(isFinite(v)&&v>=0)?v:30; saveState(); });
+  el('qLabel').addEventListener('input',()=>{ Q.label=el('qLabel').value; saveState(); });
   el('gmailUser').value=(store.get('rq_gmail_u')||'');
   el('gmailUser').addEventListener('input',()=>{
     const v=el('gmailUser').value.trim();
@@ -1319,6 +1437,7 @@ function startApp(){
     el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
     el('custEmail').value=Q.custEmail||'';
     el('validDays').value=(Q.validDays!=null?Q.validDays:30);
+    el('qLabel').value=Q.label||'';
     el('rSize').value=Q.rental.size||'';el('rDays').value=Q.rental.days||0;
     buildCatalog();renderHaul();renderDisposal();recompute();syncSaveBtn();
   });
