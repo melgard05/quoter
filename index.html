@@ -198,8 +198,14 @@
           <div><label class="fld" for="custName">Name</label><input type="text" id="custName" placeholder="Customer or company"></div>
         </div>
         <div class="row" style="margin-top:10px">
-          <div><label class="fld" for="custAddr">Address</label><input type="text" id="custAddr" placeholder="Customer address (optional)"></div>
+          <div><label class="fld" for="custStreet">Address</label><input type="text" id="custStreet" placeholder="Street address"></div>
         </div>
+        <div class="row" style="margin-top:10px">
+          <div style="flex:2 1 150px"><label class="fld" for="custCity">City</label><input type="text" id="custCity" placeholder="City"></div>
+          <div style="flex:0 0 72px"><label class="fld" for="custState">State</label><input type="text" id="custState" placeholder="MN" maxlength="2" autocapitalize="characters" style="text-transform:uppercase"></div>
+          <div style="flex:0 0 104px"><label class="fld" for="custZip">ZIP</label><input type="text" id="custZip" placeholder="56573" maxlength="10" inputmode="numeric"></div>
+        </div>
+        <div class="card-sub" id="zipNote" style="margin-top:5px;min-height:14px"></div>
         <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <span class="fld" style="margin:0">Tax class</span>
           <div class="seg" id="custSeg">
@@ -308,9 +314,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.5 (2026-10-08)';
+const APP_VERSION='v0.6 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.6',d:'Oct 8, 2026',items:[
+    'Customer address split into Name / Street / City / State / ZIP',
+    'Address auto-fills from the hauling destination (and stays editable)',
+    'Typing a 5-digit ZIP fills in the city and state'
+  ]},
   {v:'v0.5',d:'Oct 8, 2026',items:[
     'Sign-in added (email + PIN) — the quoter is now private to your team',
     'Billing codes moved to the cloud (Firebase), shared across everyone’s devices',
@@ -386,7 +397,45 @@ const usd=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
 const money=n=>usd.format(Math.round((n+Number.EPSILON)*100)/100);
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function pct(r){return (r*100).toFixed((r*100)%1?2:0)+'%';}
-function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',custAddr:'',haul:null,
+/* split a formatted address "123 Main St, Perham, MN 56573" into parts */
+function parseAddress(s){
+  const out={street:'',city:'',state:'',zip:''};
+  if(!s) return out;
+  s=String(s).replace(/,\s*(USA|United States)\s*$/i,'').trim();
+  const parts=s.split(',').map(x=>x.trim()).filter(Boolean);
+  if(!parts.length) return out;
+  const last=parts[parts.length-1];                    // "MN 56573" / "56573" / "MN"
+  const m=last.match(/^([A-Za-z]{2})?\s*(\d{5}(?:-\d{4})?)?$/);
+  if(m && (m[1]||m[2])){
+    out.state=(m[1]||'').toUpperCase(); out.zip=m[2]||'';
+    parts.pop();
+    if(parts.length) out.city=parts.pop();
+    out.street=parts.join(', ');
+  }else{
+    out.street=parts[0]||''; if(parts.length>1) out.city=parts[1];
+  }
+  return out;
+}
+
+/* ZIP -> city/state via a free lookup (best-effort; manual entry always works) */
+function zipLookup(zip){
+  zip=String(zip||'').trim();
+  if(!/^\d{5}$/.test(zip)){ el('zipNote').textContent=''; return; }
+  el('zipNote').textContent='Looking up ZIP…';
+  fetch('https://api.zippopotam.us/us/'+zip)
+    .then(r=> r.ok ? r.json() : Promise.reject())
+    .then(d=>{
+      const p=d && d.places && d.places[0]; if(!p) throw 0;
+      const city=p['place name']||'', st=p['state abbreviation']||'';
+      if(city){ el('custCity').value=city; Q.custCity=city; }
+      if(st){ el('custState').value=st; Q.custState=st; }
+      el('zipNote').textContent=''; saveState();
+    })
+    .catch(()=>{ el('zipNote').textContent=''; });      // silent — user types city/state
+}
+
+function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
+  custStreet:'',custCity:'',custState:'',custZip:'',haul:null,
   haulOverride:null,rental:{size:'',days:0},disposal:[],override:false};}
 function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
 function haulIsAdjusted(){return Q.haul&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
@@ -553,7 +602,14 @@ let appStarted=false;
 
   document.querySelectorAll('#custSeg button').forEach(bn=>bn.addEventListener('click',()=>setCustomer(bn.dataset.cust,true)));
   el('custName').addEventListener('input',()=>{Q.custName=el('custName').value;saveState();});
-  el('custAddr').addEventListener('input',()=>{Q.custAddr=el('custAddr').value;saveState();});
+  el('custStreet').addEventListener('input',()=>{Q.custStreet=el('custStreet').value;saveState();});
+  el('custCity').addEventListener('input',()=>{Q.custCity=el('custCity').value;saveState();});
+  el('custState').addEventListener('input',()=>{Q.custState=el('custState').value.toUpperCase();saveState();});
+  el('custZip').addEventListener('input',()=>{
+    Q.custZip=el('custZip').value; saveState();
+    clearTimeout(window._zipTimer);
+    window._zipTimer=setTimeout(()=>zipLookup(el('custZip').value),450);   // debounce
+  });
   el('rSize').addEventListener('change',()=>{Q.rental.size=el('rSize').value;recompute();});
   el('rDays').addEventListener('input',()=>{let v=parseInt(el('rDays').value,10);Q.rental.days=isFinite(v)&&v>=0?v:0;recompute();});
   el('dAdd').addEventListener('click',addDisposal);
@@ -562,7 +618,9 @@ let appStarted=false;
   el('ideaView').addEventListener('click',viewIdeas);
   el('dupBtn').addEventListener('click',()=>{
     if(!confirm('Duplicate this quote? A new quote starts with only the customer name & address kept.'))return;
-    const nm=Q.custName,ad=Q.custAddr;Q=freshQuote();Q.custName=nm;Q.custAddr=ad;saveState();location.href=location.pathname;});
+    const keep={name:Q.custName,street:Q.custStreet,city:Q.custCity,state:Q.custState,zip:Q.custZip};
+    Q=freshQuote();Q.custName=keep.name;Q.custStreet=keep.street;Q.custCity=keep.city;Q.custState=keep.state;Q.custZip=keep.zip;
+    saveState();location.href=location.pathname;});
   el('clearBtn').addEventListener('click',()=>{
     if(!confirm('Start a new quote? This clears everything, including the hauling line.'))return;
     Q=freshQuote();saveState();location.href=location.pathname;});
@@ -589,9 +647,17 @@ function startApp(){
   if(appStarted) return; appStarted=true;
   loadCodes().then(()=>{
     loadState();
-    const ho=readHandoff();if(ho)Q.haul=ho;saveState();
+    const ho=readHandoff();if(ho)Q.haul=ho;
+    // auto-fill the customer address from the hauling destination when it's blank
+    if(Q.haul && Q.haul.dest && !Q.custStreet && !Q.custCity && !Q.custZip){
+      const a=parseAddress(Q.haul.dest);
+      Q.custStreet=a.street; Q.custCity=a.city; Q.custState=a.state; Q.custZip=a.zip;
+    }
+    saveState();
     setCustomer(Q.customer||'commercial',false);
-    el('custName').value=Q.custName||'';el('custAddr').value=Q.custAddr||'';
+    el('custName').value=Q.custName||'';
+    el('custStreet').value=Q.custStreet||''; el('custCity').value=Q.custCity||'';
+    el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
     el('rSize').value=Q.rental.size||'';el('rDays').value=Q.rental.days||0;
     buildCatalog();renderHaul();renderDisposal();recompute();
   });
