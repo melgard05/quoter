@@ -178,6 +178,16 @@
     transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .sw input:checked + .tr{background:var(--pine)}
   .sw input:checked + .tr::before{transform:translateX(18px)}
+
+  /* ---- saved quotes ---- */
+  .saved-row{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;
+    background:var(--surface);margin-bottom:8px;flex-wrap:wrap}
+  .saved-row .sv-main{flex:2 1 160px;min-width:0}
+  .saved-row .sv-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .saved-row .sv-sub{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .saved-row .sv-amt{flex:0 0 auto;font-size:16px;font-weight:800;color:var(--pine)}
+  .saved-row .sv-btns{flex:0 0 auto;display:flex;gap:7px}
 </style>
 
 <!-- ===== Firebase (compat SDK — gives a global `firebase`) ===== -->
@@ -210,6 +220,7 @@
     <a class="btn btn-ghost btn-sm" id="backMileage" href="../ro/" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);text-decoration:none">← Mileage Quoter</a>
     <button class="btn btn-ghost btn-sm" id="dupBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">Duplicate</button>
     <button class="btn btn-ghost btn-sm" id="clearBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">New quote</button>
+    <button class="btn btn-ghost btn-sm" id="savedTopBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">📁 Saved</button>
     <button class="btn btn-ghost btn-sm" id="settingsBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">⚙ Settings</button>
   </div>
 </header>
@@ -305,7 +316,11 @@
         <div class="sum-row"><span>Solid Waste Tax</span><span class="mono" id="sSwt">$0.00</span></div>
         <div class="sum-row"><span>Environmental Tax</span><span class="mono" id="sEnv">$0.00</span></div>
         <div class="sum-total"><span>Quote total</span><span class="mono" id="sTotal">$0.00</span></div>
-        <div style="margin-top:14px"><button class="btn btn-ghost" disabled>Generate quote sheet (coming soon)</button></div>
+        <div style="margin-top:14px;display:flex;gap:9px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="saveQuoteBtn">Save quote</button>
+          <button class="btn btn-ghost" id="savedQuotesBtn">Saved quotes</button>
+        </div>
+        <div class="card-sub" id="savedState" style="margin-top:8px;min-height:14px"></div>
       </div></div>
 
     <!-- IDEAS + CHANGELOG -->
@@ -375,6 +390,16 @@
   </div>
 </div>
 
+<div class="settings-screen" id="savedScreen">
+  <div class="set-head">
+    <div><h2>Saved Quotes</h2><div class="sh-sub">Shared across the team</div></div>
+    <button class="set-close" id="savedClose">Done</button>
+  </div>
+  <div class="set-wrap">
+    <div id="savedList"></div>
+  </div>
+</div>
+
 <div class="notif" id="notif"></div>
 
 <div class="update-bar" id="updateBar" role="alert">
@@ -382,9 +407,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.8 (2026-10-08)';
+const APP_VERSION='v0.9 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.9',d:'Oct 8, 2026',items:[
+    'Save quotes to the cloud and reload them anytime (📁 Saved)',
+    'Saved quotes are shared across the team, with customer, total, who saved it and when',
+    'Re-saving a loaded quote updates it; Delete removes it'
+  ]},
   {v:'v0.8',d:'Oct 8, 2026',items:[
     'Settings panel (⚙ in the header) to manage billing codes — synced to the whole team',
     'Turn any code active or inactive without deleting it',
@@ -526,7 +556,7 @@ function quoteHasContent(){
 
 function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
   custStreet:'',custCity:'',custState:'',custZip:'',haul:null,
-  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false};}
+  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,savedId:null};}
 function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
 function haulIsAdjusted(){return Q.haul&&!Q.haul.manual&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
 let Q=freshQuote();
@@ -613,7 +643,8 @@ function renderDisposal(){
     Q.disposal.splice(+b.dataset.dx,1);renderDisposal();recompute();}));
 }
 
-function recompute(){
+/* pure totals — used by both the live display and when saving a quote */
+function calcTotals(){
   const haul=effectiveHaul();
   const rentalRate=Q.rental.size!==''?DATA.rental[+Q.rental.size].rate:0;
   const rental=rentalRate*(Q.rental.days||0);
@@ -626,7 +657,11 @@ function recompute(){
   const rate=DATA.swt[Q.customer];
   const swtBase=hasSWT?(Q.override?swtItems:swtItems+rental+haul):0;
   const swt=swtBase*rate;
-  const total=haul+rental+disp+swt+env;
+  return {haul,rental,disp,swtItems,env,hasSWT,rate,swtBase,swt,total:haul+rental+disp+swt+env};
+}
+function recompute(){
+  const T=calcTotals();
+  const {haul,rental,disp,env,hasSWT,rate,swtBase,swt,total}=T;
 
   el('haulAmt').textContent=money(haul);
   if(Q.haul)el('haulSub').textContent=Q.haul.manual?'Entered manually':(haulIsAdjusted()?'Manually adjusted':'From the Mileage Quoter');
@@ -744,6 +779,84 @@ function addNewCode(){
   });
 }
 
+/* ===== saved quotes (Firestore) ===== */
+function syncSaveBtn(){
+  const b=el('saveQuoteBtn'), s=el('savedState');
+  if(!b) return;
+  b.textContent = Q.savedId ? 'Update saved quote' : 'Save quote';
+  if(s) s.textContent = Q.savedId ? '✓ This quote is saved — changes update it.' : '';
+}
+function saveQuote(){
+  if(!db){ notify('Can’t save while offline'); return; }
+  const T=calcTotals();
+  if(T.total<=0 && !Q.custName){ notify('Nothing to save yet'); return; }
+  const rec={
+    name:Q.custName||'',
+    site:[Q.custStreet,Q.custCity].filter(Boolean).join(', '),
+    street:Q.custStreet||'', city:Q.custCity||'', state:Q.custState||'', zip:Q.custZip||'',
+    customer:Q.customer||'commercial',
+    total:T.total,
+    by:currentEmail(),
+    ts:Date.now(),
+    data:JSON.stringify(Q)
+  };
+  el('saveQuoteBtn').disabled=true;
+  const ref = Q.savedId ? db.collection('quotes').doc(Q.savedId) : db.collection('quotes').doc();
+  ref.set(rec).then(()=>{
+    Q.savedId=ref.id; saveState(); syncSaveBtn();
+    el('saveQuoteBtn').disabled=false;
+    notify(rec.name?('Saved — '+rec.name):'Quote saved');
+  }).catch(e=>{ console.error('quote save failed',e); el('saveQuoteBtn').disabled=false; notify('Save failed — check your connection'); });
+}
+function openSaved(){ el('savedScreen').classList.add('open'); renderSavedList(); }
+function closeSaved(){ el('savedScreen').classList.remove('open'); }
+function savedRowHtml(r){
+  const when=new Date(r.ts||Date.now()).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const title=esc(r.name||r.site||'(no name)');
+  const sub=[(r.name&&r.site)?esc(r.site):'', esc(r.by||''), when].filter(Boolean).join(' · ');
+  return '<div class="saved-row">'
+    +'<div class="sv-main"><div class="sv-name">'+title+'</div><div class="sv-sub">'+sub+'</div></div>'
+    +'<div class="sv-amt mono">'+money(r.total||0)+'</div>'
+    +'<div class="sv-btns"><button class="btn btn-primary btn-sm" data-load="'+esc(r.id)+'">Load</button>'
+    +'<button class="btn btn-ghost btn-sm" data-del="'+esc(r.id)+'">Delete</button></div></div>';
+}
+function renderSavedList(){
+  const box=el('savedList');
+  if(!db){ box.innerHTML='<div class="card-sub">Saved quotes need a connection — you’re offline right now.</div>'; return; }
+  box.innerHTML='<div class="card-sub">Loading…</div>';
+  db.collection('quotes').orderBy('ts','desc').limit(200).get().then(snap=>{
+    const rows=[]; snap.forEach(d=>rows.push(Object.assign({id:d.id},d.data())));
+    if(!rows.length){ box.innerHTML='<div class="card-sub">No saved quotes yet. Build a quote and tap <b>Save quote</b>.</div>'; return; }
+    box.innerHTML=rows.map(savedRowHtml).join('');
+    box.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
+      const r=rows.find(x=>x.id===b.dataset.load); if(r) loadQuote(r);
+    }));
+    box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteQuote(b.dataset.del)));
+  }).catch(e=>{ console.error('quotes load failed',e); box.innerHTML='<div class="card-sub">Couldn’t load saved quotes — check your connection.</div>'; });
+}
+function loadQuote(r){
+  if(quoteHasContent() && !confirm('Load this saved quote?\n\nYour current quote on screen will be replaced'+(Q.savedId?'':' (and isn’t saved)')+'.')) return;
+  let data; try{ data=JSON.parse(r.data); }catch(e){ notify('Couldn’t read that quote'); return; }
+  Q=Object.assign(freshQuote(),data); Q.savedId=r.id; saveState();
+  closeSaved();
+  if(!Q.haul) Q.haul={dest:'',county:'',miles:null,total:0,basis:'Manual entry',manual:true};
+  setCustomer(Q.customer||'commercial',false);
+  el('custName').value=Q.custName||'';
+  el('custStreet').value=Q.custStreet||''; el('custCity').value=Q.custCity||'';
+  el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
+  el('rSize').value=Q.rental.size||''; el('rDays').value=Q.rental.days||0;
+  buildCatalog(); renderHaul(); renderDisposal(); recompute(); syncSaveBtn();
+  window.scrollTo(0,0); notify('Loaded'+(Q.custName?(' — '+Q.custName):''));
+}
+function deleteQuote(id){
+  if(!db){ notify('Offline'); return; }
+  if(!confirm('Delete this saved quote? This can’t be undone.')) return;
+  db.collection('quotes').doc(id).delete().then(()=>{
+    if(Q.savedId===id){ Q.savedId=null; saveState(); syncSaveBtn(); }
+    renderSavedList(); notify('Quote deleted');
+  }).catch(e=>{ console.error('delete failed',e); notify('Delete failed'); });
+}
+
 /* ideas — synced via Firestore (local fallback when offline) */
 function loadIdeas(){try{const a=JSON.parse(store.get('rq_ideas')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
 function currentEmail(){try{return fbReady&&firebase.auth().currentUser?firebase.auth().currentUser.email:'';}catch(e){return '';}}
@@ -816,6 +929,10 @@ let appStarted=false;
   el('ncAdd').addEventListener('click',addNewCode);
   el('setSearch').addEventListener('input',renderCodeList);
   el('ncCode').addEventListener('keydown',e=>{if(e.key==='Enter')el('ncDesc').focus();});
+  el('saveQuoteBtn').addEventListener('click',saveQuote);
+  el('savedQuotesBtn').addEventListener('click',openSaved);
+  el('savedTopBtn').addEventListener('click',openSaved);
+  el('savedClose').addEventListener('click',closeSaved);
   el('dupBtn').addEventListener('click',()=>{
     if(!confirm('Duplicate this quote? A new quote starts with only the customer name & address kept.'))return;
     const keep={name:Q.custName,street:Q.custStreet,city:Q.custCity,state:Q.custState,zip:Q.custZip};
@@ -868,7 +985,7 @@ function startApp(){
     el('custStreet').value=Q.custStreet||''; el('custCity').value=Q.custCity||'';
     el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
     el('rSize').value=Q.rental.size||'';el('rDays').value=Q.rental.days||0;
-    buildCatalog();renderHaul();renderDisposal();recompute();
+    buildCatalog();renderHaul();renderDisposal();recompute();syncSaveBtn();
   });
 }
 
