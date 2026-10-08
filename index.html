@@ -149,6 +149,35 @@
   .signout-row{max-width:720px;margin:4px auto 20px;text-align:center}
   .signout-row button{background:none;border:0;color:var(--muted);font-family:inherit;font-weight:700;
     font-size:12.5px;cursor:pointer;text-decoration:underline}
+
+  /* ---- settings / codes panel ---- */
+  .settings-screen{display:none;position:fixed;inset:0;z-index:460;background:var(--paper);overflow-y:auto;
+    background-image:radial-gradient(rgba(28,31,26,.018) 1px,transparent 1px);background-size:22px 22px}
+  .settings-screen.open{display:block}
+  .set-head{position:sticky;top:0;z-index:2;background:linear-gradient(135deg,var(--pine),var(--pine-dk));color:#fff;
+    padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .set-head h2{font-size:19px;font-weight:800}
+  .set-head .sh-sub{font-size:12px;opacity:.85;font-weight:500;margin-top:2px}
+  .set-close{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.34);color:#fff;
+    font-family:inherit;font-weight:800;font-size:13.5px;border-radius:9px;padding:9px 16px;cursor:pointer}
+  .set-close:hover{background:rgba(255,255,255,.3)}
+  .set-wrap{max-width:720px;margin:0 auto;padding:16px 16px 70px}
+  .set-section-t{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:20px 2px 10px}
+  .code-row{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:11px;
+    background:var(--surface);margin-bottom:7px;flex-wrap:wrap}
+  .code-row.off{opacity:.6;background:#f6f4ee}
+  .code-row .cr-code{font-family:'DM Mono',monospace;font-weight:600;font-size:12.5px;flex:0 0 72px;color:var(--muted);word-break:break-all}
+  .code-row .cr-desc{flex:3 1 150px}
+  .code-row .cr-rate{flex:0 0 92px}
+  .code-row .cr-tax{flex:1 1 150px}
+  .code-row input,.code-row select{padding:7px 9px;font-size:13px}
+  .sw{position:relative;flex:0 0 auto;width:42px;height:24px;cursor:pointer;display:inline-block}
+  .sw input{position:absolute;opacity:0;width:0;height:0}
+  .sw .tr{position:absolute;inset:0;background:#cdc8b8;border-radius:999px;transition:background .15s}
+  .sw .tr::before{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;
+    transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .sw input:checked + .tr{background:var(--pine)}
+  .sw input:checked + .tr::before{transform:translateX(18px)}
 </style>
 
 <!-- ===== Firebase (compat SDK — gives a global `firebase`) ===== -->
@@ -181,6 +210,7 @@
     <a class="btn btn-ghost btn-sm" id="backMileage" href="../ro/" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);text-decoration:none">← Mileage Quoter</a>
     <button class="btn btn-ghost btn-sm" id="dupBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">Duplicate</button>
     <button class="btn btn-ghost btn-sm" id="clearBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">New quote</button>
+    <button class="btn btn-ghost btn-sm" id="settingsBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">⚙ Settings</button>
   </div>
 </header>
 <main>
@@ -307,6 +337,44 @@
     <button data-pick="residential">Residential<span class="pct">SWT 9.75%</span></button>
   </div></div></div>
 
+<div class="settings-screen" id="settingsScreen">
+  <div class="set-head">
+    <div><h2>Settings · Billing Codes</h2><div class="sh-sub">Changes sync to everyone on the team</div></div>
+    <button class="set-close" id="setClose">Done</button>
+  </div>
+  <div class="set-wrap">
+    <div class="offline-chip" id="setOffline" style="margin-bottom:14px">⚠️ Offline — edits save on this device only and won't sync until you reconnect.</div>
+
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--pine)">+</div>
+      <div class="card-t">Add a new code</div></div></div>
+      <div class="card-b">
+        <div class="row" style="align-items:flex-end">
+          <div style="flex:0 0 120px"><label class="fld" for="ncCode">Code</label>
+            <input type="text" id="ncCode" placeholder="e.g. CARDBD" maxlength="14" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"></div>
+          <div style="flex:3 1 170px"><label class="fld" for="ncDesc">Description</label>
+            <input type="text" id="ncDesc" placeholder="What it is"></div>
+          <div style="flex:0 0 110px"><label class="fld" for="ncRate">Rate ($)</label>
+            <input type="number" id="ncRate" min="0" step="any" placeholder="0.00" inputmode="decimal"></div>
+        </div>
+        <div style="margin-top:11px"><label class="fld" for="ncTax">Tax type</label>
+          <select id="ncTax">
+            <option value="None">No tax</option>
+            <option value="SWT">Solid Waste Tax</option>
+            <option value="ENV-YD">Environmental — $0.60 / yd</option>
+            <option value="ENV-TON">Environmental — $2.00 / ton</option>
+          </select></div>
+        <div class="card-sub" style="margin-top:7px">Each code carries exactly one tax type.</div>
+        <div style="margin-top:12px"><button class="btn btn-primary" id="ncAdd">Add code</button></div>
+      </div></div>
+
+    <div class="set-section-t">All codes</div>
+    <input type="text" id="setSearch" placeholder="Search by code or description…" spellcheck="false" style="margin-bottom:11px">
+    <div id="codeList"></div>
+    <div class="card-sub" style="margin-top:10px;line-height:1.5">Toggle a code off to hide it from the disposal list without deleting it.
+      Edits here don't change quotes already saved.</div>
+  </div>
+</div>
+
 <div class="notif" id="notif"></div>
 
 <div class="update-bar" id="updateBar" role="alert">
@@ -314,9 +382,15 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.7 (2026-10-08)';
+const APP_VERSION='v0.8 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.8',d:'Oct 8, 2026',items:[
+    'Settings panel (⚙ in the header) to manage billing codes — synced to the whole team',
+    'Turn any code active or inactive without deleting it',
+    'Edit a code’s description, rate, or tax type; add brand-new codes',
+    'Suggestions / ideas now sync through the cloud (and show who sent them)'
+  ]},
   {v:'v0.7',d:'Oct 8, 2026',items:[
     'Hauling can now be filled in manually (site address + haul fee) without the Mileage Quoter',
     'Bringing in a new address from the Mileage Quoter asks whether to start a new quote',
@@ -602,19 +676,113 @@ function setCustomer(c,byUser){
 function openCustModal(){el('custModal').classList.add('open');}
 function closeCustModal(){el('custModal').classList.remove('open');}
 
-/* ideas */
-function loadIdeas(){try{const a=JSON.parse(store.get('rq_ideas')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
 function notify(m){const n=el('notif');n.textContent=m;n.classList.add('on');clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('on'),2600);}
-function submitIdea(){const t=el('ideaText').value.trim();if(!t){notify('Type an idea first');return;}
-  const a=loadIdeas();a.unshift({ts:Date.now(),text:t});store.set('rq_ideas',JSON.stringify(a.slice(0,200)));
-  el('ideaText').value='';notify('Idea saved — thanks!');}
-function viewIdeas(){const a=loadIdeas();if(!a.length){notify('No ideas saved yet');return;}
+
+/* ===== settings — billing codes (synced via Firestore) ===== */
+const TAXOPTS=[['None','No tax'],['SWT','Solid Waste Tax'],['ENV-YD','Environmental — $0.60 / yd'],['ENV-TON','Environmental — $2.00 / ton']];
+function openSettings(){ el('setOffline').classList.toggle('on',!db); if(el('setSearch'))el('setSearch').value=''; renderCodeList(); el('settingsScreen').classList.add('open'); }
+function closeSettings(){ el('settingsScreen').classList.remove('open'); }
+function persistCode(c){
+  const i=CODES.findIndex(x=>x.code===c.code);
+  if(i>=0) CODES[i]=Object.assign({},CODES[i],c); else CODES.push(Object.assign({},c));
+  buildCatalog();
+  if(db){ return db.collection('codes').doc(c.code).set(c,{merge:true})
+    .then(()=>notify('Saved — synced to the team'))
+    .catch(e=>{console.error('code save failed',e); notify('Saved on this device — sync failed');}); }
+  notify('Saved on this device (offline — not synced)'); return Promise.resolve();
+}
+function taxSel(code,current){
+  return '<select data-tax="'+esc(code)+'">'+TAXOPTS.map(o=>
+    '<option value="'+o[0]+'"'+(o[0]===current?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
+}
+function renderCodeList(){
+  const q=(el('setSearch').value||'').trim().toLowerCase();
+  const list=CODES.slice().sort((a,b)=>a.code.localeCompare(b.code))
+    .filter(c=>!q||c.code.toLowerCase().includes(q)||String(c.desc||'').toLowerCase().includes(q));
+  const box=el('codeList');
+  if(!list.length){ box.innerHTML='<div class="card-sub">No codes match your search.</div>'; return; }
+  box.innerHTML=list.map(c=>{
+    const on=c.active!==false;
+    return '<div class="code-row'+(on?'':' off')+'">'
+      +'<label class="sw" title="'+(on?'Active':'Inactive')+'"><input type="checkbox" data-act="'+esc(c.code)+'"'+(on?' checked':'')+'><span class="tr"></span></label>'
+      +'<div class="cr-code">'+esc(c.code)+'</div>'
+      +'<div class="cr-desc"><input type="text" data-desc="'+esc(c.code)+'" value="'+esc(c.desc||'')+'"></div>'
+      +'<div class="cr-rate"><input type="number" min="0" step="any" data-rate="'+esc(c.code)+'" value="'+(c.rate!=null?c.rate:0)+'" inputmode="decimal"></div>'
+      +'<div class="cr-tax">'+taxSel(c.code,c.taxType||'None')+'</div></div>';
+  }).join('');
+  box.querySelectorAll('[data-act]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.act); if(!c)return;
+    persistCode({code:c.code,desc:c.desc,rate:c.rate,taxType:c.taxType,active:inp.checked});
+    inp.closest('.code-row').classList.toggle('off',!inp.checked);
+  }));
+  box.querySelectorAll('[data-tax]').forEach(sel=>sel.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===sel.dataset.tax); if(!c)return;
+    persistCode({code:c.code,desc:c.desc,rate:c.rate,taxType:sel.value,active:c.active!==false});
+  }));
+  box.querySelectorAll('[data-desc]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.desc); if(!c)return;
+    const v=inp.value.trim(); if(!v){inp.value=c.desc||'';notify('Description can’t be empty');return;}
+    persistCode({code:c.code,desc:v,rate:c.rate,taxType:c.taxType,active:c.active!==false});
+  }));
+  box.querySelectorAll('[data-rate]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.rate); if(!c)return;
+    let v=parseFloat(inp.value); if(!isFinite(v)||v<0){v=c.rate||0;inp.value=v;}
+    persistCode({code:c.code,desc:c.desc,rate:v,taxType:c.taxType,active:c.active!==false});
+  }));
+}
+function addNewCode(){
+  const code=(el('ncCode').value||'').trim().toUpperCase().replace(/\s+/g,'');
+  const desc=(el('ncDesc').value||'').trim();
+  let rate=parseFloat(el('ncRate').value); const tax=el('ncTax').value;
+  if(!code){notify('Enter a code');return;}
+  if(!desc){notify('Enter a description');return;}
+  if(!isFinite(rate)||rate<0)rate=0;
+  if(CODES.some(c=>c.code===code)){notify('Code “'+code+'” already exists');return;}
+  persistCode({code:code,desc:desc,rate:rate,taxType:tax,active:true}).then(()=>{
+    el('ncCode').value='';el('ncDesc').value='';el('ncRate').value='';el('ncTax').value='None';
+    renderCodeList();notify('Added “'+code+'”');
+  });
+}
+
+/* ideas — synced via Firestore (local fallback when offline) */
+function loadIdeas(){try{const a=JSON.parse(store.get('rq_ideas')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function currentEmail(){try{return fbReady&&firebase.auth().currentUser?firebase.auth().currentUser.email:'';}catch(e){return '';}}
+function submitIdea(){
+  const t=el('ideaText').value.trim();if(!t){notify('Type an idea first');return;}
+  const rec={text:t,ts:Date.now(),by:currentEmail()};
+  if(db){
+    db.collection('ideas').add(rec)
+      .then(()=>{el('ideaText').value='';notify('Idea sent — thanks!');})
+      .catch(e=>{console.error('idea save failed',e);
+        const a=loadIdeas();a.unshift(rec);store.set('rq_ideas',JSON.stringify(a.slice(0,200)));
+        el('ideaText').value='';notify('Saved on this device — sync failed');});
+  }else{
+    const a=loadIdeas();a.unshift(rec);store.set('rq_ideas',JSON.stringify(a.slice(0,200)));
+    el('ideaText').value='';notify('Saved on this device (offline)');
+  }
+}
+function ideasWindow(list){
   const w=window.open('','_blank');if(!w){notify('Allow pop-ups to view');return;}
-  const rows=a.map(s=>'<tr><td style="white-space:nowrap;color:#6c7065;padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top">'
-    +new Date(s.ts).toLocaleString('en-US')+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee;white-space:pre-wrap">'
-    +String(s.text).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+'</td></tr>').join('');
-  w.document.write('<!doctype html><meta charset=utf-8><title>Saved Ideas</title><style>body{font-family:system-ui,sans-serif;padding:24px;max-width:900px;margin:0 auto;color:#1d201a}h1{font-size:19px}table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid #e6e2d6;border-radius:8px;overflow:hidden}th{text-align:left;background:#f7f5ee;padding:9px 12px;border-bottom:1px solid #e6e2d6;font-size:12px;text-transform:uppercase;color:#6c7065}</style><h1>Roll-Off Quoter — Saved Ideas ('+a.length+')</h1><table><thead><tr><th>When</th><th>Idea</th></tr></thead><tbody>'+rows+'</tbody></table>');
-  w.document.close();}
+  const ec=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const td='padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top';
+  const rows=list.map(s=>'<tr><td style="'+td+';white-space:nowrap;color:#6c7065">'
+    +new Date(s.ts||Date.now()).toLocaleString('en-US')+'</td><td style="'+td+';white-space:nowrap;color:#6c7065;font-size:12px">'
+    +ec(s.by||'')+'</td><td style="'+td+';white-space:pre-wrap">'+ec(s.text)+'</td></tr>').join('');
+  w.document.write('<!doctype html><meta charset=utf-8><title>Saved Ideas</title><style>body{font-family:system-ui,sans-serif;padding:24px;max-width:900px;margin:0 auto;color:#1d201a}h1{font-size:19px}table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid #e6e2d6;border-radius:8px;overflow:hidden}th{text-align:left;background:#f7f5ee;padding:9px 12px;border-bottom:1px solid #e6e2d6;font-size:12px;text-transform:uppercase;color:#6c7065}</style><h1>Roll-Off Quoter — Saved Ideas ('+list.length+')</h1><table><thead><tr><th>When</th><th>By</th><th>Idea</th></tr></thead><tbody>'+rows+'</tbody></table>');
+  w.document.close();
+}
+function viewIdeas(){
+  if(db){
+    db.collection('ideas').orderBy('ts','desc').limit(300).get().then(snap=>{
+      const a=[];snap.forEach(d=>a.push(d.data()));
+      if(!a.length){notify('No ideas saved yet');return;}
+      ideasWindow(a);
+    }).catch(e=>{console.error('ideas load failed',e);
+      const a=loadIdeas();if(!a.length){notify('No ideas saved yet');return;}ideasWindow(a);});
+  }else{
+    const a=loadIdeas();if(!a.length){notify('No ideas saved yet');return;}ideasWindow(a);
+  }
+}
 
 function renderChangelog(){el('changelog').innerHTML=CHANGELOG.map(c=>
   `<div class="cl-entry"><div class="cl-v">${c.v} <span class="cl-d">· ${c.d}</span></div>
@@ -643,6 +811,11 @@ let appStarted=false;
   document.querySelectorAll('#custModal [data-pick]').forEach(b=>b.addEventListener('click',()=>{setCustomer(b.dataset.pick,true);closeCustModal();}));
   el('ideaSend').addEventListener('click',submitIdea);
   el('ideaView').addEventListener('click',viewIdeas);
+  el('settingsBtn').addEventListener('click',openSettings);
+  el('setClose').addEventListener('click',closeSettings);
+  el('ncAdd').addEventListener('click',addNewCode);
+  el('setSearch').addEventListener('input',renderCodeList);
+  el('ncCode').addEventListener('keydown',e=>{if(e.key==='Enter')el('ncDesc').focus();});
   el('dupBtn').addEventListener('click',()=>{
     if(!confirm('Duplicate this quote? A new quote starts with only the customer name & address kept.'))return;
     const keep={name:Q.custName,street:Q.custStreet,city:Q.custCity,state:Q.custState,zip:Q.custZip};
