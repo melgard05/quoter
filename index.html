@@ -192,9 +192,19 @@
   .sv-lab{display:inline-block;font-size:10.5px;font-weight:800;background:#eef3ef;color:var(--pine);border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:middle}
   .saved-bar{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
 
+  /* ---- help ---- */
+  .help-wrap h4{font-size:14px;font-weight:800;color:var(--pine);margin:20px 0 6px;display:flex;align-items:center;gap:8px}
+  .help-wrap h4 .hn{flex:none;width:22px;height:22px;border-radius:50%;background:var(--pine);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .help-wrap p{font-size:13.5px;margin:0 0 7px;color:var(--ink);line-height:1.55}
+  .help-wrap ul{margin:0 0 7px 20px;font-size:13.5px;line-height:1.55}
+  .help-wrap li{margin:3px 0}
+  .help-wrap b{font-weight:800}
+  .help-step{background:#eef3ef;border:1px solid #cfe0d5;border-radius:11px;padding:13px 15px;margin-bottom:16px;font-size:13.5px;line-height:1.55}
+  .help-chip{display:inline-block;background:#f0ece2;border:1px solid var(--line-strong);border-radius:6px;padding:0 6px;font-size:12.5px;font-weight:700}
+
   /* ---- type-ahead combo for disposal items ---- */
-  .combo-menu{display:none;position:absolute;left:0;right:0;top:100%;z-index:60;margin-top:4px;background:#fff;
-    border:1px solid var(--line-strong);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.16);max-height:264px;overflow-y:auto}
+  .combo-menu{display:none;position:fixed;z-index:400;background:#fff;
+    border:1px solid var(--line-strong);border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.2);max-height:300px;overflow-y:auto}
   .combo-menu.on{display:block}
   .combo-opt{display:flex;align-items:center;gap:9px;padding:9px 11px;cursor:pointer;border-top:1px solid var(--line)}
   .combo-opt:first-child{border-top:0}
@@ -258,6 +268,7 @@
     <button class="btn btn-ghost btn-sm" id="clearBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">New quote</button>
     <button class="btn btn-ghost btn-sm" id="savedTopBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">📁 Saved</button>
     <button class="btn btn-ghost btn-sm" id="settingsBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">⚙ Settings</button>
+    <button class="btn btn-ghost btn-sm" id="helpBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">❔ Help</button>
   </div>
 </header>
 <main>
@@ -482,6 +493,73 @@
   </div>
 </div>
 
+<div class="settings-screen" id="helpScreen">
+  <div class="set-head">
+    <div><h2>How to use the Quoter</h2><div class="sh-sub">A quick guide to every feature</div></div>
+    <button class="set-close" id="helpClose">Done</button>
+  </div>
+  <div class="set-wrap help-wrap">
+
+    <div class="help-step"><b>The short version:</b> fill in the customer, add the hauling, rental and disposal items,
+      check the tax, then <b>Save quote</b>. To send it, use <b>Quote sheet</b> (print or save a PDF) or <b>Email</b>
+      (opens a ready-to-send message). For a job with choices, save each version and send them together — see “Several options” below.</div>
+
+    <h4><span class="hn">C</span>Customer</h4>
+    <p>Enter the name and address. Type the <b>ZIP</b> and the city/state fill in automatically. The <b>Email</b>
+      field is used as the “To” when you email the quote. <b>Tax class</b> (Commercial 17% / Residential 9.75%) sets the
+      Solid Waste Tax rate — the first time you add a taxable item, the app asks which one.</p>
+
+    <h4><span class="hn">1</span>Hauling</h4>
+    <p>If you came from the Mileage Quoter with <b>Create Quote</b>, the haul fee is filled in. You can also type a
+      <b>Site Address</b> and <b>Haul fee</b> by hand. To change a mileage-based fee (e.g. a donation), just edit the Haul fee —
+      a note shows it was adjusted, and <span class="help-chip">Reset to mileage</span> puts it back. The
+      <span class="help-chip">← Mileage Quoter</span> button up top takes you back to calculate by distance.</p>
+
+    <h4><span class="hn">2</span>Daily rental</h4>
+    <p>Pick the container size and number of days. Rental is taxed only when the ticket has Solid Waste Tax (see Taxes).</p>
+
+    <h4><span class="hn">3</span>Disposal</h4>
+    <ul>
+      <li><b>Add item:</b> start typing in the box — it filters by description or code. Tap one, set the <b>Qty</b>, then <b>Add</b>.</li>
+      <li><b>Custom item:</b> tap <b>＋ Custom item not in the list</b> for a one-off charge — enter a description, rate, qty and tax type. It won’t change your saved code list.</li>
+      <li>Change a quantity or remove a line right in the list after adding.</li>
+    </ul>
+
+    <h4><span class="hn">4</span>Solid Waste &amp; Environmental Tax</h4>
+    <p>Taxes figure themselves out from the items:</p>
+    <ul>
+      <li><b>Solid Waste Tax</b> turns on automatically when there’s an MSW item, and applies to hauling + rental + MSW items. The breakdown shows each piece and the tax it adds.</li>
+      <li><b>MN ⅓ rule:</b> if MSW is a third or less of the load, tap <span class="help-chip">Override for this quote</span> — hauling &amp; rental come out of the tax, MSW items stay taxed.</li>
+      <li><b>Environmental Tax</b> ($0.60/yd or $2.00/ton) is figured automatically from demolition items — nothing to enter.</li>
+    </ul>
+
+    <h4><span class="hn">✓</span>Finishing a quote</h4>
+    <ul>
+      <li><b>Quote good for __ days</b> (default 30) and an optional <b>Label this option</b> show on the sheet/email.</li>
+      <li><b>Save quote</b> stores it in the cloud for everyone. <b>📁 Saved</b> lists them — <b>Load</b> reopens one, <b>Delete</b> removes it. Re-saving a loaded quote updates it.</li>
+      <li><b>Quote sheet</b> opens a printable quote — use its <b>Print / Save as PDF</b> button.</li>
+      <li><b>Email</b> opens a Gmail message with the quote filled in. You still review and hit send.</li>
+      <li><b>New quote</b> clears everything; <b>Duplicate</b> keeps the customer + address to start a variation.</li>
+    </ul>
+
+    <h4><span class="hn">≡</span>Several options on one job</h4>
+    <ul>
+      <li>Build the first version, give it a <b>Label</b> (e.g. “20 yd haul-only”), and <b>Save</b>.</li>
+      <li><b>Duplicate</b>, change it to the next version, relabel, and save again.</li>
+      <li>Open <b>📁 Saved</b>, <b>tick</b> the options, then <b>Quote sheet</b> (one PDF with all options) or <b>Email</b> (one message with all options).</li>
+    </ul>
+
+    <h4><span class="hn">⚙</span>Settings</h4>
+    <ul>
+      <li><b>Billing codes:</b> turn a code on/off, change its rate or tax type, or add a new code. Changes sync to the whole team.</li>
+      <li><b>Email sending:</b> if you keep several Gmail accounts open, set your <b>work email</b> here so the Email button uses the right one (saved on your device).</li>
+    </ul>
+
+    <p style="margin-top:18px;color:var(--muted)">Found a bug or want something added? Use the <b>Ideas &amp; Change Log</b> box at the bottom of the main screen — it goes to the whole team.</p>
+
+  </div>
+</div>
+
 <div class="notif" id="notif"></div>
 
 <div class="update-bar" id="updateBar" role="alert">
@@ -489,9 +567,13 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.16 (2026-10-08)';
+const APP_VERSION='v0.17 (2026-10-08)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.17',d:'Oct 8, 2026',items:[
+    'Disposal dropdown no longer gets cut off — it now floats above the box',
+    'Added a Help guide (❔ Help in the header) covering every feature'
+  ]},
   {v:'v0.16',d:'Oct 8, 2026',items:[
     'Send several saved quotes as options in one go — tick them in Saved Quotes, then Quote sheet or Email',
     'Combined quote sheet shows an options-at-a-glance summary plus each option in full',
@@ -745,13 +827,22 @@ function comboFilter(q){
   });
   return starts.concat(has);
 }
+function positionMenu(){
+  const inp=el('dSearch'), menu=el('dMenu'); if(!inp||!menu) return;
+  const r=inp.getBoundingClientRect();
+  const space=window.innerHeight-r.bottom-14;          // room below the box
+  menu.style.left=r.left+'px';
+  menu.style.width=r.width+'px';
+  menu.style.top=(r.bottom+4)+'px';
+  menu.style.maxHeight=Math.max(150,Math.min(320,space))+'px';
+}
 function renderMenu(){
   const menu=el('dMenu'); if(!menu) return;
   dFiltered=comboFilter(el('dSearch').value);
   if(dActiveIdx>=dFiltered.length) dActiveIdx=dFiltered.length-1;
   if(!dFiltered.length){
     menu.innerHTML='<div class="combo-empty">No matches — use <b>＋ Custom item</b> below.</div>';
-    menu.classList.add('on'); return;
+    menu.classList.add('on'); positionMenu(); return;
   }
   menu.innerHTML=dFiltered.map((c,i)=>`<div class="combo-opt${i===dActiveIdx?' hi':''}" data-ci="${i}">
     <span class="co-desc">${esc(c.desc)}</span><span class="co-rate mono">${money(c.rate)}</span>
@@ -759,6 +850,7 @@ function renderMenu(){
   menu.classList.add('on');
   menu.querySelectorAll('[data-ci]').forEach(o=>o.addEventListener('mousedown',e=>{
     e.preventDefault(); pickCombo(dFiltered[+o.dataset.ci]); }));
+  positionMenu();
 }
 function pickCombo(c){ if(!c)return; dPick=c; el('dSearch').value=c.desc; hideMenu(); el('dQty').focus(); }
 function hideMenu(){ const m=el('dMenu'); if(m)m.classList.remove('on'); dActiveIdx=-1; }
@@ -1359,6 +1451,8 @@ let appStarted=false;
   el('dSearch').addEventListener('focus',renderMenu);
   el('dSearch').addEventListener('keydown',comboKey);
   el('dSearch').addEventListener('blur',()=>setTimeout(hideMenu,150));
+  window.addEventListener('scroll',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); }, true);
+  window.addEventListener('resize',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); });
   el('customToggle').addEventListener('click',()=>toggleCustom());
   el('cAdd').addEventListener('click',addCustom);
   el('cCancel').addEventListener('click',()=>toggleCustom(false));
@@ -1384,6 +1478,8 @@ let appStarted=false;
     store.set('rq_gmail_u', ok?v:''); });
   el('savedTopBtn').addEventListener('click',openSaved);
   el('savedClose').addEventListener('click',closeSaved);
+  el('helpBtn').addEventListener('click',()=>el('helpScreen').classList.add('open'));
+  el('helpClose').addEventListener('click',()=>el('helpScreen').classList.remove('open'));
   el('dupBtn').addEventListener('click',()=>{
     if(!confirm('Duplicate this quote? A new quote starts with only the customer name & address kept.'))return;
     const keep={name:Q.custName,street:Q.custStreet,city:Q.custCity,state:Q.custState,zip:Q.custZip};
