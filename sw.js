@@ -1,6 +1,6 @@
 /* Roll-Off Quoter service worker. BUMP CACHE on every deploy (keep in step
    with APP_VERSION in index.html) so the update banner fires. */
-const CACHE = 'roq-v0.4';
+const CACHE = 'roq-v0.5';
 const SHELL = './';
 
 self.addEventListener('install', e => { /* wait, don't auto-skip — banner handles it */ });
@@ -17,6 +17,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  // Only handle our own files. Let Firebase (gstatic / googleapis / firestore)
+  // and any other cross-origin request go straight to the network untouched.
+  if (new URL(req.url).origin !== self.location.origin) return;
   // network-first so a new deploy is picked up; fall back to cache offline
   e.respondWith((async () => {
     try {
