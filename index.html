@@ -170,10 +170,11 @@
   .code-row{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:11px;
     background:var(--surface);margin-bottom:7px;flex-wrap:wrap}
   .code-row.off{opacity:.6;background:#f6f4ee}
-  .code-row .cr-code{font-family:'DM Mono',monospace;font-weight:600;font-size:12.5px;flex:0 0 72px;color:var(--muted);word-break:break-all}
-  .code-row .cr-desc{flex:3 1 150px}
-  .code-row .cr-rate{flex:0 0 92px}
-  .code-row .cr-tax{flex:1 1 150px}
+  .code-row .cr-code{font-family:'DM Mono',monospace;font-weight:600;font-size:12.5px;flex:0 0 64px;color:var(--muted);word-break:break-all}
+  .code-row .cr-desc{flex:3 1 140px}
+  .code-row .cr-rate{flex:0 0 84px}
+  .code-row .cr-tax{flex:1 1 128px}
+  .code-row .cr-cty{flex:0 0 116px}
   .code-row input,.code-row select{padding:7px 9px;font-size:13px}
   .sw{position:relative;flex:0 0 auto;width:42px;height:24px;cursor:pointer;display:inline-block}
   .sw input{position:absolute;opacity:0;width:0;height:0}
@@ -248,6 +249,10 @@
   .combo-opt .co-rate{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted)}
   .combo-opt .co-tax{flex:0 0 auto}
   .combo-empty{padding:11px;font-size:12.5px;color:var(--muted)}
+  .combo-hint{padding:7px 11px;font-size:11px;font-weight:800;color:var(--blue);background:#eef3f7;border-bottom:1px solid var(--line);letter-spacing:.02em}
+  .combo-opt.other-cty{opacity:.5}
+  .combo-opt.other-cty:hover,.combo-opt.other-cty.hi{opacity:.85}
+  .t-oth{background:#f1efe8;color:var(--muted);border:1px solid #e2ded2}
   .combo-custom-link{display:inline-block;font-size:12.5px;font-weight:800;color:var(--pine);cursor:pointer;text-decoration:underline}
   .custom-box{margin-top:11px;padding:12px;border:1px dashed var(--line-strong);border-radius:11px;background:#faf8f2}
   .tag.t-custom{background:#efe7f6;color:#5b3b8c}
@@ -366,7 +371,7 @@
 
     <!-- 3 DISPOSAL -->
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--rust)">3</div>
-      <div><div class="card-t">Disposal</div><div class="card-sub">Itemized · tax by code</div></div></div>
+      <div><div class="card-t">Disposal</div><div class="card-sub" id="dispSub">Itemized · tax by code</div></div></div>
       <div class="card-amt mono" id="dispAmt">$0.00</div></div>
       <div class="card-b">
         <div class="row" style="align-items:flex-end">
@@ -496,6 +501,14 @@
           (your signature already in it) and puts the quote on your clipboard — <b>press Ctrl+V</b> once to paste the quote in above it.
           Turn this off to have the quote pre-filled instead (no Gmail signature).</div>
 
+        <label style="display:flex;align-items:center;gap:10px;margin-top:16px;cursor:pointer;font-size:13.5px;font-weight:800">
+          <input type="checkbox" id="useRichCopy" style="width:18px;height:18px;accent-color:var(--pine);flex:none">
+          Copy the quote formatted (letterhead + table)
+        </label>
+        <div class="card-sub" style="margin-top:6px;line-height:1.55"><b>On by default.</b> <b>Email</b> and <b>Copy</b> put a formatted quote on your clipboard —
+          pasted into Gmail or Google Docs it looks like the quote sheet, with the letterhead and an itemized table.
+          Pasting into a plain-text box still gives plain text. Turn off to always copy plain text.</div>
+
         <div id="textSigWrap">
           <label class="fld" for="emailSig" style="margin-top:16px">…or type a plain-text signature here</label>
           <textarea id="emailSig" placeholder="Kelly Melgard&#10;Steve's Sanitation&#10;(218) 346-4834&#10;stevessanitation.com" style="min-height:110px"></textarea>
@@ -555,14 +568,23 @@
           <div style="flex:0 0 110px"><label class="fld" for="ncRate">Rate ($)</label>
             <input type="number" id="ncRate" min="0" step="any" placeholder="0.00" inputmode="decimal"></div>
         </div>
-        <div style="margin-top:11px"><label class="fld" for="ncTax">Tax type</label>
+        <div class="row" style="margin-top:11px">
+          <div><label class="fld" for="ncTax">Tax type</label>
           <select id="ncTax">
             <option value="None">No tax</option>
             <option value="SWT">Solid Waste Tax</option>
             <option value="ENV-YD">Environmental — $0.60 / yd</option>
             <option value="ENV-TON">Environmental — $2.00 / ton</option>
           </select></div>
-        <div class="card-sub" style="margin-top:7px">Each code carries exactly one tax type.</div>
+          <div><label class="fld" for="ncCounty">County facility</label>
+          <select id="ncCounty">
+            <option value="">Any county</option>
+            <option value="Otter Tail">Otter Tail</option>
+            <option value="Becker">Becker</option>
+            <option value="Wadena">Wadena</option>
+          </select></div>
+        </div>
+        <div class="card-sub" style="margin-top:7px">Each code carries exactly one tax type. The county says which jobs it’s suggested first on.</div>
         <div style="margin-top:12px"><button class="btn btn-primary" id="ncAdd">Add code</button></div>
       </div></div>
 
@@ -570,7 +592,8 @@
     <input type="text" id="setSearch" placeholder="Search by code or description…" spellcheck="false" style="margin-bottom:11px">
     <div id="codeList"></div>
     <div class="card-sub" style="margin-top:10px;line-height:1.5">Toggle a code off to hide it from the disposal list without deleting it.
-      Edits here don't change quotes already saved.</div>
+      Edits here don't change quotes already saved. The county dropdown marks which county’s facility a code is for —
+      on a job in that county it’s suggested first (guessed from the description until you set it).</div>
   </div>
 </div>
 
@@ -629,6 +652,7 @@
     <h4><span class="hn">3</span>Disposal</h4>
     <ul>
       <li><b>Add item:</b> start typing in the box — it filters by description or code. Tap one, set the <b>Qty</b>, then <b>Add</b>.</li>
+      <li><b>By county:</b> set the <b>Job county</b> on the Hauling card (filled in automatically when you come from the Mileage Quoter). The list then puts that county’s facility items first with a blue tag, greys out other counties’ items, and gives you a heads-up if you add one of those anyway.</li>
       <li><b>Custom item:</b> tap <b>＋ Custom item not in the list</b> for a one-off charge — enter a description, rate, qty and tax type. It won’t change your saved code list.</li>
       <li>Change a quantity or remove a line right in the list after adding.</li>
     </ul>
@@ -645,7 +669,7 @@
       <li><b>Quote good for __ days</b> (default 30) and an optional <b>Label this option</b> show on the sheet/email.</li>
       <li><b>Save quote</b> stores it in the cloud for everyone and gives it a <b>quote number</b> (Q-2026-0101, Q-2026-0102…) that shows on the sheet, in the email subject and in the Saved list. Re-saving a loaded quote updates it and keeps its number.</li>
       <li><b>Quote sheet</b> opens a printable quote — use its <b>Print / Save as PDF</b> button.</li>
-      <li><b>Email</b> saves the quote (so it has a number), marks it <b>Sent</b>, and opens a Gmail message to the customer with your signature in it and the quote on your clipboard — press <b>Ctrl+V</b> to paste the quote in, review, and send.</li>
+      <li><b>Email</b> saves the quote (so it has a number), marks it <b>Sent</b>, and opens a Gmail message to the customer with your signature in it and the quote on your clipboard — press <b>Ctrl+V</b> to paste the quote in, review, and send. The paste is the <b>formatted quote</b> — letterhead, quote number and an itemized table, just like the sheet.</li>
       <li><b>New quote</b> clears everything; <b>Duplicate</b> keeps the customer + address to start a variation (it gets its own number when saved).</li>
     </ul>
 
@@ -668,14 +692,14 @@
     <h4><span class="hn">⚙</span>Settings</h4>
     <ul>
       <li><b>Rates:</b> daily rental, Solid Waste Tax % and Environmental Tax rates. Change them here and every new quote uses them; quotes already saved keep the rates they were priced with.</li>
-      <li><b>Billing codes:</b> turn a code on/off, change its rate or tax type, or add a new code. Changes sync to the whole team.</li>
+      <li><b>Billing codes:</b> turn a code on/off, change its rate, tax type or county facility, or add a new code. Changes sync to the whole team.</li>
       <li><b>Admins:</b> only admins can change rates, codes and the admin list — everyone else sees them read-only. Admins can add or remove other admins here.</li>
       <li><b>Email sending:</b> if you keep several Gmail accounts open, set your <b>work email</b> here so the Email button uses the right one (saved on your device).</li>
     </ul>
 
     <h4><span class="hn">↯</span>Handy extras</h4>
     <ul>
-      <li><b>Copy</b> (by Email) copies the whole quote as text to paste anywhere. In Saved, tick options and <b>Copy</b> grabs them all.</li>
+      <li><b>Copy</b> (by Email) copies the whole quote to paste anywhere — formatted (letterhead + table) in Gmail or Google Docs, plain text in a plain-text box. In Saved, tick options and <b>Copy</b> grabs them all. Prefer plain text everywhere? Turn off <b>Copy the quote formatted</b> in Settings → Email sending.</li>
       <li>Set <b>your email signature</b> in Settings → Email sending — it replaces the default sign-off at the bottom of your quote emails, and is saved to your login so it follows you to any computer.</li>
     </ul>
 
@@ -714,9 +738,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.27 (2026-10-12)';
+const APP_VERSION='v0.28 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.28',d:'Oct 12, 2026',items:[
+    'Email / Copy now put a formatted quote on the clipboard — letterhead, quote number and an itemized table — so the Gmail paste looks like the quote sheet (plain text still comes through in plain-text boxes; switchable in Settings)',
+    'Disposal list is county-aware: set the Job county on the Hauling card (automatic from the Mileage Quoter) and that county’s facility items are listed first, others greyed out, with a heads-up if you add one',
+    'Admins can set each billing code’s county facility in Settings (guessed from the description until set)'
+  ]},
   {v:'v0.27',d:'Oct 12, 2026',items:[
     'Quote numbers now start at 0101 each year (Q-2026-0101, 0102…)'
   ]},
@@ -872,13 +901,27 @@ function seedCodes(){
   return batch.commit();
 }
 function showOffline(on){ const c=el('offlineChip'); if(c) c.classList.toggle('on',!!on); }
+/* ---- which county's facility a code belongs to (drives the disposal suggestions) ----
+   Admins set it per code in Settings; until they do, it's read off the description
+   (BECK → Becker, OT/OTTER → Otter Tail, WA/WADENA → Wadena). */
+const COUNTIES=['Otter Tail','Becker','Wadena'];
+function guessCounty(c){
+  const s=((c.desc||'')+' '+(c.code||'')).toUpperCase();
+  if(/BECK/.test(s)) return 'Becker';
+  if(/\bOT\b|OTTER/.test(s)) return 'Otter Tail';
+  if(/\bWA\b|WADENA/.test(s)) return 'Wadena';
+  return '';
+}
+function codeCounty(c){ return (c && c.county!=null) ? c.county : guessCounty(c||{}); }
+function tagCounties(){ CODES.forEach(c=>{ if(c.county==null) c.county=guessCounty(c); }); }
+function jobCounty(){ const c=(Q.haul&&Q.haul.county)||''; return COUNTIES.indexOf(c)>=0?c:''; }
 function loadCodes(){
-  if(!db){ CODES=fallbackCodes(); showOffline(true); return Promise.resolve(); }
+  if(!db){ CODES=fallbackCodes(); tagCounties(); showOffline(true); return Promise.resolve(); }
   return db.collection('codes').get().then(snap=>{
-    if(snap.empty){ return seedCodes().then(()=>{ CODES=fallbackCodes(); showOffline(false); }); }
-    CODES=[]; snap.forEach(doc=>CODES.push(doc.data()));
+    if(snap.empty){ return seedCodes().then(()=>{ CODES=fallbackCodes(); tagCounties(); showOffline(false); }); }
+    CODES=[]; snap.forEach(doc=>CODES.push(doc.data())); tagCounties();
     showOffline(false);
-  }).catch(e=>{ console.error('codes load failed',e); CODES=fallbackCodes(); showOffline(true); });
+  }).catch(e=>{ console.error('codes load failed',e); CODES=fallbackCodes(); tagCounties(); showOffline(true); });
 }
 
 /* ===== rates (rental / SWT / environmental) — editable in Settings, synced ===== */
@@ -997,13 +1040,21 @@ function renderHaul(){
   const nh=el('noHaul'); if(nh) nh.style.display='none';
   const h=Q.haul || (Q.haul={dest:'',county:'',miles:null,total:0,basis:'Manual entry',manual:true});
   const manual=!!h.manual;
-  const cty=h.county?`<span class="tag t-cty">${esc(h.county)} County</span>`:'';
   const eff=effectiveHaul(), adj=haulIsAdjusted();
   el('haulSub').textContent=manual?'Entered manually':(adj?'Manually adjusted':'From the Mileage Quoter');
 
+  // job county: from the Mileage Quoter hand-off, or picked here — it decides which
+  // county's disposal items are suggested first
+  const cur=h.county||'';
+  const ctyList=[''].concat(COUNTIES, (cur && COUNTIES.indexOf(cur)<0)?[cur]:[]);
+  const ctyOpts=ctyList.map(c=>'<option value="'+esc(c)+'"'+(c===cur?' selected':'')+'>'+(c?esc(c)+' County':'— not set —')+'</option>').join('');
   let html=`<label class="fld" for="haulDest">Site Address</label>
     <input type="text" id="haulDest" placeholder="Job site address" value="${esc(h.dest||'')}">
-    ${cty?`<div style="margin-top:6px">${cty}</div>`:''}`;
+    <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+      <label class="fld" for="haulCounty" style="margin:0">Job county</label>
+      <select id="haulCounty" style="width:auto;min-width:165px">${ctyOpts}</select>
+      <span class="card-sub">${manual?'':'from the Mileage Quoter · '}puts that county’s disposal items first</span>
+    </div>`;
   if(!manual){
     html+=`<div class="kv" style="margin-top:11px;margin-bottom:4px">
       <div><div class="k">One way</div><div class="v">${h.miles!=null?h.miles.toFixed(1)+' mi':'—'}</div></div>
@@ -1022,6 +1073,9 @@ function renderHaul(){
 
   const sd=el('haulDest');
   if(sd) sd.addEventListener('input',()=>{ Q.haul.dest=sd.value; saveState(); });
+  const hc=el('haulCounty');
+  if(hc) hc.addEventListener('change',()=>{ Q.haul.county=hc.value; saveState(); updateDispHint(); hideMenu(); });
+  updateDispHint();
   const fee=el('haulFee');
   if(fee) fee.addEventListener('input',()=>{
     let v=parseFloat(fee.value); v=(isFinite(v)&&v>=0)?v:0;
@@ -1061,10 +1115,18 @@ function refreshRateLabels(){
 /* ---- type-ahead combo for the disposal catalog ---- */
 let dPick=null, dFiltered=[], dActiveIdx=-1;
 function activeCodes(){ return CODES.filter(c=>c.active!==false).slice().sort((a,b)=>a.desc.localeCompare(b.desc)); }
+/* with a job county set: that county's facility items first, county-less items next,
+   other counties' items last (still there, just further down) */
+function rankByCounty(list){
+  const jc=jobCounty(); if(!jc) return list;
+  const mine=[],any=[],other=[];
+  list.forEach(c=>{ const cc=codeCounty(c); (cc===jc?mine:(cc?other:any)).push(c); });
+  return mine.concat(any,other);
+}
 function comboFilter(q){
   q=(q||'').trim().toLowerCase();
   const all=activeCodes();
-  if(!q) return all;
+  if(!q) return rankByCounty(all);
   // match on description OR code; rank by whether it starts with the text
   const starts=[], has=[];
   all.forEach(c=>{
@@ -1072,7 +1134,17 @@ function comboFilter(q){
     if(d.startsWith(q)||cd.startsWith(q)) starts.push(c);
     else if(d.includes(q)||cd.includes(q)) has.push(c);
   });
-  return starts.concat(has);
+  return rankByCounty(starts).concat(rankByCounty(has));
+}
+function countyTag(c){
+  const jc=jobCounty(), cc=codeCounty(c);
+  if(!jc||!cc) return '';
+  return cc===jc ? '<span class="tag t-cty">'+esc(cc)+'</span>' : '<span class="tag t-oth">'+esc(cc)+'</span>';
+}
+function updateDispHint(){
+  const s=el('dispSub'); if(!s) return;
+  const jc=jobCounty();
+  s.textContent='Itemized · tax by code'+(jc?(' · '+jc+' County items first'):'');
 }
 function positionMenu(){
   const inp=el('dSearch'), menu=el('dMenu'); if(!inp||!menu) return;
@@ -1091,9 +1163,12 @@ function renderMenu(){
     menu.innerHTML='<div class="combo-empty">No matches — use <b>＋ Custom item</b> below.</div>';
     menu.classList.add('on'); positionMenu(); return;
   }
-  menu.innerHTML=dFiltered.map((c,i)=>`<div class="combo-opt${i===dActiveIdx?' hi':''}" data-ci="${i}">
-    <span class="co-desc">${esc(c.desc)}</span><span class="co-rate mono">${money(c.rate)}</span>
-    <span class="co-tax">${TTAG[c.taxType]||''}</span></div>`).join('');
+  const jc=jobCounty();
+  menu.innerHTML=(jc?`<div class="combo-hint">${esc(jc)} County job — ${esc(jc)} facility items first</div>`:'')
+    +dFiltered.map((c,i)=>{ const cc=codeCounty(c);
+    return `<div class="combo-opt${i===dActiveIdx?' hi':''}${(jc&&cc&&cc!==jc)?' other-cty':''}" data-ci="${i}">
+    <span class="co-desc">${esc(c.desc)}</span>${countyTag(c)}<span class="co-rate mono">${money(c.rate)}</span>
+    <span class="co-tax">${TTAG[c.taxType]||''}</span></div>`; }).join('');
   menu.classList.add('on');
   menu.querySelectorAll('[data-ci]').forEach(o=>o.addEventListener('mousedown',e=>{
     e.preventDefault(); pickCombo(dFiltered[+o.dataset.ci]); }));
@@ -1121,6 +1196,8 @@ function addDisposal(){
   el('dSearch').blur(); hideMenu();   // keep the menu closed so it doesn't cover the new line
   if(item.taxType==='SWT'&&!Q.custChosen){openCustModal();}
   renderDisposal();recompute();
+  const jc=jobCounty(), cc=codeCounty(item);
+  if(jc && cc && cc!==jc) notify('Heads up: '+item.desc+' is a '+cc+' County item — this job is in '+jc+' County');
 }
 function toggleCustom(show){
   const box=el('customBox'); const on = show==null ? box.style.display==='none' : show;
@@ -1244,10 +1321,16 @@ function taxSel(code,current){
   return '<select data-tax="'+esc(code)+'"'+(isAdmin()?'':' disabled')+'>'+TAXOPTS().map(o=>
     '<option value="'+o[0]+'"'+(o[0]===current?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
 }
+function ctySel(code,current){
+  return '<select data-cty="'+esc(code)+'"'+(isAdmin()?'':' disabled')+' title="Which county’s facility this code is for — it gets suggested first on jobs in that county">'
+    +'<option value="">Any county</option>'+COUNTIES.map(c=>'<option value="'+esc(c)+'"'+(c===current?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>';
+}
+/* the full record for a code, with any field changed */
+function codeRec(c,patch){ return Object.assign({code:c.code,desc:c.desc,rate:c.rate,taxType:c.taxType,active:c.active!==false,county:codeCounty(c)||''},patch||{}); }
 function renderCodeList(){
   const q=(el('setSearch').value||'').trim().toLowerCase();
   const list=CODES.slice().sort((a,b)=>a.code.localeCompare(b.code))
-    .filter(c=>!q||c.code.toLowerCase().includes(q)||String(c.desc||'').toLowerCase().includes(q));
+    .filter(c=>!q||c.code.toLowerCase().includes(q)||String(c.desc||'').toLowerCase().includes(q)||String(codeCounty(c)).toLowerCase().includes(q));
   const box=el('codeList');
   if(!list.length){ box.innerHTML='<div class="card-sub">No codes match your search.</div>'; return; }
   const dis=isAdmin()?'':' disabled';
@@ -1258,38 +1341,45 @@ function renderCodeList(){
       +'<div class="cr-code">'+esc(c.code)+'</div>'
       +'<div class="cr-desc"><input type="text" data-desc="'+esc(c.code)+'" value="'+esc(c.desc||'')+'"'+dis+'></div>'
       +'<div class="cr-rate"><input type="number" min="0" step="any" data-rate="'+esc(c.code)+'" value="'+(c.rate!=null?c.rate:0)+'" inputmode="decimal"'+dis+'></div>'
-      +'<div class="cr-tax">'+taxSel(c.code,c.taxType||'None')+'</div></div>';
+      +'<div class="cr-tax">'+taxSel(c.code,c.taxType||'None')+'</div>'
+      +'<div class="cr-cty">'+ctySel(c.code,codeCounty(c)||'')+'</div></div>';
   }).join('');
   box.querySelectorAll('[data-act]').forEach(inp=>inp.addEventListener('change',()=>{
     const c=CODES.find(x=>x.code===inp.dataset.act); if(!c)return;
-    persistCode({code:c.code,desc:c.desc,rate:c.rate,taxType:c.taxType,active:inp.checked});
+    persistCode(codeRec(c,{active:inp.checked}));
     inp.closest('.code-row').classList.toggle('off',!inp.checked);
   }));
   box.querySelectorAll('[data-tax]').forEach(sel=>sel.addEventListener('change',()=>{
     const c=CODES.find(x=>x.code===sel.dataset.tax); if(!c)return;
-    persistCode({code:c.code,desc:c.desc,rate:c.rate,taxType:sel.value,active:c.active!==false});
+    persistCode(codeRec(c,{taxType:sel.value}));
+  }));
+  box.querySelectorAll('[data-cty]').forEach(sel=>sel.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===sel.dataset.cty); if(!c)return;
+    persistCode(codeRec(c,{county:sel.value}));
   }));
   box.querySelectorAll('[data-desc]').forEach(inp=>inp.addEventListener('change',()=>{
     const c=CODES.find(x=>x.code===inp.dataset.desc); if(!c)return;
     const v=inp.value.trim(); if(!v){inp.value=c.desc||'';notify('Description can’t be empty');return;}
-    persistCode({code:c.code,desc:v,rate:c.rate,taxType:c.taxType,active:c.active!==false});
+    persistCode(codeRec(c,{desc:v}));
   }));
   box.querySelectorAll('[data-rate]').forEach(inp=>inp.addEventListener('change',()=>{
     const c=CODES.find(x=>x.code===inp.dataset.rate); if(!c)return;
     let v=parseFloat(inp.value); if(!isFinite(v)||v<0){v=c.rate||0;inp.value=v;}
-    persistCode({code:c.code,desc:c.desc,rate:v,taxType:c.taxType,active:c.active!==false});
+    persistCode(codeRec(c,{rate:v}));
   }));
 }
 function addNewCode(){
   const code=(el('ncCode').value||'').trim().toUpperCase().replace(/\s+/g,'');
   const desc=(el('ncDesc').value||'').trim();
   let rate=parseFloat(el('ncRate').value); const tax=el('ncTax').value;
+  const county=el('ncCounty')?el('ncCounty').value:'';
   if(!code){notify('Enter a code');return;}
   if(!desc){notify('Enter a description');return;}
   if(!isFinite(rate)||rate<0)rate=0;
   if(CODES.some(c=>c.code===code)){notify('Code “'+code+'” already exists');return;}
-  persistCode({code:code,desc:desc,rate:rate,taxType:tax,active:true}).then(()=>{
+  persistCode({code:code,desc:desc,rate:rate,taxType:tax,active:true,county:county}).then(()=>{
     el('ncCode').value='';el('ncDesc').value='';el('ncRate').value='';el('ncTax').value='None';
+    if(el('ncCounty')) el('ncCounty').value='';
     renderCodeList();notify('Added “'+code+'”');
   });
 }
@@ -1530,8 +1620,8 @@ function combineEmail(){
   const list=selectedSavedQuotes(), ids=selectedSavedIds();
   if(!list.length){ notify('Tick one or more quotes first'); return; }
   const c0=list[0], name=c0.custName||'', to=(c0.custEmail||'').trim();
-  if(list.length===1) sendQuoteEmail(to, quoteSubject(c0), emailTextFor(c0));
-  else sendQuoteEmail(to, COMPANY.name+' — Quote options'+(name?(' for '+name):''), combinedEmailText(list));
+  if(list.length===1) sendQuoteEmail(to, quoteSubject(c0), emailTextFor(c0), emailHtmlFor(c0));
+  else sendQuoteEmail(to, COMPANY.name+' — Quote options'+(name?(' for '+name):''), combinedEmailText(list), combinedEmailHtml(list));
   Promise.all(ids.map(markSentAfterEmail)).then(drawSavedRows);
 }
 /* does a saved row match the search box + status filter? */
@@ -1827,24 +1917,27 @@ function signOffLines(){
   return L;
 }
 /* per-login email prefs (signature text, "let Gmail sign"), synced via Firestore with local fallback */
-let SIGNATURE='', USE_GMAIL_SIG=true;   // default ON: Gmail adds the signature everyone already has
+let SIGNATURE='', USE_GMAIL_SIG=true, USE_RICH=true;   // defaults: Gmail adds the signature; copies are formatted
 function emailSignature(){ return (SIGNATURE||'').trim(); }
 function sigKey(){ return 'rq_sig_'+(currentEmail()||'local'); }
 function applyPrefsToUI(){
   if(el('emailSig')) el('emailSig').value=SIGNATURE;
   if(el('useGmailSig')) el('useGmailSig').checked=!!USE_GMAIL_SIG;
+  if(el('useRichCopy')) el('useRichCopy').checked=!!USE_RICH;
   const w=el('textSigWrap'); if(w) w.style.opacity=USE_GMAIL_SIG?'.45':'1';
 }
 function loadUserPrefs(){
   try{ SIGNATURE = store.get(sigKey()) || store.get('rq_signature') || '';
-       const gm=store.get(sigKey()+'_gm'); USE_GMAIL_SIG = (gm==null) ? true : gm==='1'; }catch(e){}
+       const gm=store.get(sigKey()+'_gm'); USE_GMAIL_SIG = (gm==null) ? true : gm==='1';
+       const rc=store.get(sigKey()+'_rich'); USE_RICH = (rc==null) ? true : rc==='1'; }catch(e){}
   applyPrefsToUI();
   const email=currentEmail();
   if(db && email){
     db.collection('userprefs').doc(email).get().then(doc=>{
       if(doc && doc.exists){ const d=doc.data()||{};
         SIGNATURE=d.signature||''; USE_GMAIL_SIG=(d.useGmailSig==null) ? true : !!d.useGmailSig;
-        try{ store.set(sigKey(),SIGNATURE); store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0'); }catch(e){}
+        USE_RICH=(d.richCopy==null) ? true : !!d.richCopy;
+        try{ store.set(sigKey(),SIGNATURE); store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0'); store.set(sigKey()+'_rich',USE_RICH?'1':'0'); }catch(e){}
         applyPrefsToUI(); }
     }).catch(e=>{ /* offline — keep local copy */ });
   }
@@ -1852,6 +1945,7 @@ function loadUserPrefs(){
 function saveUserPref(patch,msg){
   if('signature' in patch){ SIGNATURE=patch.signature; try{store.set(sigKey(),SIGNATURE);}catch(e){} }
   if('useGmailSig' in patch){ USE_GMAIL_SIG=!!patch.useGmailSig; try{store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0');}catch(e){} }
+  if('richCopy' in patch){ USE_RICH=!!patch.richCopy; try{store.set(sigKey()+'_rich',USE_RICH?'1':'0');}catch(e){} }
   const email=currentEmail();
   if(db && email){ db.collection('userprefs').doc(email).set(Object.assign({updatedTs:Date.now()},patch),{merge:true})
     .then(()=>notify(msg||'Saved')).catch(e=>{ console.error('pref save failed',e); notify('Saved on this device — sync failed'); }); }
@@ -1881,6 +1975,94 @@ function combinedEmailText(list){
   signOffLines().forEach(x=>L.push(x));
   return L.join('\n');
 }
+/* ===== the formatted (HTML) quote that goes on the clipboard =====
+   Email-safe markup: tables + inline styles only, nothing Gmail strips. Pasted into
+   Gmail / Google Docs it looks like the quote sheet; plain-text fields get the text. */
+const EH={font:'font-family:Arial,Helvetica,sans-serif;'};
+function ehWrap(inner){ return '<div style="'+EH.font+'color:#1d201a;font-size:14px;line-height:1.45;max-width:600px">'+inner+'</div>'; }
+function ehHead(q,titleWord){
+  return `<img src="${logoUrl()}" width="600" height="129" alt="${esc(COMPANY.name)}" style="display:block;width:100%;max-width:600px;height:auto;border:0">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:8px;${EH.font}"><tr>
+<td style="font-size:22px;font-weight:bold;letter-spacing:2px;color:#2f6b41;vertical-align:bottom;padding:0">${esc(titleWord)}</td>
+<td style="text-align:right;font-size:13px;color:#6c7065;vertical-align:bottom;padding:0">${q.quoteNo?('<b style="color:#2c5d86;font-family:Consolas,Menlo,monospace;font-size:13.5px">'+esc(q.quoteNo)+'</b><br>'):''}${today()}</td>
+</tr></table>`;
+}
+function ehMeta(q,withTax){
+  const cell='vertical-align:top;padding:16px 26px 0 0;font-size:13.5px;color:#1d201a;'+EH.font;
+  const h3='font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;padding-bottom:3px;';
+  const site=(q.haul&&q.haul.dest)?esc(q.haul.dest):'';
+  const {T}=quoteItemsForQ(q);
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;${EH.font}"><tr>
+<td style="${cell}"><div style="${h3}">Prepared for</div>${custBlockFor(q)}</td>
+${site?`<td style="${cell}"><div style="${h3}">Site address</div>${site}</td>`:''}
+${withTax?`<td style="${cell}"><div style="${h3}">Tax class</div>${q.customer==='commercial'?'Commercial':'Residential'} · SWT ${pct(T.rate)}</td>`:''}
+</tr></table>`;
+}
+function ehTable(q,totalLabel){
+  const {T,items}=quoteItemsForQ(q);
+  const td='padding:8px 4px;border-bottom:1px solid #eeeeee;vertical-align:top;font-size:14px;color:#1d201a;'+EH.font;
+  const amt=td+'text-align:right;white-space:nowrap;';
+  const th='text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;border-bottom:2px solid #e2ded2;padding:6px 4px;'+EH.font;
+  const tx='padding:5px 4px;font-size:14px;color:#1d201a;'+EH.font;
+  const tot='border-top:2px solid #cdc8b8;font-size:17px;font-weight:bold;color:#2f6b41;padding:10px 4px 4px;'+EH.font;
+  const rows=items.map(it=>`<tr><td style="${td}"><b>${esc(it.label)}</b>${it.detail?('<br><span style="font-size:11.5px;color:#6c7065">'+esc(it.detail)+'</span>'):''}</td><td style="${amt}">${money(it.amount)}</td></tr>`).join('');
+  let tax='';
+  if(T.hasSWT) tax+=`<tr><td style="${tx}">Solid Waste Tax <span style="color:#6c7065;font-size:12px">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td style="${tx}text-align:right">${money(T.swt)}</td></tr>`;
+  if(T.env>0) tax+=`<tr><td style="${tx}">Environmental Tax</td><td style="${tx}text-align:right">${money(T.env)}</td></tr>`;
+  return `<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:12px;${EH.font}">
+<tr><td style="${th}">Description</td><td style="${th}text-align:right">Amount</td></tr>
+${rows||('<tr><td style="'+td+'color:#6c7065">No line items</td><td style="'+td+'"></td></tr>')}
+${tax}
+<tr><td style="${tot}">${esc(totalLabel||'Total')}</td><td style="${tot}text-align:right">${money(T.total)}</td></tr>
+</table>`;
+}
+function ehFoot(text){ return '<div style="margin-top:20px;padding-top:10px;border-top:1px solid #e2ded2;font-size:11.5px;color:#6c7065;'+EH.font+'">'+esc(text)+'</div>'; }
+function ehSignoff(){ return '<div style="margin-top:16px;font-size:14px;color:#1d201a;'+EH.font+'">'+signOffLines().slice(1).map(esc).join('<br>')+'</div>'; }
+function emailHtmlFor(q){
+  const days=validDaysFor(q);
+  return ehWrap(ehHead(q,'QUOTE')+ehMeta(q,true)+ehTable(q,'Total')
+    +ehFoot('This quote is good for '+days+' day'+(days==1?'':'s')+'. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.')
+    +ehSignoff());
+}
+function combinedEmailHtml(list){
+  const c0=list[0]||{}; const days=validDaysFor(c0);
+  const td='padding:8px 4px;border-bottom:1px solid #eeeeee;font-size:14px;color:#1d201a;'+EH.font;
+  const th='text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;border-bottom:2px solid #e2ded2;padding:6px 4px;'+EH.font;
+  const sum=list.map((q,i)=>{ const {T}=quoteItemsForQ(q);
+    return `<tr><td style="${td}">${esc(optionTitle(q,i))}${q.quoteNo?(' <span style="color:#6c7065;font-size:12px">'+esc(q.quoteNo)+'</span>'):''}</td><td style="${td}text-align:right;font-weight:bold;color:#2f6b41">${money(T.total)}</td></tr>`; }).join('');
+  const sections=list.map((q,i)=>`<div style="margin-top:22px"><div style="background:#eef3ef;border-radius:6px;padding:8px 11px;font-size:15px;font-weight:bold;color:#234e30;${EH.font}">${esc(optionTitle(q,i))}${q.quoteNo?('<span style="font-weight:normal;color:#6c7065;font-size:12.5px;margin-left:8px">'+esc(q.quoteNo)+'</span>'):''}</div>${ehTable(q,'Option total')}</div>`).join('');
+  return ehWrap(ehHead(Object.assign({},c0,{quoteNo:null}),'QUOTE OPTIONS')+ehMeta(c0,false)
+    +`<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:16px;${EH.font}"><tr><td style="${th}">Options at a glance</td><td style="${th}text-align:right">Total</td></tr>${sum}</table>`
+    +sections
+    +ehFoot('These quotes are good for '+days+' day'+(days==1?'':'s')+'. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.')
+    +ehSignoff());
+}
+/* put BOTH flavors on the clipboard: formatted for Gmail / Docs, plain text elsewhere */
+function copyRich(html,text,msg){
+  const done=()=>notify(msg||'Copied to clipboard');
+  const legacy=()=>{
+    // older route: a copy event lets us hand over both flavors at once
+    const h=e=>{ try{ e.clipboardData.setData('text/html',html); e.clipboardData.setData('text/plain',text); e.preventDefault(); }catch(err){} };
+    try{
+      const ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select();
+      document.addEventListener('copy',h);
+      const ok=document.execCommand('copy');
+      document.removeEventListener('copy',h); document.body.removeChild(ta);
+      if(ok) done(); else fallbackCopy(text,msg);
+    }catch(e){ document.removeEventListener('copy',h); fallbackCopy(text,msg); }
+  };
+  if(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem){
+    try{
+      const item=new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})});
+      navigator.clipboard.write([item]).then(done).catch(legacy);
+    }catch(e){ legacy(); }
+  } else legacy();
+}
+/* copy a quote the way this login prefers: formatted (default) or plain text */
+function copyOut(text,html,msg){
+  if(USE_RICH && html) copyRich(html,text,msg); else copyText(text,msg);
+}
 /* Open a Gmail compose window prefilled. Account targeting (number → /u/N/,
    email → ?authuser) from Settings → Email sending. Falls back to mailto:. */
 function openGmail(to,subj,body){
@@ -1900,9 +2082,9 @@ function openGmail(to,subj,body){
 /* Send a quote. With "Let Gmail add my signature" ON: open a BLANK message (so Gmail
    drops in the real signature, logo and all) and put the quote on the clipboard —
    one Ctrl+V pastes it in above the signature. OFF: pre-fill the body as before. */
-function sendQuoteEmail(to,subj,body){
+function sendQuoteEmail(to,subj,body,html){
   if(USE_GMAIL_SIG){
-    copyText(body,'Quote copied — press Ctrl+V in the email to paste it above your signature');
+    copyOut(body,html,'Quote copied — press Ctrl+V in the email to paste it above your signature');
     openGmail(to,subj,'');
   }else{
     openGmail(to,subj,body);
@@ -1915,7 +2097,7 @@ function emailQuote(){
   const {T}=quoteItems();
   if(T.total<=0){ notify('Build a quote first'); return; }
   let fired=false;
-  const send=()=>{ if(fired) return; fired=true; sendQuoteEmail((Q.custEmail||'').trim(), quoteSubject(Q), emailText()); };
+  const send=()=>{ if(fired) return; fired=true; sendQuoteEmail((Q.custEmail||'').trim(), quoteSubject(Q), emailText(), emailHtmlFor(Q)); };
   if(!db){ send(); return; }
   const t=setTimeout(send,2500);
   saveQuoteAsync()
@@ -1937,12 +2119,14 @@ function copyText(t,msg){
 function copyQuote(){
   const {T}=quoteItems();
   if(T.total<=0){ notify('Build a quote first'); return; }
-  copyText(emailText());
+  copyOut(emailText(), emailHtmlFor(Q), USE_RICH?'Quote copied — paste into Gmail or Docs for the formatted version':'Quote copied to clipboard');
 }
 function combineCopy(){
   const list=selectedSavedQuotes();
   if(!list.length){ notify('Tick one or more quotes first'); return; }
-  copyText(list.length===1?emailTextFor(list[0]):combinedEmailText(list));
+  const one=list.length===1;
+  copyOut(one?emailTextFor(list[0]):combinedEmailText(list), one?emailHtmlFor(list[0]):combinedEmailHtml(list),
+    USE_RICH?'Copied — paste into Gmail or Docs for the formatted version':'Copied to clipboard');
 }
 
 /* ideas — synced via Firestore (local fallback when offline) */
@@ -2068,6 +2252,7 @@ let appStarted=false;
   el('dAdd').addEventListener('click',addDisposal);
   el('dSearch').addEventListener('input',()=>{ dPick=null; dActiveIdx=-1; renderMenu(); });
   el('dSearch').addEventListener('focus',renderMenu);
+  el('dSearch').addEventListener('click',renderMenu);   // re-open after Escape, or after changing the county without leaving the box
   el('dSearch').addEventListener('keydown',comboKey);
   el('dSearch').addEventListener('blur',()=>setTimeout(hideMenu,150));
   window.addEventListener('scroll',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); }, true);
@@ -2107,6 +2292,9 @@ let appStarted=false;
   el('useGmailSig').addEventListener('change',()=>{
     saveUserPref({useGmailSig:el('useGmailSig').checked}, el('useGmailSig').checked?'Gmail will add your signature':'Using the signature typed here');
     applyPrefsToUI();
+  });
+  el('useRichCopy').addEventListener('change',()=>{
+    saveUserPref({richCopy:el('useRichCopy').checked}, el('useRichCopy').checked?'Copies will be formatted':'Copies will be plain text');
   });
   el('savedTopBtn').addEventListener('click',openSaved);
   el('savedClose').addEventListener('click',closeSaved);
