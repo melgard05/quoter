@@ -195,6 +195,17 @@
   .saved-row .sv-check{flex:0 0 auto;width:18px;height:18px;cursor:pointer;accent-color:var(--pine)}
   .sv-lab{display:inline-block;font-size:10.5px;font-weight:800;background:#eef3ef;color:var(--pine);border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:middle}
   .saved-bar{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+  .saved-tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .saved-tools input[type=text]{flex:2 1 210px;width:auto}
+  .saved-tools select{flex:1 1 130px;width:auto}
+  .sv-qno{font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;font-weight:700;color:var(--blue);margin-right:7px}
+  .saved-row .sv-name,.saved-row .sv-sub{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
+  .saved-row .sv-name .st-badge{margin-left:5px;vertical-align:middle}
+  .saved-row.is-declined .sv-name,.saved-row.is-expired .sv-name{color:var(--muted)}
+  .saved-row.is-declined .sv-amt,.saved-row.is-expired .sv-amt{color:var(--muted)}
+  select.sv-status{width:auto;padding:6px 26px 6px 9px;font-size:12.5px;font-weight:700;border-radius:8px;background:#fcfbf7}
+  .qno-tag{display:inline-block;margin-left:8px;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:700;
+    color:var(--blue);background:#e6eef6;border-radius:999px;padding:2px 9px;vertical-align:middle}
 
   /* ---- ideas ---- */
   .idea-badge{display:inline-block;margin-left:8px;background:var(--rust);color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px;vertical-align:middle}
@@ -209,6 +220,12 @@
   .st-open{background:#e6eef6;color:var(--blue)}
   .st-done{background:#e7efe9;color:var(--pine)}
   .st-cancelled{background:#f0ece2;color:var(--muted)}
+  /* quote statuses */
+  .st-draft{background:#efece3;color:var(--muted)}
+  .st-sent{background:#e6eef6;color:var(--blue)}
+  .st-accepted{background:#e7efe9;color:var(--pine)}
+  .st-declined{background:#f7e6e0;color:var(--rust)}
+  .st-expired{background:#f7eedb;color:var(--amber)}
 
   /* ---- help ---- */
   .help-wrap h4{font-size:14px;font-weight:800;color:var(--pine);margin:20px 0 6px;display:flex;align-items:center;gap:8px}
@@ -397,7 +414,7 @@
 
     <!-- SUMMARY -->
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">Σ</div>
-      <div class="card-t">Quote Summary</div></div></div>
+      <div class="card-t">Quote Summary<span class="qno-tag" id="qnoTag" style="display:none" title="Quote number"></span></div></div></div>
       <div class="card-b">
         <div class="sum-row"><span>Hauling</span><span class="mono" id="sHaul">$0.00</span></div>
         <div class="sum-row"><span>Daily rental</span><span class="mono" id="sRental">$0.00</span></div>
@@ -559,10 +576,27 @@
 
 <div class="settings-screen" id="savedScreen">
   <div class="set-head">
-    <div><h2>Saved Quotes</h2><div class="sh-sub">Shared across the team</div></div>
+    <div><h2>Saved Quotes</h2><div class="sh-sub" id="savedSub">Shared across the team</div></div>
     <button class="set-close" id="savedClose">Done</button>
   </div>
   <div class="set-wrap">
+    <div class="saved-tools">
+      <input type="text" id="savedSearch" placeholder="Search name, address, quote # or label…" spellcheck="false" autocomplete="off">
+      <select id="savedFilter" title="Show only quotes with this status">
+        <option value="">All statuses</option>
+        <option value="draft">Draft</option>
+        <option value="sent">Sent</option>
+        <option value="accepted">Accepted</option>
+        <option value="declined">Declined</option>
+        <option value="expired">Expired</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" id="exportCsv" title="Download the quotes listed below as a CSV spreadsheet (opens in Google Sheets or Excel)">⬇ Export CSV</button>
+    </div>
+    <div class="saved-bar"><span class="card-sub" id="selCount">Tick options to combine</span>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost btn-sm" id="combineSheet">Quote sheet</button>
+      <button class="btn btn-ghost btn-sm" id="combineCopy">Copy</button>
+      <button class="btn btn-primary btn-sm" id="combineEmail">Email</button></div>
     <div id="savedList"></div>
   </div>
 </div>
@@ -609,10 +643,19 @@
     <h4><span class="hn">✓</span>Finishing a quote</h4>
     <ul>
       <li><b>Quote good for __ days</b> (default 30) and an optional <b>Label this option</b> show on the sheet/email.</li>
-      <li><b>Save quote</b> stores it in the cloud for everyone. <b>📁 Saved</b> lists them — <b>Load</b> reopens one, <b>Delete</b> removes it. Re-saving a loaded quote updates it.</li>
+      <li><b>Save quote</b> stores it in the cloud for everyone and gives it a <b>quote number</b> (Q-2026-0001, Q-2026-0002…) that shows on the sheet, in the email subject and in the Saved list. Re-saving a loaded quote updates it and keeps its number.</li>
       <li><b>Quote sheet</b> opens a printable quote — use its <b>Print / Save as PDF</b> button.</li>
-      <li><b>Email</b> opens a Gmail message to the customer with your signature in it and the quote on your clipboard — press <b>Ctrl+V</b> to paste the quote in, review, and send.</li>
-      <li><b>New quote</b> clears everything; <b>Duplicate</b> keeps the customer + address to start a variation.</li>
+      <li><b>Email</b> saves the quote (so it has a number), marks it <b>Sent</b>, and opens a Gmail message to the customer with your signature in it and the quote on your clipboard — press <b>Ctrl+V</b> to paste the quote in, review, and send.</li>
+      <li><b>New quote</b> clears everything; <b>Duplicate</b> keeps the customer + address to start a variation (it gets its own number when saved).</li>
+    </ul>
+
+    <h4><span class="hn">📁</span>Saved quotes &amp; status</h4>
+    <ul>
+      <li><b>Search</b> by customer, address, quote # or label; the <b>status</b> dropdown narrows the list to Draft, Sent, Accepted, Declined or Expired.</li>
+      <li>Each quote has a status: <b>Draft</b> (saved, not sent) → <b>Sent</b> (set automatically when you Email it, or pick it yourself if you printed or handed it over) → <b>Accepted</b> / <b>Declined</b> when the customer answers. Change it with the dropdown on the row.</li>
+      <li>A Sent quote past its “good for” days shows as <b>Expired</b> automatically. Re-sending it (Email again) restarts the clock.</li>
+      <li><b>Load</b> reopens a quote on the main screen; <b>Delete</b> removes it for everyone.</li>
+      <li><b>⬇ Export CSV</b> downloads whatever is listed (after your search/filter) as a spreadsheet — totals, taxes, status, dates — that opens straight in Google Sheets or Excel.</li>
     </ul>
 
     <h4><span class="hn">≡</span>Several options on one job</h4>
@@ -671,9 +714,16 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.25 (2026-10-12)';
+const APP_VERSION='v0.26 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.26',d:'Oct 12, 2026',items:[
+    'Every saved quote gets a quote number (Q-2026-0001…) — shown on the sheet, in the email subject and in the Saved list',
+    'Quote status: Draft → Sent (automatic when you Email) → Accepted / Declined; a sent quote past its “good for” days shows as Expired',
+    'Saved quotes: search by customer, address, quote # or label, and filter by status',
+    'Export CSV downloads the listed quotes (totals, taxes, status, dates) for Google Sheets or Excel',
+    'Email saves the quote first so it always goes out with its number — no need to tap Save'
+  ]},
   {v:'v0.25',d:'Oct 12, 2026',items:[
     'Rates (rental, Solid Waste Tax %, Environmental) are now in Settings — change them yourself, synced to the team',
     'Admin lock: only admins can change rates, billing codes and the admin list; everyone else sees them read-only',
@@ -924,7 +974,8 @@ function quoteHasContent(){
 
 function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
   custStreet:'',custCity:'',custState:'',custZip:'',custEmail:'',haul:null,
-  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,label:'',rates:null,savedId:null};}
+  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,label:'',rates:null,
+  savedId:null,quoteNo:null,status:'draft',sentTs:null,created:null};}
 function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
 function haulIsAdjusted(){return Q.haul&&!Q.haul.manual&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
 let Q=freshQuote();
@@ -1294,63 +1345,174 @@ function removeAdmin(a){
 }
 
 /* ===== saved quotes (Firestore) ===== */
+const QSTATUS={draft:'Draft',sent:'Sent',accepted:'Accepted',declined:'Declined',expired:'Expired'};
+function fmtShortDate(ts){ return ts?new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''; }
+/* resolve with `tv` if the promise takes longer than ms (so a slow/offline connection never hangs the UI) */
+function withTimeout(p,ms,tv){
+  return new Promise((res,rej)=>{
+    let done=false; const t=setTimeout(()=>{ if(!done){ done=true; res(tv); } },ms);
+    Promise.resolve(p).then(v=>{ if(!done){ done=true; clearTimeout(t); res(v); } },
+                            e=>{ if(!done){ done=true; clearTimeout(t); rej(e); } });
+  });
+}
+/* the saved quote's stored quote object (parsed once per row) */
+function rowQuote(r){ if(!r.__q){ try{ r.__q=JSON.parse(r.data||'{}')||{}; }catch(e){ r.__q={}; } } return r.__q; }
+/* when a SENT quote stops being good: sent date + its "good for" days (0 = never) */
+function expiresTs(r){
+  if(!r||!r.sentTs) return null;
+  const days=validDaysFor(r.validDays!=null?r:rowQuote(r));
+  return days>0 ? r.sentTs+days*86400000 : null;
+}
+/* a quote's status as shown: stored status, except a sent quote past its window is Expired */
+function effectiveStatus(r){
+  const st=(r&&r.status)||'draft';
+  if(st==='sent'){ const x=expiresTs(r); if(x && Date.now()>x) return 'expired'; }
+  return QSTATUS[st]?st:'draft';
+}
+function statusBadge(r){ const s=effectiveStatus(r); return '<span class="st-badge st-'+s+'">'+QSTATUS[s]+'</span>'; }
+
+/* Quote numbers: Q-YYYY-NNNN, handed out in order from one shared counter
+   (counters/quotes). A transaction keeps two people from getting the same number.
+   Needs a connection — resolves null if it can't get one. */
+function nextQuoteNo(){
+  if(!db || !db.runTransaction) return Promise.resolve(null);
+  const year=new Date().getFullYear();
+  const ref=db.collection('counters').doc('quotes');
+  return db.runTransaction(t=>t.get(ref).then(doc=>{
+    const d=(doc&&doc.exists)?(doc.data()||{}):{};
+    const seq=(d.year===year && isFinite(d.seq))?(d.seq+1):1;
+    t.set(ref,{year:year,seq:seq,updated:Date.now()});
+    return 'Q-'+year+'-'+String(seq).padStart(4,'0');
+  })).catch(e=>{ console.warn('quote number not assigned',e); return null; });
+}
 function syncSaveBtn(){
-  const b=el('saveQuoteBtn'), s=el('savedState');
+  const b=el('saveQuoteBtn'), s=el('savedState'), tag=el('qnoTag');
   if(!b) return;
   b.textContent = Q.savedId ? 'Update saved quote' : 'Save quote';
-  let msg = Q.savedId ? '✓ This quote is saved — changes update it.' : '';
+  let msg='';
+  if(Q.savedId){
+    msg='✓ Saved'+(Q.quoteNo?(' as '+Q.quoteNo):'')+' — changes update it.';
+    const st=effectiveStatus({status:Q.status,sentTs:Q.sentTs,validDays:Q.validDays});
+    if(st==='sent') msg+=' Sent '+fmtShortDate(Q.sentTs)+'.';
+    else if(st==='expired') msg+=' Sent '+fmtShortDate(Q.sentTs)+' — now expired.';
+    else if(st==='accepted') msg+=' Accepted by the customer.';
+    else if(st==='declined') msg+=' Declined by the customer.';
+  }
   if(Q.rates && ratesDiffer(Q.rates,currentRates()))
     msg += ' Priced with the rates in effect when it was saved (rates have changed since).';
   if(s) s.textContent = msg;
+  if(tag){ tag.textContent=Q.quoteNo||''; tag.style.display=Q.quoteNo?'':'none'; }
+}
+/* Save (or update) the on-screen quote. Resolves 'saved', or 'queued' when offline
+   (the write is kept on the device and syncs later). A new quote gets the next
+   quote number; if the counter can't be reached it saves without one and picks
+   a number up on the next save. */
+function saveQuoteAsync(){
+  if(!db) return Promise.reject(new Error('offline'));
+  const T=calcTotals();
+  if(T.total<=0 && !Q.custName) return Promise.reject(new Error('empty'));
+  if(!Q.rates) Q.rates=currentRates();           // lock in today's rates for this quote
+  const isNew=!Q.savedId;
+  const ref=isNew ? db.collection('quotes').doc() : db.collection('quotes').doc(Q.savedId);
+  const id=ref.id;
+  if(isNew){ Q.savedId=id; Q.created=Date.now(); Q.status='draft'; Q.sentTs=null; }
+  let issued=false;
+  let numP=Promise.resolve(Q.quoteNo||null);
+  if(!Q.quoteNo){
+    numP=nextQuoteNo();
+    // number arrives after we've already written (slow connection): attach it then
+    numP.then(no=>{ if(no && issued && !Q.quoteNo && Q.savedId===id){
+      Q.quoteNo=no; saveState(); syncSaveBtn();
+      ref.update({quoteNo:no}).catch(()=>{}); } });
+  }
+  return withTimeout(numP,2500,null).then(no=>{
+    if(no && !Q.quoteNo && Q.savedId===id) Q.quoteNo=no;
+    const rec={
+      name:Q.custName||'',
+      site:[Q.custStreet,Q.custCity].filter(Boolean).join(', '),
+      street:Q.custStreet||'', city:Q.custCity||'', state:Q.custState||'', zip:Q.custZip||'',
+      email:(Q.custEmail||'').trim(),
+      customer:Q.customer||'commercial',
+      label:Q.label||'',
+      validDays:validDaysFor(Q),
+      total:T.total,
+      by:currentEmail(),
+      ts:Date.now(),
+      data:JSON.stringify(Q)
+    };
+    if(Q.quoteNo) rec.quoteNo=Q.quoteNo;
+    if(isNew){ rec.status='draft'; rec.created=Q.created; rec.createdBy=currentEmail(); }
+    issued=true; saveState(); syncSaveBtn();
+    return withTimeout(ref.set(rec,{merge:true}),4000,'queued');
+  }).then(res=>{ saveState(); syncSaveBtn(); return res||'saved'; })
+  .catch(e=>{
+    if(isNew && Q.savedId===id){ Q.savedId=null; Q.created=null; }   // keep Q.quoteNo: it's ours, reused next try
+    saveState(); syncSaveBtn(); throw e;
+  });
 }
 function saveQuote(){
   if(!db){ notify('Can’t save while offline'); return; }
   const T=calcTotals();
   if(T.total<=0 && !Q.custName){ notify('Nothing to save yet'); return; }
-  if(!Q.rates) Q.rates=currentRates();           // lock in today's rates for this quote
-  const rec={
-    name:Q.custName||'',
-    site:[Q.custStreet,Q.custCity].filter(Boolean).join(', '),
-    street:Q.custStreet||'', city:Q.custCity||'', state:Q.custState||'', zip:Q.custZip||'',
-    customer:Q.customer||'commercial',
-    label:Q.label||'',
-    total:T.total,
-    by:currentEmail(),
-    ts:Date.now(),
-    data:JSON.stringify(Q)
-  };
-  el('saveQuoteBtn').disabled=true;
-  const ref = Q.savedId ? db.collection('quotes').doc(Q.savedId) : db.collection('quotes').doc();
-  ref.set(rec).then(()=>{
-    Q.savedId=ref.id; saveState(); syncSaveBtn();
-    el('saveQuoteBtn').disabled=false;
-    notify(rec.name?('Saved — '+rec.name):'Quote saved');
-  }).catch(e=>{ console.error('quote save failed',e); el('saveQuoteBtn').disabled=false; notify('Save failed — check your connection'); });
+  const b=el('saveQuoteBtn'); b.disabled=true;
+  saveQuoteAsync().then(res=>{
+    b.disabled=false;
+    const who=Q.custName?(' — '+Q.custName):'';
+    if(res==='queued') notify('Saved on this device — will sync when you’re back online');
+    else notify((Q.quoteNo?('Saved as '+Q.quoteNo):'Quote saved')+who);
+  }).catch(e=>{ console.error('quote save failed',e); b.disabled=false; notify('Save failed — check your connection'); });
+}
+/* change a saved quote's status (Draft / Sent / Accepted / Declined) */
+function setQuoteStatus(id,status,opts){
+  if(!db || !QSTATUS[status] || status==='expired' || !id) return Promise.resolve();
+  const patch={status:status,statusTs:Date.now(),statusBy:currentEmail()};
+  if(status==='sent') patch.sentTs=patch.statusTs;
+  const r=savedRows.find(x=>x.id===id); if(r) Object.assign(r,patch);
+  if(Q.savedId===id){ Q.status=status; if(status==='sent') Q.sentTs=patch.sentTs; saveState(); syncSaveBtn(); }
+  return db.collection('quotes').doc(id).update(patch)
+    .then(()=>{ if(!(opts&&opts.quiet)) notify('Marked '+QSTATUS[status].toLowerCase()+(r&&r.quoteNo?(' — '+r.quoteNo):'')); })
+    .catch(e=>{ console.error('status update failed',e); notify('Couldn’t update the status — check your connection'); });
+}
+/* after a quote is emailed: mark it Sent unless the customer already answered */
+function markSentAfterEmail(id){
+  if(!id) return Promise.resolve();
+  const r=savedRows.find(x=>x.id===id);
+  const cur=(Q.savedId===id)?(Q.status||'draft'):((r&&r.status)||'draft');
+  if(cur==='accepted'||cur==='declined') return Promise.resolve();
+  return setQuoteStatus(id,'sent',{quiet:true});
 }
 function openSaved(){ el('savedScreen').classList.add('open'); renderSavedList(); }
 function closeSaved(){ el('savedScreen').classList.remove('open'); }
-let savedRows=[];
+let savedRows=[], savedShown=[];
 function savedRowHtml(r){
-  const when=new Date(r.ts||Date.now()).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const st=effectiveStatus(r);
+  const when=fmtShortDate(r.created||r.ts||Date.now());
   const title=esc(r.name||r.site||'(no name)');
   const lab=r.label?' <span class="sv-lab">'+esc(r.label)+'</span>':'';
-  const sub=[(r.name&&r.site)?esc(r.site):'', esc(r.by||''), when].filter(Boolean).join(' · ');
-  return '<div class="saved-row">'
+  const qn=r.quoteNo?'<span class="sv-qno">'+esc(r.quoteNo)+'</span>':'';
+  const bits=[(r.name&&r.site)?esc(r.site):'', esc(r.by||''), when];
+  if(st==='sent' && r.sentTs){ bits.push('sent '+fmtShortDate(r.sentTs)); const x=expiresTs(r); if(x) bits.push('good through '+fmtShortDate(x)); }
+  else if(st==='expired') bits.push('expired '+fmtShortDate(expiresTs(r)));
+  else if((st==='accepted'||st==='declined') && r.statusTs) bits.push(QSTATUS[st].toLowerCase()+' '+fmtShortDate(r.statusTs));
+  const sel='<select class="sv-status" data-status="'+esc(r.id)+'" title="Quote status">'
+    +['draft','sent','accepted','declined'].map(s=>'<option value="'+s+'"'+(((r.status||'draft')===s)?' selected':'')+'>'
+      +(s==='sent'&&st==='expired'?'Sent (expired)':QSTATUS[s])+'</option>').join('')+'</select>';
+  return '<div class="saved-row is-'+st+'">'
     +'<input type="checkbox" class="sv-check" data-sel="'+esc(r.id)+'" title="Select for combined quote / email">'
-    +'<div class="sv-main"><div class="sv-name">'+title+lab+'</div><div class="sv-sub">'+sub+'</div></div>'
+    +'<div class="sv-main"><div class="sv-name">'+qn+title+lab+statusBadge(r)+'</div><div class="sv-sub">'+bits.filter(Boolean).join(' · ')+'</div></div>'
     +'<div class="sv-amt mono">'+money(r.total||0)+'</div>'
-    +'<div class="sv-btns"><button class="btn btn-primary btn-sm" data-load="'+esc(r.id)+'">Load</button>'
+    +'<div class="sv-btns">'+sel+'<button class="btn btn-primary btn-sm" data-load="'+esc(r.id)+'">Load</button>'
     +'<button class="btn btn-ghost btn-sm" data-del="'+esc(r.id)+'">Delete</button></div></div>';
 }
 function updateSelCount(){
   const n=document.querySelectorAll('#savedList [data-sel]:checked').length;
   const s=el('selCount'); if(s) s.textContent = n ? (n+' selected') : 'Tick options to combine';
 }
+function selectedSavedIds(){ return [...document.querySelectorAll('#savedList [data-sel]:checked')].map(c=>c.dataset.sel); }
 function selectedSavedQuotes(){
-  const ids=[...document.querySelectorAll('#savedList [data-sel]:checked')].map(c=>c.dataset.sel);
   const out=[];
-  ids.forEach(id=>{ const r=savedRows.find(x=>x.id===id); if(!r)return;
-    try{ const q=JSON.parse(r.data); if(!q.label && r.label) q.label=r.label; q.override=false; out.push(q); }catch(e){} });
+  selectedSavedIds().forEach(id=>{ const r=savedRows.find(x=>x.id===id); if(!r)return;
+    try{ const q=JSON.parse(r.data); if(!q.label && r.label) q.label=r.label; if(r.quoteNo) q.quoteNo=r.quoteNo; q.override=false; out.push(q); }catch(e){} });
   return out;
 }
 function combineSheet(){
@@ -1359,44 +1521,85 @@ function combineSheet(){
   openWin(list.length===1 ? quoteSheetHtmlFor(list[0]) : combinedSheetHtml(list));
 }
 function combineEmail(){
-  const list=selectedSavedQuotes();
+  const list=selectedSavedQuotes(), ids=selectedSavedIds();
   if(!list.length){ notify('Tick one or more quotes first'); return; }
   const c0=list[0], name=c0.custName||'', to=(c0.custEmail||'').trim();
-  if(list.length===1){
-    sendQuoteEmail(to, COMPANY.name+' — Roll-Off Quote'+(name?(' for '+name):''), emailTextFor(c0));
-  }else{
-    sendQuoteEmail(to, COMPANY.name+' — Quote options'+(name?(' for '+name):''), combinedEmailText(list));
-  }
+  if(list.length===1) sendQuoteEmail(to, quoteSubject(c0), emailTextFor(c0));
+  else sendQuoteEmail(to, COMPANY.name+' — Quote options'+(name?(' for '+name):''), combinedEmailText(list));
+  Promise.all(ids.map(markSentAfterEmail)).then(drawSavedRows);
+}
+/* does a saved row match the search box + status filter? */
+function savedMatches(r,q,st){
+  if(st && effectiveStatus(r)!==st) return false;
+  if(!q) return true;
+  const hay=[r.quoteNo,r.name,r.site,r.street,r.city,r.state,r.zip,r.label,r.by,r.email].map(x=>String(x||'').toLowerCase()).join(' | ');
+  return q.split(/\s+/).filter(Boolean).every(w=>hay.indexOf(w)>=0);
+}
+/* draw the (filtered) rows from what's already loaded */
+function drawSavedRows(){
+  const box=el('savedList'); if(!box) return;
+  const q=(el('savedSearch').value||'').trim().toLowerCase(), st=el('savedFilter').value||'';
+  const rows=savedRows.filter(r=>savedMatches(r,q,st));
+  savedShown=rows;
+  const sub=el('savedSub');
+  if(sub) sub.textContent = !savedRows.length ? 'Shared across the team'
+    : (rows.length===savedRows.length ? savedRows.length+' saved · shared across the team' : rows.length+' of '+savedRows.length+' shown');
+  const was=new Set(selectedSavedIds());
+  if(!savedRows.length){ box.innerHTML='<div class="card-sub">No saved quotes yet. Build a quote and tap <b>Save quote</b>.</div>'; updateSelCount(); return; }
+  if(!rows.length){ box.innerHTML='<div class="card-sub">No saved quotes match that search / status.</div>'; updateSelCount(); return; }
+  box.innerHTML=rows.map(savedRowHtml).join('');
+  box.querySelectorAll('[data-sel]').forEach(c=>{ if(was.has(c.dataset.sel)) c.checked=true; c.addEventListener('change',updateSelCount); });
+  box.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
+    const r=savedRows.find(x=>x.id===b.dataset.load); if(r) loadQuote(r);
+  }));
+  box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteQuote(b.dataset.del)));
+  box.querySelectorAll('[data-status]').forEach(s=>s.addEventListener('change',()=>setQuoteStatus(s.dataset.status,s.value).then(drawSavedRows)));
+  updateSelCount();
 }
 function renderSavedList(){
   const box=el('savedList');
   if(!db){ box.innerHTML='<div class="card-sub">Saved quotes need a connection — you’re offline right now.</div>'; return; }
   box.innerHTML='<div class="card-sub">Loading…</div>';
-  db.collection('quotes').orderBy('ts','desc').limit(200).get().then(snap=>{
+  db.collection('quotes').orderBy('ts','desc').limit(500).get().then(snap=>{
     const rows=[]; snap.forEach(d=>rows.push(Object.assign({id:d.id},d.data())));
-    savedRows=rows;
-    if(!rows.length){ box.innerHTML='<div class="card-sub">No saved quotes yet. Build a quote and tap <b>Save quote</b>.</div>'; return; }
-    box.innerHTML='<div class="saved-bar"><span class="card-sub" id="selCount">Tick options to combine</span>'
-      +'<span style="flex:1"></span>'
-      +'<button class="btn btn-ghost btn-sm" id="combineSheet">Quote sheet</button>'
-      +'<button class="btn btn-ghost btn-sm" id="combineCopy">Copy</button>'
-      +'<button class="btn btn-primary btn-sm" id="combineEmail">Email</button></div>'
-      + rows.map(savedRowHtml).join('');
-    el('combineSheet').addEventListener('click',combineSheet);
-    el('combineCopy').addEventListener('click',combineCopy);
-    el('combineEmail').addEventListener('click',combineEmail);
-    box.querySelectorAll('[data-sel]').forEach(c=>c.addEventListener('change',updateSelCount));
-    box.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
-      const r=rows.find(x=>x.id===b.dataset.load); if(r) loadQuote(r);
-    }));
-    box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteQuote(b.dataset.del)));
-    updateSelCount();
+    savedRows=rows; drawSavedRows();
+    // keep the on-screen quote's number/status in step with what the team has done to it
+    const mine=Q.savedId && rows.find(r=>r.id===Q.savedId);
+    if(mine){ Q.quoteNo=mine.quoteNo||Q.quoteNo||null; Q.status=mine.status||'draft'; Q.sentTs=mine.sentTs||null; saveState(); syncSaveBtn(); }
   }).catch(e=>{ console.error('quotes load failed',e); box.innerHTML='<div class="card-sub">Couldn’t load saved quotes — check your connection.</div>'; });
+}
+/* Export the listed quotes as a CSV file (opens in Google Sheets / Excel) */
+function csvCell(v){ v=(v==null)?'':String(v); return /[",\n\r]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v; }
+function exportCsv(){
+  const rows=savedShown.length?savedShown:savedRows;
+  if(!rows.length){ notify('Nothing to export yet'); return; }
+  const d=v=>v?new Date(v).toLocaleDateString('en-US'):'';
+  const head=['Quote #','Status','Date','Sent','Good through','Customer','Street','City','State','ZIP','Email','Site address',
+    'Tax class','Option label','Hauling','Daily rental','Disposal','Solid Waste Tax','Environmental Tax','Total','Good for (days)','Saved by','Last updated'];
+  const lines=[head.map(csvCell).join(',')];
+  rows.forEach(r=>{
+    const q=Object.assign(freshQuote(),rowQuote(r)); q.override=false;
+    const T=calcTotalsForQ(q);
+    lines.push([r.quoteNo||'', QSTATUS[effectiveStatus(r)], d(r.created||r.ts), d(r.sentTs), d(expiresTs(r)),
+      r.name||q.custName||'', r.street||q.custStreet||'', r.city||q.custCity||'', r.state||q.custState||'', r.zip||q.custZip||'',
+      r.email||q.custEmail||'', (q.haul&&q.haul.dest)||'', (q.customer==='residential'?'Residential':'Commercial'), r.label||q.label||'',
+      T.haul.toFixed(2), T.rental.toFixed(2), T.disp.toFixed(2), T.swt.toFixed(2), T.env.toFixed(2), T.total.toFixed(2),
+      validDaysFor(q), r.by||'', d(r.ts)].map(csvCell).join(','));
+  });
+  const blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='quotes-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },800);
+  notify('Downloaded '+rows.length+' quote'+(rows.length==1?'':'s')+' as CSV — open it in Google Sheets or Excel');
 }
 function loadQuote(r){
   if(quoteHasContent() && !confirm('Load this saved quote?\n\nYour current quote on screen will be replaced'+(Q.savedId?'':' (and isn’t saved)')+'.')) return;
   let data; try{ data=JSON.parse(r.data); }catch(e){ notify('Couldn’t read that quote'); return; }
-  Q=Object.assign(freshQuote(),data); Q.savedId=r.id; saveState();
+  Q=Object.assign(freshQuote(),data); Q.savedId=r.id;
+  // the record's own fields win over the snapshot (status can change from the Saved list)
+  Q.quoteNo=r.quoteNo||Q.quoteNo||null; Q.status=r.status||'draft'; Q.sentTs=r.sentTs||null; Q.created=r.created||Q.created||r.ts||null;
+  saveState();
   closeSaved();
   if(!Q.haul) Q.haul={dest:'',county:'',miles:null,total:0,basis:'Manual entry',manual:true};
   setCustomer(Q.customer||'commercial',false);
@@ -1408,11 +1611,13 @@ function loadQuote(r){
   el('qLabel').value=Q.label||'';
   el('rSize').value=Q.rental.size||''; el('rDays').value=Q.rental.days||0;
   buildCatalog(); renderHaul(); renderDisposal(); recompute(); syncSaveBtn();
-  window.scrollTo(0,0); notify('Loaded'+(Q.custName?(' — '+Q.custName):''));
+  window.scrollTo(0,0); notify('Loaded'+(Q.quoteNo?(' '+Q.quoteNo):'')+(Q.custName?(' — '+Q.custName):''));
 }
 function deleteQuote(id){
   if(!db){ notify('Offline'); return; }
-  if(!confirm('Delete this saved quote? This can’t be undone.')) return;
+  const r=savedRows.find(x=>x.id===id);
+  const what=r?((r.quoteNo?r.quoteNo+' ':'')+(r.name||r.site||'')).trim():'';
+  if(!confirm('Delete '+(what?('saved quote '+what):'this saved quote')+'? This can’t be undone.')) return;
   db.collection('quotes').doc(id).delete().then(()=>{
     if(Q.savedId===id){ Q.savedId=null; saveState(); syncSaveBtn(); }
     renderSavedList(); notify('Quote deleted');
@@ -1477,7 +1682,9 @@ const SHEET_CSS=`
   .lh{display:block;width:100%;height:auto}
   .qrow{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
   .qrow .qt{font-size:22px;font-weight:800;letter-spacing:.06em;color:#2f6b41}
-  .qrow .qd{font-size:13px;color:#6c7065}
+  .qrow .qd{font-size:13px;color:#6c7065;text-align:right}
+  .qrow .qd b{color:#2c5d86;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px}
+  .oh .qn{font-weight:600;color:#6c7065;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-left:8px}
   .meta{display:flex;gap:30px;flex-wrap:wrap;margin:20px 0 8px}
   .meta h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#6c7065;margin:0 0 5px}
   .meta .blk{font-size:13.5px}
@@ -1526,7 +1733,7 @@ function quoteSheetHtmlFor(q){
   return headHtml('Quote — '+(q.custName||COMPANY.name))
     +`<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
     <img class="lh" src="${logoUrl()}" alt="${esc(COMPANY.name)}">
-    <div class="qrow"><div class="qt">QUOTE</div><div class="qd">${today()}</div></div>
+    <div class="qrow"><div class="qt">QUOTE</div><div class="qd">${q.quoteNo?('<b>'+esc(q.quoteNo)+'</b><br>'):''}${today()}</div></div>
     <div class="meta">
       <div><h3>Prepared for</h3><div class="blk">${custBlockFor(q)}</div></div>
       ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
@@ -1541,10 +1748,10 @@ function combinedSheetHtml(list){
   const site=(c0.haul&&c0.haul.dest)?esc(c0.haul.dest):'';
   const days=validDaysFor(c0);
   const sumRows=list.map((q,i)=>{const {T}=quoteItemsForQ(q);
-    const lbl='Option '+(i+1)+(q.label?(' — '+esc(q.label)):'');
+    const lbl=esc(optionTitle(q,i))+(q.quoteNo?' <span class="mut">'+esc(q.quoteNo)+'</span>':'');
     return `<tr><td>${lbl}</td><td class="amt">${money(T.total)}</td></tr>`;}).join('');
   const sections=list.map((q,i)=>{
-    const head='Option '+(i+1)+(q.label?(' — '+esc(q.label)):'');
+    const head=esc(optionTitle(q,i))+(q.quoteNo?'<span class="qn">'+esc(q.quoteNo)+'</span>':'');
     return `<div class="opt"><h3 class="oh">${head}</h3>${sheetTableFor(q,'Option total')}</div>`;}).join('');
   return headHtml('Quote options — '+(c0.custName||COMPANY.name))
     +`<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
@@ -1580,9 +1787,17 @@ function emailItemsFor(q,optionLabel){
   L.push(pad(optionLabel?'Option total':'TOTAL',money(T.total)));
   return L.join('\n');
 }
+/* "Option 2 — 30 yd + demo" */
+function optionTitle(q,i){ return 'Option '+(i+1)+(q.label?(' — '+q.label):''); }
+/* email subject for one quote: "Steve's Sanitation — Quote Q-2026-0004 for Acme" */
+function quoteSubject(q){
+  const name=(q&&q.custName)||'';
+  return COMPANY.name+' — '+(q&&q.quoteNo?('Quote '+q.quoteNo):'Roll-Off Quote')+(name?(' for '+name):'');
+}
 function emailTextFor(q){
   const L=[];
   L.push(COMPANY.name+" — Roll-Off Quote");
+  if(q.quoteNo) L.push('Quote #: '+q.quoteNo);
   L.push('Date: '+new Date().toLocaleDateString('en-US'));
   L.push('');
   if(q.custName) L.push('Prepared for: '+q.custName);
@@ -1648,11 +1863,11 @@ function combinedEmailText(list){
   if(c0.haul&&c0.haul.dest){ L.push(''); L.push('Site address: '+c0.haul.dest); }
   L.push(''); L.push('OPTIONS AT A GLANCE');
   list.forEach((q,i)=>{const {T}=quoteItemsForQ(q);
-    L.push('  Option '+(i+1)+(q.label?(' — '+q.label):'')+': '+money(T.total));});
+    L.push('  '+optionTitle(q,i)+(q.quoteNo?(' ('+q.quoteNo+')'):'')+': '+money(T.total));});
   L.push('');
   list.forEach((q,i)=>{
     L.push('------------------------------------------------');
-    L.push(emailItemsFor(q,'Option '+(i+1)+(q.label?(' — '+q.label):'')));
+    L.push(emailItemsFor(q,optionTitle(q,i)+(q.quoteNo?(' · '+q.quoteNo):'')));
     L.push('');
   });
   const days=validDaysFor(c0);
@@ -1687,11 +1902,19 @@ function sendQuoteEmail(to,subj,body){
     openGmail(to,subj,body);
   }
 }
+/* Email the on-screen quote. It's saved first (so it carries its quote number) and
+   then marked Sent — but a slow or missing connection never holds the email up:
+   after 2.5 s it goes out as-is and the save finishes in the background. */
 function emailQuote(){
   const {T}=quoteItems();
   if(T.total<=0){ notify('Build a quote first'); return; }
-  const subj=COMPANY.name+' — Roll-Off Quote'+(Q.custName?(' for '+Q.custName):'');
-  sendQuoteEmail((Q.custEmail||'').trim(), subj, emailText());
+  let fired=false;
+  const send=()=>{ if(fired) return; fired=true; sendQuoteEmail((Q.custEmail||'').trim(), quoteSubject(Q), emailText()); };
+  if(!db){ send(); return; }
+  const t=setTimeout(send,2500);
+  saveQuoteAsync()
+    .then(()=>{ clearTimeout(t); send(); return markSentAfterEmail(Q.savedId); })
+    .catch(e=>{ clearTimeout(t); send(); console.warn('save before email failed',e); notify('Couldn’t save the quote — the email went out without a quote number'); });
 }
 /* copy the quote text to the clipboard, paste anywhere */
 function fallbackCopy(t,msg){
@@ -1881,6 +2104,12 @@ let appStarted=false;
   });
   el('savedTopBtn').addEventListener('click',openSaved);
   el('savedClose').addEventListener('click',closeSaved);
+  el('savedSearch').addEventListener('input',()=>{ clearTimeout(window._svTimer); window._svTimer=setTimeout(drawSavedRows,120); });
+  el('savedFilter').addEventListener('change',drawSavedRows);
+  el('exportCsv').addEventListener('click',exportCsv);
+  el('combineSheet').addEventListener('click',combineSheet);
+  el('combineCopy').addEventListener('click',combineCopy);
+  el('combineEmail').addEventListener('click',combineEmail);
   el('helpBtn').addEventListener('click',()=>el('helpScreen').classList.add('open'));
   el('helpClose').addEventListener('click',()=>el('helpScreen').classList.remove('open'));
   el('dupBtn').addEventListener('click',()=>{
