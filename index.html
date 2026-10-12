@@ -192,6 +192,20 @@
   .sv-lab{display:inline-block;font-size:10.5px;font-weight:800;background:#eef3ef;color:var(--pine);border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:middle}
   .saved-bar{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
 
+  /* ---- ideas ---- */
+  .idea-badge{display:inline-block;margin-left:8px;background:var(--rust);color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px;vertical-align:middle}
+  .idea-row{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);margin-bottom:8px;flex-wrap:wrap}
+  .idea-row.done,.idea-row.cancelled{opacity:.6}
+  .idea-row .ir-main{flex:2 1 180px;min-width:0}
+  .idea-row .ir-text{font-size:13.5px;white-space:pre-wrap;line-height:1.5}
+  .idea-row .ir-text.struck{text-decoration:line-through;color:var(--muted)}
+  .idea-row .ir-sub{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+  .idea-row .ir-btns{flex:0 0 auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .st-badge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;border-radius:999px;padding:2px 8px;white-space:nowrap}
+  .st-open{background:#e6eef6;color:var(--blue)}
+  .st-done{background:#e7efe9;color:var(--pine)}
+  .st-cancelled{background:#f0ece2;color:var(--muted)}
+
   /* ---- help ---- */
   .help-wrap h4{font-size:14px;font-weight:800;color:var(--pine);margin:20px 0 6px;display:flex;align-items:center;gap:8px}
   .help-wrap h4 .hn{flex:none;width:22px;height:22px;border-radius:50%;background:var(--pine);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
@@ -401,19 +415,20 @@
           <button class="btn btn-ghost" id="savedQuotesBtn">Saved quotes</button>
           <button class="btn btn-ghost" id="sheetBtn">Quote sheet</button>
           <button class="btn btn-ghost" id="emailBtn">Email</button>
+          <button class="btn btn-ghost" id="copyBtn">Copy</button>
         </div>
         <div class="card-sub" id="savedState" style="margin-top:8px;min-height:14px"></div>
       </div></div>
 
     <!-- IDEAS + CHANGELOG -->
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">!</div>
-      <div class="card-t">Ideas &amp; Change Log</div></div></div>
+      <div class="card-t">Ideas &amp; Change Log<span class="idea-badge" id="ideaBadge" style="display:none"></span></div></div></div>
       <div class="card-b">
         <label class="fld" for="ideaText">Suggestion / change request</label>
         <textarea id="ideaText" placeholder="Anything you'd like added or changed…"></textarea>
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" id="ideaSend">Submit idea</button>
-          <button class="btn btn-ghost btn-sm" id="ideaView" style="margin-left:auto">View saved</button>
+          <button class="btn btn-ghost btn-sm" id="ideaView" style="margin-left:auto">View / manage</button>
         </div>
         <details style="margin-top:14px"><summary>Change log</summary>
           <div id="changelog" style="margin-top:8px"></div></details>
@@ -451,6 +466,9 @@
           <b>If work &amp; personal are in separate Chrome profiles,</b> the sure fix is to open this quoter
           in your <b>work</b> Chrome profile (or install it there) — the Email button always opens Gmail in that same profile.
           Saved on this device only.</div>
+        <label class="fld" for="emailSig" style="margin-top:16px">Your email signature (optional)</label>
+        <textarea id="emailSig" placeholder="Kelly Melgard — Steve's Sanitation — (218) 346-4834" style="min-height:80px"></textarea>
+        <div class="card-sub" style="margin-top:6px">Added to the bottom of every quote email you send. Saved on this device only.</div>
       </div></div>
 
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--pine)">+</div>
@@ -555,9 +573,24 @@
       <li><b>Email sending:</b> if you keep several Gmail accounts open, set your <b>work email</b> here so the Email button uses the right one (saved on your device).</li>
     </ul>
 
+    <h4><span class="hn">↯</span>Handy extras</h4>
+    <ul>
+      <li><b>Copy</b> (by Email) copies the whole quote as text to paste anywhere. In Saved, tick options and <b>Copy</b> grabs them all.</li>
+      <li>Set <b>your email signature</b> in Settings → Email sending — it's added to the bottom of every quote email.</li>
+      <li><b>Ideas:</b> submit a request, then <b>View / manage</b> to see all of them and mark each <b>Done</b> or <b>Cancel</b>. A red <b>“new”</b> badge shows when ideas have come in since you last looked.</li>
+    </ul>
+
     <p style="margin-top:18px;color:var(--muted)">Found a bug or want something added? Use the <b>Ideas &amp; Change Log</b> box at the bottom of the main screen — it goes to the whole team.</p>
 
   </div>
+</div>
+
+<div class="settings-screen" id="ideasScreen">
+  <div class="set-head">
+    <div><h2>Ideas &amp; Requests</h2><div class="sh-sub">Mark each one done or cancelled</div></div>
+    <button class="set-close" id="ideasClose">Done</button>
+  </div>
+  <div class="set-wrap"><div id="ideasList"></div></div>
 </div>
 
 <div class="notif" id="notif"></div>
@@ -567,9 +600,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.18 (2026-10-08)';
+const APP_VERSION='v0.19 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.19',d:'Oct 12, 2026',items:[
+    'Copy button — copies the whole quote (or combined options) as text to paste anywhere',
+    'Add your own email signature in Settings — it goes on the bottom of every quote email',
+    'Ideas can now be marked Done or Cancelled, and a “new” badge shows when ideas come in'
+  ]},
   {v:'v0.18',d:'Oct 8, 2026',items:[
     'The item search list now closes after you add an item, so it no longer covers the line you just added'
   ]},
@@ -1132,9 +1170,11 @@ function renderSavedList(){
     box.innerHTML='<div class="saved-bar"><span class="card-sub" id="selCount">Tick options to combine</span>'
       +'<span style="flex:1"></span>'
       +'<button class="btn btn-ghost btn-sm" id="combineSheet">Quote sheet</button>'
+      +'<button class="btn btn-ghost btn-sm" id="combineCopy">Copy</button>'
       +'<button class="btn btn-primary btn-sm" id="combineEmail">Email</button></div>'
       + rows.map(savedRowHtml).join('');
     el('combineSheet').addEventListener('click',combineSheet);
+    el('combineCopy').addEventListener('click',combineCopy);
     el('combineEmail').addEventListener('click',combineEmail);
     box.querySelectorAll('[data-sel]').forEach(c=>c.addEventListener('change',updateSelCount));
     box.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
@@ -1337,8 +1377,10 @@ function emailTextFor(q){
   L.push(''); L.push('This quote is good for '+days+' day'+(days==1?'':'s')+'.');
   L.push(''); L.push('Thank you,');
   L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web);
+  const sig=emailSignature(); if(sig){ L.push(''); L.push(sig); }
   return L.join('\n');
 }
+function emailSignature(){ return (store.get('rq_signature')||'').trim(); }
 function emailText(){ return emailTextFor(Q); }
 function combinedEmailText(list){
   const c0=list[0]||{};
@@ -1362,6 +1404,7 @@ function combinedEmailText(list){
   L.push('These quotes are good for '+days+' day'+(days==1?'':'s')+'.');
   L.push(''); L.push('Thank you,');
   L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web);
+  const sig=emailSignature(); if(sig){ L.push(''); L.push(sig); }
   return L.join('\n');
 }
 /* Open a Gmail compose window prefilled. Account targeting (number → /u/N/,
@@ -1385,13 +1428,35 @@ function emailQuote(){
   const subj=COMPANY.name+' — Roll-Off Quote'+(Q.custName?(' for '+Q.custName):'');
   openGmail((Q.custEmail||'').trim(), subj, emailText());
 }
+/* copy the quote text to the clipboard, paste anywhere */
+function fallbackCopy(t){
+  try{ const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly','');
+    ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta); notify('Copied to clipboard'); }
+  catch(e){ notify('Couldn’t copy — select the text manually'); }
+}
+function copyText(t){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>notify('Copied to clipboard')).catch(()=>fallbackCopy(t));
+  } else { fallbackCopy(t); }
+}
+function copyQuote(){
+  const {T}=quoteItems();
+  if(T.total<=0){ notify('Build a quote first'); return; }
+  copyText(emailText());
+}
+function combineCopy(){
+  const list=selectedSavedQuotes();
+  if(!list.length){ notify('Tick one or more quotes first'); return; }
+  copyText(list.length===1?emailTextFor(list[0]):combinedEmailText(list));
+}
 
 /* ideas — synced via Firestore (local fallback when offline) */
 function loadIdeas(){try{const a=JSON.parse(store.get('rq_ideas')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
 function currentEmail(){try{return fbReady&&firebase.auth().currentUser?firebase.auth().currentUser.email:'';}catch(e){return '';}}
 function submitIdea(){
   const t=el('ideaText').value.trim();if(!t){notify('Type an idea first');return;}
-  const rec={text:t,ts:Date.now(),by:currentEmail()};
+  const rec={text:t,ts:Date.now(),by:currentEmail(),status:'open'};
   if(db){
     db.collection('ideas').add(rec)
       .then(()=>{el('ideaText').value='';notify('Idea sent — thanks!');})
@@ -1403,27 +1468,59 @@ function submitIdea(){
     el('ideaText').value='';notify('Saved on this device (offline)');
   }
 }
-function ideasWindow(list){
-  const w=window.open('','_blank');if(!w){notify('Allow pop-ups to view');return;}
-  const ec=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  const td='padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top';
-  const rows=list.map(s=>'<tr><td style="'+td+';white-space:nowrap;color:#6c7065">'
-    +new Date(s.ts||Date.now()).toLocaleString('en-US')+'</td><td style="'+td+';white-space:nowrap;color:#6c7065;font-size:12px">'
-    +ec(s.by||'')+'</td><td style="'+td+';white-space:pre-wrap">'+ec(s.text)+'</td></tr>').join('');
-  w.document.write('<!doctype html><meta charset=utf-8><title>Saved Ideas</title><style>body{font-family:system-ui,sans-serif;padding:24px;max-width:900px;margin:0 auto;color:#1d201a}h1{font-size:19px}table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid #e6e2d6;border-radius:8px;overflow:hidden}th{text-align:left;background:#f7f5ee;padding:9px 12px;border-bottom:1px solid #e6e2d6;font-size:12px;text-transform:uppercase;color:#6c7065}</style><h1>Roll-Off Quoter — Saved Ideas ('+list.length+')</h1><table><thead><tr><th>When</th><th>By</th><th>Idea</th></tr></thead><tbody>'+rows+'</tbody></table>');
-  w.document.close();
+/* new-idea badge on the Ideas card */
+function ideaSeen(){ try{ return parseInt(store.get('rq_ideas_seen')||'0',10)||0; }catch(e){ return 0; } }
+function updateIdeaBadge(n){ const b=el('ideaBadge'); if(!b)return; if(n>0){ b.textContent=n+' new'; b.style.display=''; } else { b.style.display='none'; } }
+function markIdeasSeen(){ try{ store.set('rq_ideas_seen', String(Date.now())); }catch(e){} updateIdeaBadge(0); }
+function checkNewIdeas(){
+  if(!db){ updateIdeaBadge(0); return; }
+  const seen=ideaSeen();
+  db.collection('ideas').where('ts','>',seen).get()
+    .then(snap=>updateIdeaBadge(snap.size))
+    .catch(e=>{ /* offline / index — just skip the badge */ });
 }
-function viewIdeas(){
-  if(db){
-    db.collection('ideas').orderBy('ts','desc').limit(300).get().then(snap=>{
-      const a=[];snap.forEach(d=>a.push(d.data()));
-      if(!a.length){notify('No ideas saved yet');return;}
-      ideasWindow(a);
-    }).catch(e=>{console.error('ideas load failed',e);
-      const a=loadIdeas();if(!a.length){notify('No ideas saved yet');return;}ideasWindow(a);});
-  }else{
-    const a=loadIdeas();if(!a.length){notify('No ideas saved yet');return;}ideasWindow(a);
+
+/* ideas manager — view, mark done or cancelled (synced) */
+const IDEA_ST={open:'Open',done:'Done',cancelled:'Cancelled'};
+function openIdeas(){ el('ideasScreen').classList.add('open'); renderIdeasList(); markIdeasSeen(); }
+function closeIdeas(){ el('ideasScreen').classList.remove('open'); }
+function setIdeaStatus(id,status){
+  if(!db){ notify('Needs a connection to update'); return; }
+  db.collection('ideas').doc(id).set({status:status},{merge:true})
+    .then(()=>{ renderIdeasList(); notify('Marked '+(IDEA_ST[status]||status)); })
+    .catch(e=>{ console.error('idea status failed',e); notify('Update failed'); });
+}
+function ideaRowHtml(o){
+  const st=o.status||'open';
+  const when=new Date(o.ts||Date.now()).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  const struck=(st==='done'||st==='cancelled')?' struck':'';
+  const sub=[esc(o.by||''),when].filter(Boolean).join(' · ');
+  let btns='';
+  if(o.id){
+    if(st!=='done')      btns+='<button class="btn btn-ghost btn-sm" data-done="'+esc(o.id)+'">Done</button>';
+    if(st!=='cancelled') btns+='<button class="btn btn-ghost btn-sm" data-cancel="'+esc(o.id)+'">Cancel</button>';
+    if(st!=='open')      btns+='<button class="btn btn-ghost btn-sm" data-reopen="'+esc(o.id)+'">Reopen</button>';
   }
+  return '<div class="idea-row '+st+'">'
+    +'<div class="ir-main"><div class="ir-text'+struck+'">'+esc(o.text)+'</div><div class="ir-sub">'+sub+'</div></div>'
+    +'<div class="ir-btns"><span class="st-badge st-'+st+'">'+(IDEA_ST[st]||st)+'</span>'+btns+'</div></div>';
+}
+function renderIdeasList(){
+  const box=el('ideasList');
+  if(!db){
+    const a=loadIdeas();
+    box.innerHTML=a.length?a.map(ideaRowHtml).join(''):'<div class="card-sub">No ideas saved on this device.</div>';
+    return;
+  }
+  box.innerHTML='<div class="card-sub">Loading…</div>';
+  db.collection('ideas').orderBy('ts','desc').limit(300).get().then(snap=>{
+    const a=[]; snap.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
+    if(!a.length){ box.innerHTML='<div class="card-sub">No ideas yet. Submit one from the main screen.</div>'; return; }
+    box.innerHTML=a.map(ideaRowHtml).join('');
+    box.querySelectorAll('[data-done]').forEach(b=>b.addEventListener('click',()=>setIdeaStatus(b.dataset.done,'done')));
+    box.querySelectorAll('[data-cancel]').forEach(b=>b.addEventListener('click',()=>setIdeaStatus(b.dataset.cancel,'cancelled')));
+    box.querySelectorAll('[data-reopen]').forEach(b=>b.addEventListener('click',()=>setIdeaStatus(b.dataset.reopen,'open')));
+  }).catch(e=>{ console.error('ideas load failed',e); box.innerHTML='<div class="card-sub">Couldn’t load ideas — check your connection.</div>'; });
 }
 
 function renderChangelog(){el('changelog').innerHTML=CHANGELOG.map(c=>
@@ -1462,7 +1559,8 @@ let appStarted=false;
   el('cCancel').addEventListener('click',()=>toggleCustom(false));
   document.querySelectorAll('#custModal [data-pick]').forEach(b=>b.addEventListener('click',()=>{setCustomer(b.dataset.pick,true);closeCustModal();}));
   el('ideaSend').addEventListener('click',submitIdea);
-  el('ideaView').addEventListener('click',viewIdeas);
+  el('ideaView').addEventListener('click',openIdeas);
+  el('ideasClose').addEventListener('click',closeIdeas);
   el('settingsBtn').addEventListener('click',openSettings);
   el('setClose').addEventListener('click',closeSettings);
   el('ncAdd').addEventListener('click',addNewCode);
@@ -1472,6 +1570,7 @@ let appStarted=false;
   el('savedQuotesBtn').addEventListener('click',openSaved);
   el('sheetBtn').addEventListener('click',openSheet);
   el('emailBtn').addEventListener('click',emailQuote);
+  el('copyBtn').addEventListener('click',copyQuote);
   el('validDays').addEventListener('input',()=>{
     let v=parseInt(el('validDays').value,10); Q.validDays=(isFinite(v)&&v>=0)?v:30; saveState(); });
   el('qLabel').addEventListener('input',()=>{ Q.label=el('qLabel').value; saveState(); });
@@ -1480,6 +1579,8 @@ let appStarted=false;
     const v=el('gmailUser').value.trim();
     const ok=/^\d+$/.test(v) || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
     store.set('rq_gmail_u', ok?v:''); });
+  el('emailSig').value=(store.get('rq_signature')||'');
+  el('emailSig').addEventListener('input',()=>{ store.set('rq_signature', el('emailSig').value); });
   el('savedTopBtn').addEventListener('click',openSaved);
   el('savedClose').addEventListener('click',closeSaved);
   el('helpBtn').addEventListener('click',()=>el('helpScreen').classList.add('open'));
@@ -1540,6 +1641,7 @@ function startApp(){
     el('qLabel').value=Q.label||'';
     el('rSize').value=Q.rental.size||'';el('rDays').value=Q.rental.days||0;
     buildCatalog();renderHaul();renderDisposal();recompute();syncSaveBtn();
+    checkNewIdeas();
   });
 }
 
