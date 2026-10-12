@@ -466,10 +466,20 @@
           <b>If work &amp; personal are in separate Chrome profiles,</b> the sure fix is to open this quoter
           in your <b>work</b> Chrome profile (or install it there) — the Email button always opens Gmail in that same profile.
           Saved on this device only.</div>
-        <label class="fld" for="emailSig" style="margin-top:16px">Your email signature (optional)</label>
-        <textarea id="emailSig" placeholder="Kelly Melgard&#10;Steve's Sanitation&#10;(218) 346-4834&#10;stevessanitation.com" style="min-height:110px"></textarea>
-        <div class="card-sub" style="margin-top:6px;line-height:1.5">Goes at the bottom of every quote email you send, in place of the default company sign-off.
-          <b>Saved to your login</b>, so it follows you to any computer. Plain text only — paste the text of your Gmail signature here.</div>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:18px;cursor:pointer;font-size:13.5px;font-weight:800">
+          <input type="checkbox" id="useGmailSig" style="width:18px;height:18px;accent-color:var(--pine);flex:none">
+          Let Gmail add my signature (with the company logo)
+        </label>
+        <div class="card-sub" style="margin-top:6px;line-height:1.55">Set your signature up in Gmail with the logo (see Help → “Logo in your signature”).
+          With this on, the quoter ends the email at <b>“Thank you,”</b> and leaves the signature to Gmail so it isn’t doubled.
+          Logo image to use in Gmail: <b style="word-break:break-all">https://melgard05.github.io/quoter/logo-sig.png</b></div>
+
+        <div id="textSigWrap">
+          <label class="fld" for="emailSig" style="margin-top:16px">…or type a plain-text signature here</label>
+          <textarea id="emailSig" placeholder="Kelly Melgard&#10;Steve's Sanitation&#10;(218) 346-4834&#10;stevessanitation.com" style="min-height:110px"></textarea>
+          <div class="card-sub" style="margin-top:6px;line-height:1.5">Used when the box above is off. Replaces the default company sign-off. Plain text only (no logo).</div>
+        </div>
+        <div class="card-sub" style="margin-top:10px"><b>Saved to your login</b> — both settings follow you to any computer.</div>
       </div></div>
 
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--pine)">+</div>
@@ -577,6 +587,17 @@
     <ul>
       <li><b>Copy</b> (by Email) copies the whole quote as text to paste anywhere. In Saved, tick options and <b>Copy</b> grabs them all.</li>
       <li>Set <b>your email signature</b> in Settings → Email sending — it replaces the default sign-off at the bottom of your quote emails, and is saved to your login so it follows you to any computer.</li>
+    </ul>
+
+    <h4><span class="hn">✎</span>Logo in your signature</h4>
+    <p>The quote email is plain text, so the logo can’t be typed into it — but <b>Gmail’s own signature can carry it</b>. One-time setup, in Gmail:</p>
+    <ul>
+      <li>Gmail → gear ⚙ → <b>See all settings</b> → <b>General</b> → scroll to <b>Signature</b> → <b>Create new</b>.</li>
+      <li>Type your name/title, then click the <b>Insert image</b> icon → <b>Web Address (URL)</b> → paste
+        <b style="word-break:break-all">https://melgard05.github.io/quoter/logo-sig.png</b> → Select. Resize it with the Small / Medium / Large links if needed.</li>
+      <li>Under <b>Signature defaults</b>, pick it for <b>For new emails use</b>. Save Changes at the bottom.</li>
+      <li>Back in the quoter: Settings → Email sending → turn on <b>Let Gmail add my signature</b>.</li>
+      <li>Now when you hit <b>Email</b>, the compose window ends at “Thank you,” and Gmail’s signature with the logo appears below. If you ever don’t see it, click the <b>pen icon</b> in the compose toolbar to insert it.</li>
       <li><b>Ideas:</b> submit a request, then <b>View / manage</b> to see all of them and mark each <b>Done</b> or <b>Cancel</b>. A red <b>“new”</b> badge shows when ideas have come in since you last looked.</li>
     </ul>
 
@@ -600,9 +621,13 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.21 (2026-10-12)';
+const APP_VERSION='v0.22 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.22',d:'Oct 12, 2026',items:[
+    '“Let Gmail add my signature” option — use your Gmail signature (with the company logo) as the sign-off',
+    'Help → Logo in your signature: step-by-step Gmail setup'
+  ]},
   {v:'v0.21',d:'Oct 12, 2026',items:[
     'Email signature is now saved to your login (follows you to any computer) and replaces the default company sign-off'
   ]},
@@ -1374,34 +1399,48 @@ function emailTextFor(q){
   L.push('------------------------------------------------');
   const days=validDaysFor(q);
   L.push(''); L.push('This quote is good for '+days+' day'+(days==1?'':'s')+'.');
-  L.push(''); L.push('Thank you,');
-  const sig=emailSignature();
-  if(sig){ L.push(sig); }
-  else { L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web); }
+  signOffLines().forEach(x=>L.push(x));
   return L.join('\n');
 }
-/* per-login email signature, synced via Firestore (local fallback) */
-let SIGNATURE='';
+/* the sign-off at the bottom of a quote email */
+function signOffLines(){
+  const L=['','Thank you,'];
+  if(USE_GMAIL_SIG) return L;                 // Gmail inserts the (logo) signature itself
+  const sig=emailSignature();
+  if(sig) L.push(sig);
+  else { L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web); }
+  return L;
+}
+/* per-login email prefs (signature text, "let Gmail sign"), synced via Firestore with local fallback */
+let SIGNATURE='', USE_GMAIL_SIG=false;
 function emailSignature(){ return (SIGNATURE||'').trim(); }
 function sigKey(){ return 'rq_sig_'+(currentEmail()||'local'); }
-function loadUserPrefs(){
-  try{ SIGNATURE = store.get(sigKey()) || store.get('rq_signature') || ''; }catch(e){ SIGNATURE=''; }
+function applyPrefsToUI(){
   if(el('emailSig')) el('emailSig').value=SIGNATURE;
+  if(el('useGmailSig')) el('useGmailSig').checked=!!USE_GMAIL_SIG;
+  const w=el('textSigWrap'); if(w) w.style.opacity=USE_GMAIL_SIG?'.45':'1';
+}
+function loadUserPrefs(){
+  try{ SIGNATURE = store.get(sigKey()) || store.get('rq_signature') || ''; USE_GMAIL_SIG = store.get(sigKey()+'_gm')==='1'; }catch(e){}
+  applyPrefsToUI();
   const email=currentEmail();
   if(db && email){
     db.collection('userprefs').doc(email).get().then(doc=>{
-      if(doc && doc.exists){ const d=doc.data()||{}; SIGNATURE=d.signature||'';
-        if(el('emailSig')) el('emailSig').value=SIGNATURE; try{store.set(sigKey(),SIGNATURE);}catch(e){} }
+      if(doc && doc.exists){ const d=doc.data()||{};
+        SIGNATURE=d.signature||''; USE_GMAIL_SIG=!!d.useGmailSig;
+        try{ store.set(sigKey(),SIGNATURE); store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0'); }catch(e){}
+        applyPrefsToUI(); }
     }).catch(e=>{ /* offline — keep local copy */ });
   }
 }
-function saveSignature(v){
-  SIGNATURE=v;
-  try{ store.set(sigKey(), v); }catch(e){}
+function saveUserPref(patch,msg){
+  if('signature' in patch){ SIGNATURE=patch.signature; try{store.set(sigKey(),SIGNATURE);}catch(e){} }
+  if('useGmailSig' in patch){ USE_GMAIL_SIG=!!patch.useGmailSig; try{store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0');}catch(e){} }
   const email=currentEmail();
-  if(db && email){ db.collection('userprefs').doc(email).set({signature:v,updatedTs:Date.now()},{merge:true})
-    .then(()=>notify('Signature saved')).catch(e=>{ console.error('signature save failed',e); notify('Saved on this device — sync failed'); }); }
+  if(db && email){ db.collection('userprefs').doc(email).set(Object.assign({updatedTs:Date.now()},patch),{merge:true})
+    .then(()=>notify(msg||'Saved')).catch(e=>{ console.error('pref save failed',e); notify('Saved on this device — sync failed'); }); }
 }
+function saveSignature(v){ saveUserPref({signature:v},'Signature saved'); }
 function emailText(){ return emailTextFor(Q); }
 function combinedEmailText(list){
   const c0=list[0]||{};
@@ -1423,10 +1462,7 @@ function combinedEmailText(list){
   });
   const days=validDaysFor(c0);
   L.push('These quotes are good for '+days+' day'+(days==1?'':'s')+'.');
-  L.push(''); L.push('Thank you,');
-  const sig=emailSignature();
-  if(sig){ L.push(sig); }
-  else { L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web); }
+  signOffLines().forEach(x=>L.push(x));
   return L.join('\n');
 }
 /* Open a Gmail compose window prefilled. Account targeting (number → /u/N/,
@@ -1628,6 +1664,10 @@ let appStarted=false;
   el('emailSig').addEventListener('input',()=>{
     clearTimeout(window._sigTimer);
     window._sigTimer=setTimeout(()=>saveSignature(el('emailSig').value), 600);   // debounce
+  });
+  el('useGmailSig').addEventListener('change',()=>{
+    saveUserPref({useGmailSig:el('useGmailSig').checked}, el('useGmailSig').checked?'Gmail will add your signature':'Using the signature typed here');
+    applyPrefsToUI();
   });
   el('savedTopBtn').addEventListener('click',openSaved);
   el('savedClose').addEventListener('click',closeSaved);
