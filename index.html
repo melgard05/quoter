@@ -175,6 +175,9 @@
   .code-row .cr-rate{flex:0 0 84px}
   .code-row .cr-tax{flex:1 1 128px}
   .code-row .cr-cty{flex:0 0 116px}
+  .code-row .cr-label{flex:1 1 100%;display:flex;align-items:center;gap:9px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .code-row .cr-label input{flex:1;text-transform:none;letter-spacing:0;font-weight:600;max-width:360px}
+  .code-row .cr-label input::placeholder{color:#a9ab9f;font-weight:600}
   .code-row input,.code-row select{padding:7px 9px;font-size:13px}
   .sw{position:relative;flex:0 0 auto;width:42px;height:24px;cursor:pointer;display:inline-block}
   .sw input{position:absolute;opacity:0;width:0;height:0}
@@ -247,6 +250,8 @@
   .combo-opt:hover,.combo-opt.hi{background:#eef3ef}
   .combo-opt .co-desc{flex:1;min-width:0;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .combo-opt .co-rate{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted)}
+  .combo-opt .co-code{flex:0 0 auto;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+  .combo-foot{padding:8px 11px;font-size:11px;font-weight:600;color:var(--muted);border-top:1px solid var(--line);background:#faf8f2}
   .combo-opt .co-tax{flex:0 0 auto}
   .combo-empty{padding:11px;font-size:12.5px;color:var(--muted)}
   .combo-hint{padding:7px 11px;font-size:11px;font-weight:800;color:var(--blue);background:#eef3f7;border-bottom:1px solid var(--line);letter-spacing:.02em}
@@ -610,7 +615,9 @@
             <option value="Wadena">Wadena</option>
           </select></div>
         </div>
-        <div class="card-sub" style="margin-top:7px">Each code carries exactly one tax type. The county says which jobs it’s suggested first on.</div>
+        <div style="margin-top:11px"><label class="fld" for="ncLabel">Shows on quote as <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— optional; blank = the description without the county, tidied up</span></label>
+          <input type="text" id="ncLabel" placeholder="e.g. Clean Demo"></div>
+        <div class="card-sub" style="margin-top:7px">Each code carries exactly one tax type. The county says which facility the code is for — it’s listed only when that county is picked on a quote.</div>
         <div style="margin-top:12px"><button class="btn btn-primary" id="ncAdd">Add code</button></div>
       </div></div>
 
@@ -618,8 +625,9 @@
     <input type="text" id="setSearch" placeholder="Search by code or description…" spellcheck="false" style="margin-bottom:11px">
     <div id="codeList"></div>
     <div class="card-sub" style="margin-top:10px;line-height:1.5">Toggle a code off to hide it from the disposal list without deleting it.
-      Edits here don't change quotes already saved. The county dropdown marks which county’s facility a code is for —
-      on a job in that county it’s suggested first (guessed from the description until you set it).</div>
+      Edits here don't change quotes already saved. The county dropdown marks which county’s facility a code is for — it’s listed
+      only when that county is picked on the quote (guessed from the description until you set it). <b>Shows on quote as</b> is the
+      customer-facing name: the county is left out automatically (“CLEAN DEMO - OT” → “Clean Demo”); type your own to override.</div>
   </div>
 </div>
 
@@ -678,7 +686,8 @@
     <h4><span class="hn">3</span>Disposal</h4>
     <ul>
       <li><b>Add item:</b> start typing in the box — it filters by description or code. Tap one, set the <b>Qty</b>, then <b>Add</b>.</li>
-      <li><b>By county:</b> set the <b>Job county</b> on the Hauling card (filled in automatically when you come from the Mileage Quoter). The list then puts that county’s facility items first with a blue tag, greys out other counties’ items, and gives you a heads-up if you add one of those anyway.</li>
+      <li><b>By county:</b> the <b>Disposal county</b> on the Hauling card (set from the job’s county when you come from the Mileage Quoter) decides which facility’s items are listed — that county’s codes plus the ones that apply anywhere. To run Becker waste through Perham, switch it to Otter Tail. Leave it on “all counties” to see everything, with a county tag on each.</li>
+      <li><b>What the customer sees:</b> the county never shows on the quote — “CLEAN DEMO - OT” prints as <b>Clean Demo</b>. The internal code and description still show in small type on your screen so you know which facility you picked. Admins can set the customer wording per code in Settings (“Shows on quote as”).</li>
       <li><b>Custom item:</b> tap <b>＋ Custom item not in the list</b> for a one-off charge — enter a description, rate, qty and tax type. It won’t change your saved code list.</li>
       <li>Change a quantity or remove a line right in the list after adding.</li>
     </ul>
@@ -719,7 +728,7 @@
     <ul>
       <li><b>Rates:</b> daily rental, Solid Waste Tax % and Environmental Tax rates. Change them here and every new quote uses them; quotes already saved keep the rates they were priced with.</li>
       <li><b>Hauling rates:</b> the $ per mile and base fees the <b>Mileage Quoter</b> charges (Roll-Off, MSW temporary, MSW permanent). Save them here and the Mileage Quoter picks them up on its next refresh — no more editing its code.</li>
-      <li><b>Billing codes:</b> turn a code on/off, change its rate, tax type or county facility, or add a new code. Changes sync to the whole team.</li>
+      <li><b>Billing codes:</b> turn a code on/off, change its rate, tax type, county facility or customer-facing name (“Shows on quote as”), or add a new code. Changes sync to the whole team.</li>
       <li><b>Admins:</b> only admins can change rates, codes and the admin list — everyone else sees them read-only. Admins can add or remove other admins here.</li>
       <li><b>Email sending:</b> if you keep several Gmail accounts open, set your <b>work email</b> here so the Email button uses the right one (saved on your device).</li>
     </ul>
@@ -765,9 +774,14 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.29 (2026-10-12)';
+const APP_VERSION='v0.30 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.30',d:'Oct 12, 2026',items:[
+    'Disposal items print without the county: “CLEAN DEMO - OT” shows on the quote, sheet and email as “Clean Demo” (admins can set the wording per code in Settings)',
+    'The Disposal county on the Hauling card now picks which facility’s items are listed — switch it to Otter Tail to run Becker waste through Perham',
+    'The on-screen item list still shows the code and full description so you know which facility you picked'
+  ]},
   {v:'v0.29',d:'Oct 12, 2026',items:[
     'Settings → Hauling rates: the Mileage Quoter’s $ per mile and base fees now live here (admins) and sync to it automatically'
   ]},
@@ -945,6 +959,28 @@ function guessCounty(c){
 function codeCounty(c){ return (c && c.county!=null) ? c.county : guessCounty(c||{}); }
 function tagCounties(){ CODES.forEach(c=>{ if(c.county==null) c.county=guessCounty(c); }); }
 function jobCounty(){ const c=(Q.haul&&Q.haul.county)||''; return COUNTIES.indexOf(c)>=0?c:''; }
+
+/* ---- what the customer sees: the billing description minus the county/facility
+   tag, tidied up ("CLEAN DEMO - OT" → "Clean Demo"). Admins can override it per
+   code in Settings ("Shows on quote as"). The internal description still tells
+   staff which facility the code is for. ---- */
+const LABEL_ACRONYMS={MSW:1,RR:1,TV:1,CPU:1,DVD:1,VCR:1,WM:1,'A/C':1,'S/W':1,C:1,D:1};
+function autoLabel(desc){
+  let s=' '+String(desc||'').toUpperCase().replace(/\s+/g,' ').trim()+' ';
+  const CTY='(OT|OTTER-T|OTTER\\s*TAIL|OTTER|BECK|BECKER|WA|WADENA)';
+  s=s.replace(new RegExp('\\s*[-–]\\s*'+CTY+'(?=\\s)','g'),' ');     // "CLEAN DEMO - OT"
+  s=s.replace(new RegExp('\\s'+CTY+'(?=\\s)','g'),' ');              // "BECKER LOOSE GARB", "MIXED MSW OTTER-T"
+  s=s.replace(/\s+/g,' ').trim();
+  if(!s) s=String(desc||'').trim();
+  s=s.replace(/\bCLN\b/g,'CLEAN').replace(/\bGARB\b/g,'GARBAGE').replace(/\bAPPL\b/g,'APPLIANCE');
+  return s.split(' ').map(w=>{
+    if(LABEL_ACRONYMS[w]) return w;
+    return w.split('/').map(p=>LABEL_ACRONYMS[p]?p:(p.charAt(0)+p.slice(1).toLowerCase())).join('/');
+  }).join(' ');
+}
+function codeLabel(c){ return ((c&&c.label)||'').trim() || autoLabel(c&&c.desc); }
+/* the label for a line already on the quote (custom items are what you typed) */
+function itemLabel(d){ if(!d) return ''; if(d.custom) return d.desc||''; return (d.label||'').trim() || autoLabel(d.desc); }
 function loadCodes(){
   if(!db){ CODES=fallbackCodes(); tagCounties(); showOffline(true); return Promise.resolve(); }
   return db.collection('codes').get().then(snap=>{
@@ -1116,13 +1152,13 @@ function renderHaul(){
   // county's disposal items are suggested first
   const cur=h.county||'';
   const ctyList=[''].concat(COUNTIES, (cur && COUNTIES.indexOf(cur)<0)?[cur]:[]);
-  const ctyOpts=ctyList.map(c=>'<option value="'+esc(c)+'"'+(c===cur?' selected':'')+'>'+(c?esc(c)+' County':'— not set —')+'</option>').join('');
+  const ctyOpts=ctyList.map(c=>'<option value="'+esc(c)+'"'+(c===cur?' selected':'')+'>'+(c?esc(c)+' County':'— all counties —')+'</option>').join('');
   let html=`<label class="fld" for="haulDest">Site Address</label>
     <input type="text" id="haulDest" placeholder="Job site address" value="${esc(h.dest||'')}">
     <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
-      <label class="fld" for="haulCounty" style="margin:0">Job county</label>
+      <label class="fld" for="haulCounty" style="margin:0">Disposal county</label>
       <select id="haulCounty" style="width:auto;min-width:165px">${ctyOpts}</select>
-      <span class="card-sub">${manual?'':'from the Mileage Quoter · '}puts that county’s disposal items first</span>
+      <span class="card-sub">${manual?'':'set from the job’s county · '}which facility prices the disposal items — switch it to run Becker waste through Perham</span>
     </div>`;
   if(!manual){
     html+=`<div class="kv" style="margin-top:11px;margin-bottom:4px">
@@ -1183,37 +1219,46 @@ function refreshRateLabels(){
 }
 /* ---- type-ahead combo for the disposal catalog ---- */
 let dPick=null, dFiltered=[], dActiveIdx=-1;
-function activeCodes(){ return CODES.filter(c=>c.active!==false).slice().sort((a,b)=>a.desc.localeCompare(b.desc)); }
-/* with a job county set: that county's facility items first, county-less items next,
-   other counties' items last (still there, just further down) */
+function activeCodes(){ return CODES.filter(c=>c.active!==false).slice().sort((a,b)=>codeLabel(a).localeCompare(codeLabel(b))||a.desc.localeCompare(b.desc)); }
+/* With a disposal county set, the list is that county's facility items (first) plus
+   items that apply anywhere; other counties' items are left out — change the county
+   on the Hauling card to get them. With no county set, everything is listed. */
+let hiddenByCounty=0;
+function countyVisible(c){
+  const jc=jobCounty(); if(!jc) return true;
+  const cc=codeCounty(c); return !cc || cc===jc;
+}
 function rankByCounty(list){
   const jc=jobCounty(); if(!jc) return list;
-  const mine=[],any=[],other=[];
-  list.forEach(c=>{ const cc=codeCounty(c); (cc===jc?mine:(cc?other:any)).push(c); });
-  return mine.concat(any,other);
+  const mine=[],any=[];
+  list.forEach(c=>{ (codeCounty(c)===jc?mine:any).push(c); });
+  return mine.concat(any);
 }
 function comboFilter(q){
   q=(q||'').trim().toLowerCase();
   const all=activeCodes();
-  if(!q) return rankByCounty(all);
-  // match on description OR code; rank by whether it starts with the text
+  const seen=all.filter(countyVisible);
+  hiddenByCounty=all.length-seen.length;
+  if(!q) return rankByCounty(seen);
+  // match on the customer label, the billing description OR the code; rank by whether it starts with the text
   const starts=[], has=[];
-  all.forEach(c=>{
-    const d=c.desc.toLowerCase(), cd=c.code.toLowerCase();
-    if(d.startsWith(q)||cd.startsWith(q)) starts.push(c);
-    else if(d.includes(q)||cd.includes(q)) has.push(c);
+  seen.forEach(c=>{
+    const d=c.desc.toLowerCase(), cd=c.code.toLowerCase(), lb=codeLabel(c).toLowerCase();
+    if(lb.startsWith(q)||d.startsWith(q)||cd.startsWith(q)) starts.push(c);
+    else if(lb.includes(q)||d.includes(q)||cd.includes(q)) has.push(c);
   });
   return rankByCounty(starts).concat(rankByCounty(has));
 }
+/* county tag — only needed when no county is picked and look-alike labels are all listed */
 function countyTag(c){
-  const jc=jobCounty(), cc=codeCounty(c);
-  if(!jc||!cc) return '';
-  return cc===jc ? '<span class="tag t-cty">'+esc(cc)+'</span>' : '<span class="tag t-oth">'+esc(cc)+'</span>';
+  if(jobCounty()) return '';
+  const cc=codeCounty(c);
+  return cc ? '<span class="tag t-cty">'+esc(cc)+'</span>' : '';
 }
 function updateDispHint(){
   const s=el('dispSub'); if(!s) return;
   const jc=jobCounty();
-  s.textContent='Itemized · tax by code'+(jc?(' · '+jc+' County items first'):'');
+  s.textContent='Itemized · tax by code'+(jc?(' · '+jc+' County pricing'):' · all counties');
 }
 function positionMenu(){
   const inp=el('dSearch'), menu=el('dMenu'); if(!inp||!menu) return;
@@ -1233,17 +1278,17 @@ function renderMenu(){
     menu.classList.add('on'); positionMenu(); return;
   }
   const jc=jobCounty();
-  menu.innerHTML=(jc?`<div class="combo-hint">${esc(jc)} County job — ${esc(jc)} facility items first</div>`:'')
-    +dFiltered.map((c,i)=>{ const cc=codeCounty(c);
-    return `<div class="combo-opt${i===dActiveIdx?' hi':''}${(jc&&cc&&cc!==jc)?' other-cty':''}" data-ci="${i}">
-    <span class="co-desc">${esc(c.desc)}</span>${countyTag(c)}<span class="co-rate mono">${money(c.rate)}</span>
-    <span class="co-tax">${TTAG[c.taxType]||''}</span></div>`; }).join('');
+  menu.innerHTML=(jc?`<div class="combo-hint">${esc(jc)} County pricing — change the disposal county on the Hauling card for another facility’s items</div>`:'')
+    +dFiltered.map((c,i)=>`<div class="combo-opt${i===dActiveIdx?' hi':''}" data-ci="${i}">
+    <span class="co-desc">${esc(codeLabel(c))}</span><span class="co-code mono">${esc(c.code)}</span>${countyTag(c)}<span class="co-rate mono">${money(c.rate)}</span>
+    <span class="co-tax">${TTAG[c.taxType]||''}</span></div>`).join('')
+    +(hiddenByCounty?`<div class="combo-foot">${hiddenByCounty} other-county item${hiddenByCounty==1?'':'s'} not shown</div>`:'');
   menu.classList.add('on');
   menu.querySelectorAll('[data-ci]').forEach(o=>o.addEventListener('mousedown',e=>{
     e.preventDefault(); pickCombo(dFiltered[+o.dataset.ci]); }));
   positionMenu();
 }
-function pickCombo(c){ if(!c)return; dPick=c; el('dSearch').value=c.desc; hideMenu(); el('dQty').focus(); }
+function pickCombo(c){ if(!c)return; dPick=c; el('dSearch').value=codeLabel(c); hideMenu(); el('dQty').focus(); }
 function hideMenu(){ const m=el('dMenu'); if(m)m.classList.remove('on'); dActiveIdx=-1; }
 function comboKey(e){
   if(e.key==='ArrowDown'){ e.preventDefault(); if(!el('dMenu').classList.contains('on'))renderMenu();
@@ -1260,13 +1305,11 @@ function addDisposal(){
   if(!item){ const f=comboFilter(el('dSearch').value); if(f.length) item=f[0]; }
   if(!item){ notify('Type to pick an item, or use ＋ Custom item'); return; }
   let qty=parseFloat(el('dQty').value); if(!isFinite(qty)||qty<=0)qty=1;
-  Q.disposal.push({code:item.code,desc:item.desc,rate:item.rate,taxType:item.taxType,qty});
+  Q.disposal.push({code:item.code,desc:item.desc,label:codeLabel(item),rate:item.rate,taxType:item.taxType,qty});
   el('dQty').value='1'; el('dSearch').value=''; dPick=null;
   el('dSearch').blur(); hideMenu();   // keep the menu closed so it doesn't cover the new line
   if(item.taxType==='SWT'&&!Q.custChosen){openCustModal();}
   renderDisposal();recompute();
-  const jc=jobCounty(), cc=codeCounty(item);
-  if(jc && cc && cc!==jc) notify('Heads up: '+item.desc+' is a '+cc+' County item — this job is in '+jc+' County');
 }
 function toggleCustom(show){
   const box=el('customBox'); const on = show==null ? box.style.display==='none' : show;
@@ -1289,12 +1332,16 @@ function addCustom(){
 function renderDisposal(){
   const box=el('dLines');
   if(!Q.disposal.length){box.innerHTML='<div class="card-sub">No disposal items added yet.</div>';return;}
-  box.innerHTML=Q.disposal.map((d,i)=>`<div class="line"><div class="l-d">
-    <div class="l-name">${esc(d.desc)}</div>
-    <div class="l-meta">${money(d.rate)} each ${TTAG[d.taxType]||''}${d.custom?' <span class="tag t-custom">custom</span>':''}</div></div>
+  box.innerHTML=Q.disposal.map((d,i)=>{
+    const lb=itemLabel(d);
+    // staff still see which code / facility this is; the customer sees only the label
+    const internal=(!d.custom && d.desc && d.desc!==lb) ? ('<span class="mono">'+esc(d.code)+'</span> · '+esc(d.desc)+' · ') : '';
+    return `<div class="line"><div class="l-d">
+    <div class="l-name">${esc(lb)}</div>
+    <div class="l-meta">${internal}${money(d.rate)} each ${TTAG[d.taxType]||''}${d.custom?' <span class="tag t-custom">custom</span>':''}</div></div>
     <div class="l-qty"><input type="number" min="0" step="any" value="${d.qty}" data-qi="${i}" inputmode="decimal"></div>
     <div class="l-amt mono">${money(d.rate*d.qty)}</div>
-    <button class="l-x" data-dx="${i}" title="Remove">×</button></div>`).join('');
+    <button class="l-x" data-dx="${i}" title="Remove">×</button></div>`; }).join('');
   box.querySelectorAll('[data-qi]').forEach(inp=>inp.addEventListener('input',()=>{
     let v=parseFloat(inp.value);Q.disposal[+inp.dataset.qi].qty=isFinite(v)&&v>=0?v:0;recompute();}));
   box.querySelectorAll('[data-dx]').forEach(b=>b.addEventListener('click',()=>{
@@ -1395,11 +1442,11 @@ function ctySel(code,current){
     +'<option value="">Any county</option>'+COUNTIES.map(c=>'<option value="'+esc(c)+'"'+(c===current?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>';
 }
 /* the full record for a code, with any field changed */
-function codeRec(c,patch){ return Object.assign({code:c.code,desc:c.desc,rate:c.rate,taxType:c.taxType,active:c.active!==false,county:codeCounty(c)||''},patch||{}); }
+function codeRec(c,patch){ return Object.assign({code:c.code,desc:c.desc,rate:c.rate,taxType:c.taxType,active:c.active!==false,county:codeCounty(c)||'',label:(c.label||'').trim()},patch||{}); }
 function renderCodeList(){
   const q=(el('setSearch').value||'').trim().toLowerCase();
   const list=CODES.slice().sort((a,b)=>a.code.localeCompare(b.code))
-    .filter(c=>!q||c.code.toLowerCase().includes(q)||String(c.desc||'').toLowerCase().includes(q)||String(codeCounty(c)).toLowerCase().includes(q));
+    .filter(c=>!q||c.code.toLowerCase().includes(q)||String(c.desc||'').toLowerCase().includes(q)||codeLabel(c).toLowerCase().includes(q)||String(codeCounty(c)).toLowerCase().includes(q));
   const box=el('codeList');
   if(!list.length){ box.innerHTML='<div class="card-sub">No codes match your search.</div>'; return; }
   const dis=isAdmin()?'':' disabled';
@@ -1411,7 +1458,8 @@ function renderCodeList(){
       +'<div class="cr-desc"><input type="text" data-desc="'+esc(c.code)+'" value="'+esc(c.desc||'')+'"'+dis+'></div>'
       +'<div class="cr-rate"><input type="number" min="0" step="any" data-rate="'+esc(c.code)+'" value="'+(c.rate!=null?c.rate:0)+'" inputmode="decimal"'+dis+'></div>'
       +'<div class="cr-tax">'+taxSel(c.code,c.taxType||'None')+'</div>'
-      +'<div class="cr-cty">'+ctySel(c.code,codeCounty(c)||'')+'</div></div>';
+      +'<div class="cr-cty">'+ctySel(c.code,codeCounty(c)||'')+'</div>'
+      +'<div class="cr-label"><span>Shows on quote as</span><input type="text" data-label="'+esc(c.code)+'" value="'+esc((c.label||'').trim())+'" placeholder="'+esc(autoLabel(c.desc))+'"'+dis+' title="Leave blank to use the automatic label shown in grey"></div></div>';
   }).join('');
   box.querySelectorAll('[data-act]').forEach(inp=>inp.addEventListener('change',()=>{
     const c=CODES.find(x=>x.code===inp.dataset.act); if(!c)return;
@@ -1425,6 +1473,10 @@ function renderCodeList(){
   box.querySelectorAll('[data-cty]').forEach(sel=>sel.addEventListener('change',()=>{
     const c=CODES.find(x=>x.code===sel.dataset.cty); if(!c)return;
     persistCode(codeRec(c,{county:sel.value}));
+  }));
+  box.querySelectorAll('[data-label]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.label); if(!c)return;
+    persistCode(codeRec(c,{label:inp.value.trim()}));
   }));
   box.querySelectorAll('[data-desc]').forEach(inp=>inp.addEventListener('change',()=>{
     const c=CODES.find(x=>x.code===inp.dataset.desc); if(!c)return;
@@ -1442,13 +1494,14 @@ function addNewCode(){
   const desc=(el('ncDesc').value||'').trim();
   let rate=parseFloat(el('ncRate').value); const tax=el('ncTax').value;
   const county=el('ncCounty')?el('ncCounty').value:'';
+  const label=el('ncLabel')?el('ncLabel').value.trim():'';
   if(!code){notify('Enter a code');return;}
   if(!desc){notify('Enter a description');return;}
   if(!isFinite(rate)||rate<0)rate=0;
   if(CODES.some(c=>c.code===code)){notify('Code “'+code+'” already exists');return;}
-  persistCode({code:code,desc:desc,rate:rate,taxType:tax,active:true,county:county}).then(()=>{
+  persistCode({code:code,desc:desc,rate:rate,taxType:tax,active:true,county:county,label:label}).then(()=>{
     el('ncCode').value='';el('ncDesc').value='';el('ncRate').value='';el('ncTax').value='None';
-    if(el('ncCounty')) el('ncCounty').value='';
+    if(el('ncCounty')) el('ncCounty').value=''; if(el('ncLabel')) el('ncLabel').value='';
     renderCodeList();notify('Added “'+code+'”');
   });
 }
@@ -1831,7 +1884,7 @@ function quoteItemsForQ(q){
     const rr=DATA.rental[+r.size], rate=R.rental[+r.size]||0;
     items.push({label:'Daily rental',detail:rr.size+' · '+r.days+' day'+((r.days||0)==1?'':'s')+' @ '+money(rate)+'/day',amount:rate*(r.days||0)});
   }
-  (q.disposal||[]).forEach(d=>{ if((d.qty||0)>0) items.push({label:d.desc,detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
+  (q.disposal||[]).forEach(d=>{ if((d.qty||0)>0) items.push({label:itemLabel(d),detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
   return {T,items,haul};
 }
 function quoteItems(){ return quoteItemsForQ(Q); }
