@@ -470,9 +470,9 @@
           <input type="checkbox" id="useGmailSig" style="width:18px;height:18px;accent-color:var(--pine);flex:none">
           Let Gmail add my signature (with the company logo)
         </label>
-        <div class="card-sub" style="margin-top:6px;line-height:1.55">Set your signature up in Gmail with the logo (see Help → “Logo in your signature”).
-          With this on, the quoter ends the email at <b>“Thank you,”</b> and leaves the signature to Gmail so it isn’t doubled.
-          Logo image to use in Gmail: <b style="word-break:break-all">https://melgard05.github.io/quoter/logo-sig.png</b></div>
+        <div class="card-sub" style="margin-top:6px;line-height:1.55"><b>On by default.</b> Your existing Gmail signature is used as-is — nothing to set up.
+          The quoter ends the email at <b>“Thank you,”</b> and Gmail adds your signature below it, so it isn’t doubled.
+          Want the logo in it? See Help → “Logo in your signature”.</div>
 
         <div id="textSigWrap">
           <label class="fld" for="emailSig" style="margin-top:16px">…or type a plain-text signature here</label>
@@ -589,15 +589,15 @@
       <li>Set <b>your email signature</b> in Settings → Email sending — it replaces the default sign-off at the bottom of your quote emails, and is saved to your login so it follows you to any computer.</li>
     </ul>
 
-    <h4><span class="hn">✎</span>Logo in your signature</h4>
-    <p>The quote email is plain text, so the logo can’t be typed into it — but <b>Gmail’s own signature can carry it</b>. One-time setup, in Gmail:</p>
+    <h4><span class="hn">✎</span>Your Gmail signature &amp; the logo</h4>
+    <p><b>Your existing Gmail signature is used automatically</b> — the quote email ends at “Thank you,” and Gmail adds your signature below it. Nothing to set up.
+      If you ever don’t see it in the compose window, click the <b>pen icon</b> in the compose toolbar to insert it.</p>
+    <p>To add the <b>company logo</b> to your signature (optional, one time, in Gmail):</p>
     <ul>
-      <li>Gmail → gear ⚙ → <b>See all settings</b> → <b>General</b> → scroll to <b>Signature</b> → <b>Create new</b>.</li>
-      <li>Type your name/title, then click the <b>Insert image</b> icon → <b>Web Address (URL)</b> → paste
-        <b style="word-break:break-all">https://melgard05.github.io/quoter/logo-sig.png</b> → Select. Resize it with the Small / Medium / Large links if needed.</li>
-      <li>Under <b>Signature defaults</b>, pick it for <b>For new emails use</b>. Save Changes at the bottom.</li>
-      <li>Back in the quoter: Settings → Email sending → turn on <b>Let Gmail add my signature</b>.</li>
-      <li>Now when you hit <b>Email</b>, the compose window ends at “Thank you,” and Gmail’s signature with the logo appears below. If you ever don’t see it, click the <b>pen icon</b> in the compose toolbar to insert it.</li>
+      <li>Gmail → gear ⚙ → <b>See all settings</b> → <b>General</b> → scroll to <b>Signature</b> → click your signature to edit it.</li>
+      <li>Click the <b>Insert image</b> icon → <b>Web Address (URL)</b> → paste
+        <b style="word-break:break-all">https://melgard05.github.io/quoter/logo-sig.png</b> → Select. Resize with Small / Medium / Large if needed.</li>
+      <li><b>Save Changes</b> at the bottom. Done — the logo now shows on every email, including quotes.</li>
       <li><b>Ideas:</b> submit a request, then <b>View / manage</b> to see all of them and mark each <b>Done</b> or <b>Cancel</b>. A red <b>“new”</b> badge shows when ideas have come in since you last looked.</li>
     </ul>
 
@@ -621,9 +621,12 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.22 (2026-10-12)';
+const APP_VERSION='v0.23 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.23',d:'Oct 12, 2026',items:[
+    'Your existing Gmail signature is now used automatically on quote emails — nothing to set up'
+  ]},
   {v:'v0.22',d:'Oct 12, 2026',items:[
     '“Let Gmail add my signature” option — use your Gmail signature (with the company logo) as the sign-off',
     'Help → Logo in your signature: step-by-step Gmail setup'
@@ -1412,7 +1415,7 @@ function signOffLines(){
   return L;
 }
 /* per-login email prefs (signature text, "let Gmail sign"), synced via Firestore with local fallback */
-let SIGNATURE='', USE_GMAIL_SIG=false;
+let SIGNATURE='', USE_GMAIL_SIG=true;   // default ON: Gmail adds the signature everyone already has
 function emailSignature(){ return (SIGNATURE||'').trim(); }
 function sigKey(){ return 'rq_sig_'+(currentEmail()||'local'); }
 function applyPrefsToUI(){
@@ -1421,13 +1424,14 @@ function applyPrefsToUI(){
   const w=el('textSigWrap'); if(w) w.style.opacity=USE_GMAIL_SIG?'.45':'1';
 }
 function loadUserPrefs(){
-  try{ SIGNATURE = store.get(sigKey()) || store.get('rq_signature') || ''; USE_GMAIL_SIG = store.get(sigKey()+'_gm')==='1'; }catch(e){}
+  try{ SIGNATURE = store.get(sigKey()) || store.get('rq_signature') || '';
+       const gm=store.get(sigKey()+'_gm'); USE_GMAIL_SIG = (gm==null) ? true : gm==='1'; }catch(e){}
   applyPrefsToUI();
   const email=currentEmail();
   if(db && email){
     db.collection('userprefs').doc(email).get().then(doc=>{
       if(doc && doc.exists){ const d=doc.data()||{};
-        SIGNATURE=d.signature||''; USE_GMAIL_SIG=!!d.useGmailSig;
+        SIGNATURE=d.signature||''; USE_GMAIL_SIG=(d.useGmailSig==null) ? true : !!d.useGmailSig;
         try{ store.set(sigKey(),SIGNATURE); store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0'); }catch(e){}
         applyPrefsToUI(); }
     }).catch(e=>{ /* offline — keep local copy */ });
