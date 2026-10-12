@@ -40,7 +40,7 @@
   .card-amt{flex:none;font-size:17px;font-weight:800}
   .card-b{padding:14px 16px}
   label.fld{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-  select,input[type=number],input[type=text]{width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:9px;
+  select,input[type=number],input[type=text],input[type=email]{width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:9px;
     font-family:inherit;font-size:14px;color:var(--ink);background:#fcfbf7}
   select:focus,input:focus{outline:none;border-color:var(--pine);box-shadow:0 0 0 3px rgba(47,107,65,.13)}
   .row{display:flex;gap:11px;flex-wrap:wrap}
@@ -163,6 +163,10 @@
   .set-close:hover{background:rgba(255,255,255,.3)}
   .set-wrap{max-width:720px;margin:0 auto;padding:16px 16px 70px}
   .set-section-t{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:20px 2px 10px}
+  .settings-screen:not(.admin) .admin-only{display:none !important}
+  .settings-screen.admin .non-admin-only{display:none !important}
+  .settings-screen:not(.admin) .code-row{opacity:.85}
+  .settings-screen:not(.admin) .sw{pointer-events:none}
   .code-row{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:11px;
     background:var(--surface);margin-bottom:7px;flex-wrap:wrap}
   .code-row.off{opacity:.6;background:#f6f4ee}
@@ -483,7 +487,47 @@
         <div class="card-sub" style="margin-top:10px"><b>Saved to your login</b> — both settings follow you to any computer.</div>
       </div></div>
 
-    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--pine)">+</div>
+    <div class="notice non-admin-only" style="margin-bottom:15px"><b>View only.</b> Rates and billing codes can only be changed by an admin
+      (<span id="adminNames"></span>). Ask them if something needs updating.</div>
+
+    <!-- RATES -->
+    <div class="card" id="ratesCard"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--rust)">$</div>
+      <div class="card-t">Rates</div></div><span class="card-sub">Synced to the team</span></div>
+      <div class="card-b">
+        <div class="set-section-t" style="margin-top:0">Daily rental</div>
+        <div class="row">
+          <div><label class="fld" for="rtRental1020">10/20 yd — $ per day</label><input type="number" id="rtRental1020" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="rtRental3040">30/40 yd — $ per day</label><input type="number" id="rtRental3040" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">Solid Waste Tax</div>
+        <div class="row">
+          <div><label class="fld" for="rtSwtCom">Commercial — %</label><input type="number" id="rtSwtCom" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="rtSwtRes">Residential — %</label><input type="number" id="rtSwtRes" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">Environmental Tax</div>
+        <div class="row">
+          <div><label class="fld" for="rtEnvYd">$ per cubic yard</label><input type="number" id="rtEnvYd" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="rtEnvTon">$ per ton</label><input type="number" id="rtEnvTon" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="admin-only" style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="saveRatesBtn">Save rates</button>
+          <span class="card-sub">Applies to new quotes right away. Quotes already saved keep the rates they were priced with.</span>
+        </div>
+      </div></div>
+
+    <!-- ADMINS -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#7a5bb0">★</div>
+      <div class="card-t">Admins</div></div><span class="card-sub">Can change rates &amp; codes</span></div>
+      <div class="card-b">
+        <div id="adminList"></div>
+        <div class="admin-only row" style="margin-top:12px;align-items:flex-end">
+          <div style="flex:2 1 200px"><label class="fld" for="adminNew">Add an admin by login email</label>
+            <input type="email" id="adminNew" placeholder="name@stevessanitation.com" autocapitalize="none" spellcheck="false"></div>
+          <div style="flex:0 0 auto"><button class="btn btn-ghost" id="adminAddBtn">Add</button></div>
+        </div>
+      </div></div>
+
+    <div class="card admin-only"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--pine)">+</div>
       <div class="card-t">Add a new code</div></div></div>
       <div class="card-b">
         <div class="row" style="align-items:flex-end">
@@ -536,7 +580,7 @@
 
     <h4><span class="hn">C</span>Customer</h4>
     <p>Enter the name and address. Type the <b>ZIP</b> and the city/state fill in automatically. The <b>Email</b>
-      field is used as the “To” when you email the quote. <b>Tax class</b> (Commercial 17% / Residential 9.75%) sets the
+      field is used as the “To” when you email the quote. <b>Tax class</b> (Commercial / Residential) sets the
       Solid Waste Tax rate — the first time you add a taxable item, the app asks which one.</p>
 
     <h4><span class="hn">1</span>Hauling</h4>
@@ -559,7 +603,7 @@
     <p>Taxes figure themselves out from the items:</p>
     <ul>
       <li><b>Solid Waste Tax</b> turns on automatically when there’s an MSW item, and applies to hauling + rental + MSW items. The breakdown shows each piece and the tax it adds.</li>
-      <li><b>Environmental Tax</b> ($0.60/yd or $2.00/ton) is figured automatically from demolition items — nothing to enter.</li>
+      <li><b>Environmental Tax</b> (per yard or per ton) is figured automatically from demolition items — nothing to enter.</li>
     </ul>
 
     <h4><span class="hn">✓</span>Finishing a quote</h4>
@@ -580,7 +624,9 @@
 
     <h4><span class="hn">⚙</span>Settings</h4>
     <ul>
+      <li><b>Rates:</b> daily rental, Solid Waste Tax % and Environmental Tax rates. Change them here and every new quote uses them; quotes already saved keep the rates they were priced with.</li>
       <li><b>Billing codes:</b> turn a code on/off, change its rate or tax type, or add a new code. Changes sync to the whole team.</li>
+      <li><b>Admins:</b> only admins can change rates, codes and the admin list — everyone else sees them read-only. Admins can add or remove other admins here.</li>
       <li><b>Email sending:</b> if you keep several Gmail accounts open, set your <b>work email</b> here so the Email button uses the right one (saved on your device).</li>
     </ul>
 
@@ -625,9 +671,15 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.24 (2026-10-12)';
+const APP_VERSION='v0.25 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.25',d:'Oct 12, 2026',items:[
+    'Rates (rental, Solid Waste Tax %, Environmental) are now in Settings — change them yourself, synced to the team',
+    'Admin lock: only admins can change rates, billing codes and the admin list; everyone else sees them read-only',
+    'Saved quotes keep the rates they were priced with, even after rates change',
+    'Offline support: codes, rates and saved quotes are cached on the device and sync when back online'
+  ]},
   {v:'v0.24',d:'Oct 12, 2026',items:[
     'Email now opens a blank message with your real Gmail signature (logo included) and copies the quote — press Ctrl+V to paste it in'
   ]},
@@ -749,6 +801,9 @@ try{
   if(typeof firebase!=='undefined'){
     firebase.initializeApp(firebaseConfig);
     db=firebase.firestore();
+    // Offline support: codes, rates and saved quotes are cached on the device and
+    // changes made offline sync when the connection returns.
+    try{ db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
     fbReady=true;
   }
@@ -771,6 +826,41 @@ function loadCodes(){
     CODES=[]; snap.forEach(doc=>CODES.push(doc.data()));
     showOffline(false);
   }).catch(e=>{ console.error('codes load failed',e); CODES=fallbackCodes(); showOffline(true); });
+}
+
+/* ===== rates (rental / SWT / environmental) — editable in Settings, synced ===== */
+function ratesDoc(){ return {
+  rental1020:DATA.rental[0].rate, rental3040:DATA.rental[1].rate,
+  swtCommercial:DATA.swt.commercial, swtResidential:DATA.swt.residential,
+  envPerYard:DATA.env.perYard, envPerTon:DATA.env.perTon }; }
+function applyRates(d){
+  if(!d) return;
+  const n=(v,f)=>{ v=parseFloat(v); return (isFinite(v)&&v>=0)?v:f; };
+  DATA.rental[0].rate=n(d.rental1020,DATA.rental[0].rate);
+  DATA.rental[1].rate=n(d.rental3040,DATA.rental[1].rate);
+  DATA.swt.commercial=n(d.swtCommercial,DATA.swt.commercial);
+  DATA.swt.residential=n(d.swtResidential,DATA.swt.residential);
+  DATA.env.perYard=n(d.envPerYard,DATA.env.perYard);
+  DATA.env.perTon=n(d.envPerTon,DATA.env.perTon);
+}
+function loadRates(){
+  if(!db) return Promise.resolve();
+  return db.collection('settings').doc('rates').get().then(doc=>{
+    if(doc.exists) applyRates(doc.data());
+    else db.collection('settings').doc('rates').set(Object.assign({updatedTs:Date.now()},ratesDoc())).catch(()=>{});
+  }).catch(e=>{ console.error('rates load failed',e); });
+}
+
+/* ===== admins — who may change codes, rates and the admin list ===== */
+const DEFAULT_ADMINS=['kelly@stevessanitation.com','casey@stevessanitation.com'];
+let ADMINS=DEFAULT_ADMINS.slice();
+function isAdmin(){ const e=(currentEmail()||'').toLowerCase(); return ADMINS.map(a=>a.toLowerCase()).indexOf(e)>=0; }
+function loadAdmins(){
+  if(!db) return Promise.resolve();
+  return db.collection('settings').doc('admins').get().then(doc=>{
+    if(doc.exists && Array.isArray((doc.data()||{}).emails) && doc.data().emails.length) ADMINS=doc.data().emails.slice();
+    else db.collection('settings').doc('admins').set({emails:DEFAULT_ADMINS,updatedTs:Date.now()}).catch(()=>{});
+  }).catch(e=>{ console.error('admins load failed',e); });
 }
 
 function friendlyAuthErr(e){
@@ -834,7 +924,7 @@ function quoteHasContent(){
 
 function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
   custStreet:'',custCity:'',custState:'',custZip:'',custEmail:'',haul:null,
-  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,label:'',savedId:null};}
+  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,label:'',rates:null,savedId:null};}
 function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
 function haulIsAdjusted(){return Q.haul&&!Q.haul.manual&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
 let Q=freshQuote();
@@ -892,8 +982,28 @@ function renderHaul(){
   if(rb) rb.addEventListener('click',()=>{Q.haulOverride=null;renderHaul();recompute();});
 }
 
-const TTAG={'SWT':'<span class="tag t-swt">SWT</span>','ENV-YD':'<span class="tag t-env">Env $0.60/yd</span>',
-  'ENV-TON':'<span class="tag t-env">Env $2/ton</span>','None':'<span class="tag t-non">No tax</span>'};
+let TTAG={};
+function envYdLbl(){ return '$'+DATA.env.perYard.toFixed(2)+'/yd'; }
+function envTonLbl(){ return '$'+DATA.env.perTon.toFixed(2)+'/ton'; }
+function buildTTAG(){
+  TTAG={'SWT':'<span class="tag t-swt">SWT</span>','ENV-YD':'<span class="tag t-env">Env '+envYdLbl()+'</span>',
+    'ENV-TON':'<span class="tag t-env">Env '+envTonLbl()+'</span>','None':'<span class="tag t-non">No tax</span>'};
+}
+buildTTAG();
+/* push the current rates into every label that shows one */
+function refreshRateLabels(){
+  buildTTAG();
+  const rs=el('rSize');
+  if(rs){ const v=rs.value; rs.innerHTML='<option value="">— none —</option>'
+    +DATA.rental.map((r,i)=>'<option value="'+i+'">'+esc(r.size)+' — '+money(r.rate)+'/day</option>').join(''); rs.value=v; }
+  document.querySelectorAll('#custSeg button').forEach(b=>{
+    b.textContent=(b.dataset.cust==='commercial'?'Commercial':'Residential')+' · '+pct(DATA.swt[b.dataset.cust]); });
+  document.querySelectorAll('#custModal [data-pick]').forEach(b=>{
+    const p=b.querySelector('.pct'); if(p) p.textContent='SWT '+pct(DATA.swt[b.dataset.pick]); });
+  ['cTax','ncTax'].forEach(id=>{ const s=el(id); if(!s) return; const v=s.value;
+    s.innerHTML=TAXOPTS().map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join(''); s.value=v||'None'; });
+  const lbl=el('swtRateLbl'); if(lbl) lbl.textContent='SWT '+pct(DATA.swt[Q.customer]||DATA.swt.commercial);
+}
 /* ---- type-ahead combo for the disposal catalog ---- */
 let dPick=null, dFiltered=[], dActiveIdx=-1;
 function activeCodes(){ return CODES.filter(c=>c.active!==false).slice().sort((a,b)=>a.desc.localeCompare(b.desc)); }
@@ -1057,10 +1167,17 @@ function closeCustModal(){el('custModal').classList.remove('open');}
 function notify(m){const n=el('notif');n.textContent=m;n.classList.add('on');clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('on'),2600);}
 
 /* ===== settings — billing codes (synced via Firestore) ===== */
-const TAXOPTS=[['None','No tax'],['SWT','Solid Waste Tax'],['ENV-YD','Environmental — $0.60 / yd'],['ENV-TON','Environmental — $2.00 / ton']];
-function openSettings(){ el('setOffline').classList.toggle('on',!db); if(el('setSearch'))el('setSearch').value=''; renderCodeList(); el('settingsScreen').classList.add('open'); }
+function TAXOPTS(){ return [['None','No tax'],['SWT','Solid Waste Tax'],['ENV-YD','Environmental — '+envYdLbl()],['ENV-TON','Environmental — '+envTonLbl()]]; }
+function openSettings(){
+  el('setOffline').classList.toggle('on',!db);
+  if(el('setSearch'))el('setSearch').value='';
+  el('settingsScreen').classList.toggle('admin',isAdmin());
+  fillRatesForm(); renderAdminList(); renderCodeList();
+  el('settingsScreen').classList.add('open');
+}
 function closeSettings(){ el('settingsScreen').classList.remove('open'); }
 function persistCode(c){
+  if(!isAdmin()){ notify('Only admins can change billing codes'); renderCodeList(); return Promise.resolve(); }
   const i=CODES.findIndex(x=>x.code===c.code);
   if(i>=0) CODES[i]=Object.assign({},CODES[i],c); else CODES.push(Object.assign({},c));
   buildCatalog();
@@ -1070,7 +1187,7 @@ function persistCode(c){
   notify('Saved on this device (offline — not synced)'); return Promise.resolve();
 }
 function taxSel(code,current){
-  return '<select data-tax="'+esc(code)+'">'+TAXOPTS.map(o=>
+  return '<select data-tax="'+esc(code)+'"'+(isAdmin()?'':' disabled')+'>'+TAXOPTS().map(o=>
     '<option value="'+o[0]+'"'+(o[0]===current?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
 }
 function renderCodeList(){
@@ -1079,13 +1196,14 @@ function renderCodeList(){
     .filter(c=>!q||c.code.toLowerCase().includes(q)||String(c.desc||'').toLowerCase().includes(q));
   const box=el('codeList');
   if(!list.length){ box.innerHTML='<div class="card-sub">No codes match your search.</div>'; return; }
+  const dis=isAdmin()?'':' disabled';
   box.innerHTML=list.map(c=>{
     const on=c.active!==false;
     return '<div class="code-row'+(on?'':' off')+'">'
-      +'<label class="sw" title="'+(on?'Active':'Inactive')+'"><input type="checkbox" data-act="'+esc(c.code)+'"'+(on?' checked':'')+'><span class="tr"></span></label>'
+      +'<label class="sw" title="'+(on?'Active':'Inactive')+'"><input type="checkbox" data-act="'+esc(c.code)+'"'+(on?' checked':'')+dis+'><span class="tr"></span></label>'
       +'<div class="cr-code">'+esc(c.code)+'</div>'
-      +'<div class="cr-desc"><input type="text" data-desc="'+esc(c.code)+'" value="'+esc(c.desc||'')+'"></div>'
-      +'<div class="cr-rate"><input type="number" min="0" step="any" data-rate="'+esc(c.code)+'" value="'+(c.rate!=null?c.rate:0)+'" inputmode="decimal"></div>'
+      +'<div class="cr-desc"><input type="text" data-desc="'+esc(c.code)+'" value="'+esc(c.desc||'')+'"'+dis+'></div>'
+      +'<div class="cr-rate"><input type="number" min="0" step="any" data-rate="'+esc(c.code)+'" value="'+(c.rate!=null?c.rate:0)+'" inputmode="decimal"'+dis+'></div>'
       +'<div class="cr-tax">'+taxSel(c.code,c.taxType||'None')+'</div></div>';
   }).join('');
   box.querySelectorAll('[data-act]').forEach(inp=>inp.addEventListener('change',()=>{
@@ -1122,17 +1240,74 @@ function addNewCode(){
   });
 }
 
+/* ===== settings — rates form ===== */
+function fillRatesForm(){
+  const set=(id,v)=>{ const e=el(id); if(e) e.value=v; };
+  set('rtRental1020',DATA.rental[0].rate); set('rtRental3040',DATA.rental[1].rate);
+  set('rtSwtCom',+(DATA.swt.commercial*100).toFixed(4)); set('rtSwtRes',+(DATA.swt.residential*100).toFixed(4));
+  set('rtEnvYd',DATA.env.perYard); set('rtEnvTon',DATA.env.perTon);
+  document.querySelectorAll('#ratesCard input').forEach(i=>i.disabled=!isAdmin());
+}
+function saveRates(){
+  if(!isAdmin()){ notify('Only admins can change rates'); return; }
+  const num=(id,min)=>{ const v=parseFloat(el(id).value); return (isFinite(v)&&v>=(min||0))?v:null; };
+  const r1=num('rtRental1020'), r2=num('rtRental3040'), sc=num('rtSwtCom'), sr=num('rtSwtRes'), ey=num('rtEnvYd'), et=num('rtEnvTon');
+  if([r1,r2,sc,sr,ey,et].some(v=>v==null)){ notify('Check the rates — every box needs a number'); return; }
+  const doc={rental1020:r1,rental3040:r2,swtCommercial:sc/100,swtResidential:sr/100,envPerYard:ey,envPerTon:et,
+    updatedTs:Date.now(),updatedBy:currentEmail()};
+  applyRates(doc); refreshRateLabels(); renderCodeList(); recompute(); syncSaveBtn();
+  if(!db){ notify('Rates applied here — offline, not synced'); return; }
+  db.collection('settings').doc('rates').set(doc)
+    .then(()=>notify('Rates saved — synced to the team'))
+    .catch(e=>{ console.error('rates save failed',e); notify('Rates save failed — are you an admin?'); });
+}
+
+/* ===== settings — admin list ===== */
+function renderAdminList(){
+  const box=el('adminList'); if(!box) return;
+  const n=el('adminNames'); if(n) n.textContent=ADMINS.join(', ');
+  const me=(currentEmail()||'').toLowerCase();
+  box.innerHTML=ADMINS.map(a=>'<div class="line"><div class="l-d"><div class="l-name">'+esc(a)+(a.toLowerCase()===me?' <span class="tag t-non">you</span>':'')+'</div></div>'
+    +(isAdmin()?'<button class="l-x" data-rmadmin="'+esc(a)+'" title="Remove admin">×</button>':'')+'</div>').join('');
+  box.querySelectorAll('[data-rmadmin]').forEach(b=>b.addEventListener('click',()=>removeAdmin(b.dataset.rmadmin)));
+}
+function saveAdmins(next,msg){
+  if(!db){ notify('Needs a connection'); return; }
+  db.collection('settings').doc('admins').set({emails:next,updatedTs:Date.now(),updatedBy:currentEmail()})
+    .then(()=>{ ADMINS=next; renderAdminList(); el('settingsScreen').classList.toggle('admin',isAdmin()); notify(msg||'Admins updated'); })
+    .catch(e=>{ console.error('admins save failed',e); notify('Couldn’t update admins — are you an admin?'); });
+}
+function addAdmin(){
+  if(!isAdmin()){ notify('Only admins can add admins'); return; }
+  const v=(el('adminNew').value||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){ notify('Enter a valid email'); return; }
+  if(ADMINS.map(a=>a.toLowerCase()).indexOf(v)>=0){ notify('Already an admin'); return; }
+  el('adminNew').value='';
+  saveAdmins(ADMINS.concat([v]),'Added '+v);
+}
+function removeAdmin(a){
+  if(!isAdmin()){ notify('Only admins can remove admins'); return; }
+  const next=ADMINS.filter(x=>x.toLowerCase()!==a.toLowerCase());
+  if(!next.length){ notify('There must be at least one admin'); return; }
+  if(a.toLowerCase()===(currentEmail()||'').toLowerCase() && !confirm('Remove yourself as an admin? You won’t be able to change codes or rates afterwards.')) return;
+  saveAdmins(next,'Removed '+a);
+}
+
 /* ===== saved quotes (Firestore) ===== */
 function syncSaveBtn(){
   const b=el('saveQuoteBtn'), s=el('savedState');
   if(!b) return;
   b.textContent = Q.savedId ? 'Update saved quote' : 'Save quote';
-  if(s) s.textContent = Q.savedId ? '✓ This quote is saved — changes update it.' : '';
+  let msg = Q.savedId ? '✓ This quote is saved — changes update it.' : '';
+  if(Q.rates && ratesDiffer(Q.rates,currentRates()))
+    msg += ' Priced with the rates in effect when it was saved (rates have changed since).';
+  if(s) s.textContent = msg;
 }
 function saveQuote(){
   if(!db){ notify('Can’t save while offline'); return; }
   const T=calcTotals();
   if(T.total<=0 && !Q.custName){ notify('Nothing to save yet'); return; }
+  if(!Q.rates) Q.rates=currentRates();           // lock in today's rates for this quote
   const rec={
     name:Q.custName||'',
     site:[Q.custStreet,Q.custCity].filter(Boolean).join(', '),
@@ -1252,30 +1427,39 @@ function validDaysFor(q){ const d=parseInt(q&&q.validDays,10); return (isFinite(
 function quoteValidDays(){ return validDaysFor(Q); }
 function effHaul(q){ return (q&&q.haul)?(q.haulOverride!=null?q.haulOverride:q.haul.total):0; }
 /* totals for ANY quote object (so saved quotes can be rendered off-screen) */
+/* the rates a quote is priced with: the snapshot it was saved with, else today's */
+function currentRates(){ return {rental:DATA.rental.map(r=>r.rate),swt:{commercial:DATA.swt.commercial,residential:DATA.swt.residential},env:{perYard:DATA.env.perYard,perTon:DATA.env.perTon}}; }
+function ratesFor(q){
+  const R=q&&q.rates;
+  if(R&&Array.isArray(R.rental)&&R.swt&&R.env) return R;
+  return currentRates();
+}
+function ratesDiffer(a,b){ return JSON.stringify(a)!==JSON.stringify(b); }
 function calcTotalsForQ(q){
+  const R=ratesFor(q);
   const haul=effHaul(q);
   const r=q.rental||{};
-  const rentalRate=(r.size!==''&&r.size!=null)?DATA.rental[+r.size].rate:0;
+  const rentalRate=(r.size!==''&&r.size!=null)?(R.rental[+r.size]||0):0;
   const rental=rentalRate*(r.days||0);
   let disp=0,swtItems=0,env=0;
   (q.disposal||[]).forEach(d=>{const lt=d.rate*(d.qty||0);disp+=lt;
     if(d.taxType==='SWT')swtItems+=lt;
-    else if(d.taxType==='ENV-YD')env+=(d.qty||0)*DATA.env.perYard;
-    else if(d.taxType==='ENV-TON')env+=(d.qty||0)*DATA.env.perTon;});
+    else if(d.taxType==='ENV-YD')env+=(d.qty||0)*R.env.perYard;
+    else if(d.taxType==='ENV-TON')env+=(d.qty||0)*R.env.perTon;});
   const hasSWT=(q.disposal||[]).some(d=>d.taxType==='SWT'&&(d.qty||0)>0);
-  const rate=(DATA.swt[q.customer]!=null)?DATA.swt[q.customer]:DATA.swt.commercial;
+  const rate=(R.swt[q.customer]!=null)?R.swt[q.customer]:R.swt.commercial;
   const swtBase=hasSWT?(q.override?swtItems:swtItems+rental+haul):0;
   const swt=swtBase*rate;
   return {haul,rental,disp,swtItems,env,hasSWT,rate,swtBase,swt,total:haul+rental+disp+swt+env};
 }
 function quoteItemsForQ(q){
-  const T=calcTotalsForQ(q);
+  const T=calcTotalsForQ(q); const R=ratesFor(q);
   const items=[]; const haul=T.haul;
   if(haul>0||(q.haul&&q.haul.dest)) items.push({label:'Hauling',detail:(q.haul&&q.haul.dest)||'',amount:haul});
   const r=q.rental||{};
   if(r.size!==''&&r.size!=null&&(r.days||0)>0){
-    const rr=DATA.rental[+r.size];
-    items.push({label:'Daily rental',detail:rr.size+' · '+r.days+' day'+((r.days||0)==1?'':'s')+' @ '+money(rr.rate)+'/day',amount:rr.rate*(r.days||0)});
+    const rr=DATA.rental[+r.size], rate=R.rental[+r.size]||0;
+    items.push({label:'Daily rental',detail:rr.size+' · '+r.days+' day'+((r.days||0)==1?'':'s')+' @ '+money(rate)+'/day',amount:rate*(r.days||0)});
   }
   (q.disposal||[]).forEach(d=>{ if((d.qty||0)>0) items.push({label:d.desc,detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
   return {T,items,haul};
@@ -1669,6 +1853,9 @@ let appStarted=false;
   el('settingsBtn').addEventListener('click',openSettings);
   el('setClose').addEventListener('click',closeSettings);
   el('ncAdd').addEventListener('click',addNewCode);
+  el('saveRatesBtn').addEventListener('click',saveRates);
+  el('adminAddBtn').addEventListener('click',addAdmin);
+  el('adminNew').addEventListener('keydown',e=>{if(e.key==='Enter')addAdmin();});
   el('setSearch').addEventListener('input',renderCodeList);
   el('ncCode').addEventListener('keydown',e=>{if(e.key==='Enter')el('ncDesc').focus();});
   el('saveQuoteBtn').addEventListener('click',saveQuote);
@@ -1725,7 +1912,8 @@ function doLogin(){
 /* ---- the data-dependent startup, run once after sign-in ---- */
 function startApp(){
   if(appStarted) return; appStarted=true;
-  loadCodes().then(()=>{
+  loadCodes().then(loadRates).then(loadAdmins).then(()=>{
+    refreshRateLabels();
     loadState();
     const ho=readHandoff();
     if(ho){
