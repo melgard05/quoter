@@ -545,6 +545,32 @@
         </div>
       </div></div>
 
+    <div class="card" id="haulRatesCard"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">mi</div>
+      <div class="card-t">Hauling rates — Mileage Quoter</div></div><span class="card-sub">Synced to the team</span></div>
+      <div class="card-b">
+        <div class="card-sub" style="margin-bottom:10px;line-height:1.5">What the <b>Mileage Quoter</b> charges per one-way mile, plus the base fee for each dispatch point. Per-mile is one way; the quote total is rounded to $5 there.</div>
+        <div class="set-section-t" style="margin-top:0">Roll-Off</div>
+        <div class="row">
+          <div><label class="fld" for="hrRoMile">$ per mile</label><input type="number" id="hrRoMile" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrRoDL">Detroit Lakes base $</label><input type="number" id="hrRoDL" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrRoPer">Perham base $</label><input type="number" id="hrRoPer" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">MSW — Temporary</div>
+        <div class="row">
+          <div><label class="fld" for="hrMtMile">$ per mile</label><input type="number" id="hrMtMile" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrMtBase">Perham base $</label><input type="number" id="hrMtBase" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">MSW — Permanent</div>
+        <div class="row">
+          <div><label class="fld" for="hrMpMile">$ per mile</label><input type="number" id="hrMpMile" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrMpBase">Perham base $</label><input type="number" id="hrMpBase" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="admin-only" style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="saveHaulRatesBtn">Save hauling rates</button>
+          <span class="card-sub">The Mileage Quoter picks these up the next time it opens or refreshes.</span>
+        </div>
+      </div></div>
+
     <!-- ADMINS -->
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#7a5bb0">★</div>
       <div class="card-t">Admins</div></div><span class="card-sub">Can change rates &amp; codes</span></div>
@@ -692,6 +718,7 @@
     <h4><span class="hn">⚙</span>Settings</h4>
     <ul>
       <li><b>Rates:</b> daily rental, Solid Waste Tax % and Environmental Tax rates. Change them here and every new quote uses them; quotes already saved keep the rates they were priced with.</li>
+      <li><b>Hauling rates:</b> the $ per mile and base fees the <b>Mileage Quoter</b> charges (Roll-Off, MSW temporary, MSW permanent). Save them here and the Mileage Quoter picks them up on its next refresh — no more editing its code.</li>
       <li><b>Billing codes:</b> turn a code on/off, change its rate, tax type or county facility, or add a new code. Changes sync to the whole team.</li>
       <li><b>Admins:</b> only admins can change rates, codes and the admin list — everyone else sees them read-only. Admins can add or remove other admins here.</li>
       <li><b>Email sending:</b> if you keep several Gmail accounts open, set your <b>work email</b> here so the Email button uses the right one (saved on your device).</li>
@@ -738,9 +765,12 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.28 (2026-10-12)';
+const APP_VERSION='v0.29 (2026-10-12)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.29',d:'Oct 12, 2026',items:[
+    'Settings → Hauling rates: the Mileage Quoter’s $ per mile and base fees now live here (admins) and sync to it automatically'
+  ]},
   {v:'v0.28',d:'Oct 12, 2026',items:[
     'Email / Copy now put a formatted quote on the clipboard — letterhead, quote number and an itemized table — so the Gmail paste looks like the quote sheet (plain text still comes through in plain-text boxes; switchable in Settings)',
     'Disposal list is county-aware: set the Job county on the Hauling card (automatic from the Mileage Quoter) and that county’s facility items are listed first, others greyed out, with a heads-up if you add one',
@@ -945,6 +975,45 @@ function loadRates(){
     if(doc.exists) applyRates(doc.data());
     else db.collection('settings').doc('rates').set(Object.assign({updatedTs:Date.now()},ratesDoc())).catch(()=>{});
   }).catch(e=>{ console.error('rates load failed',e); });
+}
+
+/* ===== hauling rates for the Mileage Quoter (settings/haulRates — it reads this doc without a login) ===== */
+const HAUL_DEFAULTS={ ro:{perMile:7,baseDetroitLakes:175,basePerham:100}, mswTemporary:{perMile:7,basePerham:70}, mswPermanent:{perMile:3,basePerham:0} };
+let HAUL=JSON.parse(JSON.stringify(HAUL_DEFAULTS));
+function applyHaul(d){
+  if(!d) return;
+  const n=(v,f)=>{ v=parseFloat(v); return (isFinite(v)&&v>=0)?v:f; };
+  const ro=d.ro||{}, mt=d.mswTemporary||{}, mp=d.mswPermanent||{};
+  HAUL={ ro:{ perMile:n(ro.perMile,HAUL.ro.perMile), baseDetroitLakes:n(ro.baseDetroitLakes,HAUL.ro.baseDetroitLakes), basePerham:n(ro.basePerham,HAUL.ro.basePerham) },
+         mswTemporary:{ perMile:n(mt.perMile,HAUL.mswTemporary.perMile), basePerham:n(mt.basePerham,HAUL.mswTemporary.basePerham) },
+         mswPermanent:{ perMile:n(mp.perMile,HAUL.mswPermanent.perMile), basePerham:n(mp.basePerham,HAUL.mswPermanent.basePerham) } };
+}
+function loadHaulRates(){
+  if(!db) return Promise.resolve();
+  return db.collection('settings').doc('haulRates').get().then(doc=>{
+    if(doc.exists) applyHaul(doc.data());
+    else db.collection('settings').doc('haulRates').set(Object.assign({updatedTs:Date.now()},HAUL_DEFAULTS)).catch(()=>{});
+  }).catch(e=>{ console.error('hauling rates load failed',e); });
+}
+function fillHaulForm(){
+  const set=(id,v)=>{ const e=el(id); if(e) e.value=v; };
+  set('hrRoMile',HAUL.ro.perMile); set('hrRoDL',HAUL.ro.baseDetroitLakes); set('hrRoPer',HAUL.ro.basePerham);
+  set('hrMtMile',HAUL.mswTemporary.perMile); set('hrMtBase',HAUL.mswTemporary.basePerham);
+  set('hrMpMile',HAUL.mswPermanent.perMile); set('hrMpBase',HAUL.mswPermanent.basePerham);
+  document.querySelectorAll('#haulRatesCard input').forEach(i=>i.disabled=!isAdmin());
+}
+function saveHaulRates(){
+  if(!isAdmin()){ notify('Only admins can change hauling rates'); return; }
+  const num=id=>{ const v=parseFloat(el(id).value); return (isFinite(v)&&v>=0)?v:null; };
+  const v=['hrRoMile','hrRoDL','hrRoPer','hrMtMile','hrMtBase','hrMpMile','hrMpBase'].map(num);
+  if(v.some(x=>x==null)){ notify('Check the hauling rates — every box needs a number'); return; }
+  const doc={ ro:{perMile:v[0],baseDetroitLakes:v[1],basePerham:v[2]}, mswTemporary:{perMile:v[3],basePerham:v[4]}, mswPermanent:{perMile:v[5],basePerham:v[6]},
+    updatedTs:Date.now(), updatedBy:currentEmail() };
+  applyHaul(doc);
+  if(!db){ notify('Offline — hauling rates not synced'); return; }
+  db.collection('settings').doc('haulRates').set(doc)
+    .then(()=>notify('Hauling rates saved — the Mileage Quoter uses them on its next refresh'))
+    .catch(e=>{ console.error('hauling rates save failed',e); notify('Save failed — check your connection'); });
 }
 
 /* ===== admins — who may change codes, rates and the admin list ===== */
@@ -1303,7 +1372,7 @@ function openSettings(){
   el('setOffline').classList.toggle('on',!db);
   if(el('setSearch'))el('setSearch').value='';
   el('settingsScreen').classList.toggle('admin',isAdmin());
-  fillRatesForm(); renderAdminList(); renderCodeList();
+  fillRatesForm(); fillHaulForm(); renderAdminList(); renderCodeList();
   el('settingsScreen').classList.add('open');
 }
 function closeSettings(){ el('settingsScreen').classList.remove('open'); }
@@ -2268,6 +2337,7 @@ let appStarted=false;
   el('setClose').addEventListener('click',closeSettings);
   el('ncAdd').addEventListener('click',addNewCode);
   el('saveRatesBtn').addEventListener('click',saveRates);
+  el('saveHaulRatesBtn').addEventListener('click',saveHaulRates);
   el('adminAddBtn').addEventListener('click',addAdmin);
   el('adminNew').addEventListener('keydown',e=>{if(e.key==='Enter')addAdmin();});
   el('setSearch').addEventListener('input',renderCodeList);
@@ -2335,7 +2405,7 @@ function doLogin(){
 /* ---- the data-dependent startup, run once after sign-in ---- */
 function startApp(){
   if(appStarted) return; appStarted=true;
-  loadCodes().then(loadRates).then(loadAdmins).then(()=>{
+  loadCodes().then(loadRates).then(loadAdmins).then(loadHaulRates).then(()=>{
     refreshRateLabels();
     loadState();
     const ho=readHandoff();
