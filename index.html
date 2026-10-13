@@ -193,6 +193,19 @@
   .sw input:checked + .tr{background:var(--pine)}
   .sw input:checked + .tr::before{transform:translateX(18px)}
 
+  /* ---- service type switch ---- */
+  .svc-seg{display:flex;gap:6px;background:#efece3;border-radius:13px;padding:5px;margin:0 0 15px}
+  .svc-seg button{flex:1;border:0;border-radius:9px;padding:9px 6px;background:transparent;cursor:pointer;font-family:inherit;color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2}
+  .svc-seg button b{font-size:13.5px;font-weight:800;color:inherit}
+  .svc-seg button span{font-size:10.5px;font-weight:600}
+  .svc-seg button.on{background:var(--surface);color:var(--pine);box-shadow:0 1px 3px rgba(28,31,26,.12)}
+  .sum-sec{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+  .sum-total.sum-total-sm{font-size:15px}
+  .waive-row{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:13.5px;font-weight:700;cursor:pointer}
+  .waive-row input{width:18px;height:18px;accent-color:var(--pine);flex:none}
+  .tag.t-msw{background:#e6eef6;color:var(--blue);border:1px solid #cfe0ee}
+  .tag.t-per{background:#f1efe8;color:var(--muted);border:1px solid #e2ded2}
   /* ---- saved quotes ---- */
   .saved-row{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;
     background:var(--surface);margin-bottom:8px;flex-wrap:wrap}
@@ -258,6 +271,8 @@
   .combo-opt .co-rate{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted)}
   .combo-opt .co-code{flex:0 0 auto;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.02em}
   .combo-foot{padding:8px 11px;font-size:11px;font-weight:600;color:var(--muted);border-top:1px solid var(--line);background:#faf8f2}
+  .combo-group{padding:6px 11px 3px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:#faf8f2;border-top:1px solid var(--line)}
+  #mMenu .combo-opt .co-desc{white-space:normal;line-height:1.3}
   .combo-opt .co-tax{flex:0 0 auto}
   .combo-empty{padding:11px;font-size:12.5px;color:var(--muted)}
   .combo-hint{padding:7px 11px;font-size:11px;font-weight:800;color:var(--blue);background:#eef3f7;border-bottom:1px solid var(--line);letter-spacing:.02em}
@@ -329,6 +344,13 @@
 
     <div class="offline-chip" id="offlineChip">⚠️ Offline — using built-in codes. Changes won't sync until you reconnect.</div>
 
+    <!-- SERVICE TYPE -->
+    <div class="svc-seg" id="svcSeg" role="tablist">
+      <button data-svc="ro"><b>Roll-Off</b><span>one-time job</span></button>
+      <button data-svc="msw-temp"><b>MSW · Temporary</b><span>dumpster for a while</span></button>
+      <button data-svc="msw-perm"><b>MSW · Permanent</b><span>ongoing service</span></button>
+    </div>
+
     <!-- CUSTOMER -->
     <div class="card">
       <div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">C</div>
@@ -367,12 +389,12 @@
 
     <!-- 1 HAULING -->
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n">1</div>
-      <div><div class="card-t">Hauling</div><div class="card-sub" id="haulSub">From the Mileage Quoter</div></div></div>
+      <div><div class="card-t" id="haulTitle">Hauling</div><div class="card-sub" id="haulSub">From the Mileage Quoter</div></div></div>
       <div class="card-amt mono" id="haulAmt">$0.00</div></div>
       <div class="card-b" id="haulBody"><div class="card-sub">Waiting for hauling data…</div></div></div>
 
-    <!-- 2 RENTAL -->
-    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">2</div>
+    <!-- 2 RENTAL (roll-off) -->
+    <div class="card" id="rentalCard"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">2</div>
       <div><div class="card-t">Daily Rental</div><div class="card-sub">Tax follows the ticket</div></div></div>
       <div class="card-amt mono" id="rentalAmt">$0.00</div></div>
       <div class="card-b"><div class="row">
@@ -382,8 +404,48 @@
         <div><label class="fld" for="rDays">Days</label><input type="number" id="rDays" min="0" step="1" value="0" inputmode="numeric"></div>
       </div></div></div>
 
+    <!-- 2 SERVICE PERIOD FEES (MSW) -->
+    <div class="card" id="svcCard" style="display:none"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">2</div>
+      <div><div class="card-t">Service Period Fees</div><div class="card-sub" id="svcSub">Billed monthly · tax by code</div></div></div>
+      <div class="card-amt mono" id="svcAmt">$0.00</div></div>
+      <div class="card-b">
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px">
+          <label class="fld" for="svcPeriod" style="margin:0">Billing period</label>
+          <select id="svcPeriod" style="width:auto;min-width:150px">
+            <option value="Monthly">Monthly</option><option value="Quarterly">Quarterly</option>
+            <option value="Semi-Annual">Semi-Annual</option><option value="Annual">Annual</option></select>
+          <span class="card-sub">lists the codes priced for that period, plus one-time extras</span>
+        </div>
+        <div class="row" style="align-items:flex-end">
+          <div style="flex:2 1 150px;position:relative">
+            <label class="fld" for="mSearch">Add service</label>
+            <input type="text" id="mSearch" placeholder="Type size, pickup or code… e.g. 2 yd weekly" autocomplete="off" spellcheck="false">
+            <div class="combo-menu" id="mMenu"></div>
+          </div>
+          <div style="flex:0 0 72px"><label class="fld" for="mQty">Qty</label><input type="number" id="mQty" min="0" step="any" value="1" inputmode="decimal"></div>
+          <div style="flex:0 0 auto"><button class="btn btn-primary" id="mAdd">Add</button></div>
+        </div>
+        <div style="margin-top:9px"><a class="combo-custom-link" id="mCustomToggle">＋ Custom charge not in the list</a></div>
+        <div id="mCustomBox" class="custom-box" style="display:none">
+          <div class="row" style="align-items:flex-end">
+            <div style="flex:2 1 150px"><label class="fld" for="mcDesc">Description</label><input type="text" id="mcDesc" placeholder="What it is"></div>
+            <div style="flex:0 0 100px"><label class="fld" for="mcRate">Rate ($)</label><input type="number" id="mcRate" min="0" step="any" placeholder="0.00" inputmode="decimal"></div>
+            <div style="flex:0 0 66px"><label class="fld" for="mcQty">Qty</label><input type="number" id="mcQty" min="0" step="any" value="1" inputmode="decimal"></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div><label class="fld" for="mcPer">Charged</label>
+              <select id="mcPer"><option value="period">Every billing period</option><option value="Other">One time</option></select></div>
+            <div><label class="fld" for="mcTax">Tax type</label>
+              <select id="mcTax"><option value="SWT">Solid Waste Tax</option><option value="None">No tax</option></select></div>
+          </div>
+          <div style="margin-top:11px;display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" id="mcAdd">Add custom charge</button>
+            <button class="btn btn-ghost btn-sm" id="mcCancel">Cancel</button></div>
+        </div>
+        <div id="mLines" style="margin-top:12px"></div></div></div>
+
     <!-- 3 DISPOSAL -->
-    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--rust)">3</div>
+    <div class="card" id="dispCard"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--rust)">3</div>
       <div><div class="card-t">Disposal</div><div class="card-sub" id="dispSub">Itemized · tax by code</div></div></div>
       <div class="card-amt mono" id="dispAmt">$0.00</div></div>
       <div class="card-b">
@@ -434,12 +496,26 @@
     <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">Σ</div>
       <div class="card-t">Quote Summary<span class="qno-tag" id="qnoTag" style="display:none" title="Quote number"></span></div></div></div>
       <div class="card-b">
+        <div id="sumRO">
         <div class="sum-row"><span>Hauling</span><span class="mono" id="sHaul">$0.00</span></div>
         <div class="sum-row"><span>Daily rental</span><span class="mono" id="sRental">$0.00</span></div>
         <div class="sum-row"><span>Disposal</span><span class="mono" id="sDisp">$0.00</span></div>
         <div class="sum-row"><span>Solid Waste Tax</span><span class="mono" id="sSwt">$0.00</span></div>
         <div class="sum-row"><span>Environmental Tax</span><span class="mono" id="sEnv">$0.00</span></div>
         <div class="sum-total"><span>Quote total</span><span class="mono" id="sTotal">$0.00</span></div>
+        </div>
+        <div id="sumMSW" style="display:none">
+        <div class="sum-sec">One-time charges</div>
+        <div class="sum-row"><span>Delivery &amp; hauling</span><span class="mono" id="mHaul">$0.00</span></div>
+        <div class="sum-row" id="mDispRow"><span>Disposal &amp; extras</span><span class="mono" id="mDisp">$0.00</span></div>
+        <div class="sum-row"><span>Solid Waste Tax</span><span class="mono" id="mSwt">$0.00</span></div>
+        <div class="sum-row" id="mEnvRow"><span>Environmental Tax</span><span class="mono" id="mEnv">$0.00</span></div>
+        <div class="sum-total sum-total-sm"><span>One-time total</span><span class="mono" id="mOnce">$0.00</span></div>
+        <div class="sum-sec" id="mRecSec">Service charges — per month</div>
+        <div class="sum-row"><span>Service fees</span><span class="mono" id="mRec">$0.00</span></div>
+        <div class="sum-row"><span>Solid Waste Tax</span><span class="mono" id="mRecSwt">$0.00</span></div>
+        <div class="sum-total"><span id="mRecLbl">Per month</span><span class="mono" id="mRecTotal">$0.00</span></div>
+        </div>
         <div style="margin-top:12px">
           <label class="fld" for="qLabel">Label this option <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— optional, e.g. “30 yd + demo”. Shows when sending multiple options.</span></label>
           <input type="text" id="qLabel" placeholder="Option name">
@@ -642,6 +718,36 @@
       Edits here don't change quotes already saved. The county dropdown marks which county’s facility a code is for — it’s listed
       only when that county is picked on the quote (guessed from the description until you set it). <b>Shows on quote as</b> is the
       customer-facing name: the county is left out automatically (“CLEAN DEMO - OT” → “Clean Demo”); type your own to override.</div>
+
+    <div class="set-section-t" style="margin-top:26px">MSW service codes</div>
+    <div class="card admin-only"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">＋</div>
+      <div class="card-t">Add an MSW code</div></div></div>
+      <div class="card-b">
+        <div class="row">
+          <div style="flex:1 1 110px"><label class="fld" for="nmCode">Code</label>
+            <input type="text" id="nmCode" placeholder="e.g. 121" maxlength="14" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"></div>
+          <div style="flex:3 1 170px"><label class="fld" for="nmDesc">Description</label>
+            <input type="text" id="nmDesc" placeholder="e.g. 2YD 1/WEEK"></div>
+          <div style="flex:0 0 110px"><label class="fld" for="nmRate">Rate ($)</label>
+            <input type="number" id="nmRate" min="0" step="any" placeholder="0.00" inputmode="decimal"></div>
+        </div>
+        <div class="row" style="margin-top:11px">
+          <div><label class="fld" for="nmPer">Billed</label>
+            <select id="nmPer"><option value="Monthly">Monthly</option><option value="Quarterly">Quarterly</option><option value="Semi-Annual">Semi-Annual</option><option value="Annual">Annual</option><option value="Other">One-time / per occurrence</option></select></div>
+          <div><label class="fld" for="nmCounty">County</label>
+            <select id="nmCounty"><option value="">Both counties</option><option value="Otter Tail">Otter Tail</option><option value="Becker">Becker</option></select></div>
+          <div><label class="fld" for="nmTax">Tax</label>
+            <select id="nmTax"><option value="SWT">Solid Waste Tax</option><option value="None">No tax</option></select></div>
+        </div>
+        <div style="margin-top:11px"><label class="fld" for="nmLabel">Shows on quote as <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— optional; blank = worked out from the description</span></label>
+          <input type="text" id="nmLabel" placeholder="e.g. 2 yd dumpster — weekly pickup"></div>
+        <div style="margin-top:12px"><button class="btn btn-primary" id="nmAdd">Add MSW code</button></div>
+      </div></div>
+    <input type="text" id="mswSearch" placeholder="Search MSW codes by code, description, county or period…" spellcheck="false" style="margin-bottom:11px">
+    <div id="mswList"></div>
+    <div class="card-sub" style="margin-top:10px;line-height:1.5">Front-load dumpsters, carts, rent, recycling, cardboard and one-time extras for MSW quotes. The billing period
+      decides which quotes a code is offered on; the county limits it to that county’s jobs (blank = both). Recycling and cardboard default to no tax,
+      everything else to Solid Waste Tax — change it here if that’s wrong. <b>Shows on quote as</b> is the customer wording (“2YD 1/WEEK” → “2 yd dumpster — weekly pickup”).</div>
   </div>
 </div>
 
@@ -679,7 +785,7 @@
   </div>
   <div class="set-wrap help-wrap">
 
-    <div class="help-step"><b>The short version:</b> fill in the customer, add the hauling, rental and disposal items,
+    <div class="help-step"><b>The short version:</b> pick Roll-Off or MSW at the top, fill in the customer, add the hauling, rental / service fees and disposal items,
       check the tax, then <b>Save quote</b>. To send it, use <b>Quote sheet</b> (print or save a PDF) or <b>Email</b>
       (opens a ready-to-send message). For a job with choices, save each version and send them together — see “Several options” below.</div>
 
@@ -704,6 +810,20 @@
       <li><b>What the customer sees:</b> the county never shows on the quote — “CLEAN DEMO - OT” prints as <b>Clean Demo</b>. The internal code and description still show in small type on your screen so you know which facility you picked. Admins can set the customer wording per code in Settings (“Shows on quote as”).</li>
       <li><b>Custom item:</b> tap <b>＋ Custom item not in the list</b> for a one-off charge — enter a description, rate, qty and tax type. It won’t change your saved code list.</li>
       <li>Change a quantity or remove a line right in the list after adding.</li>
+    </ul>
+
+    <h4><span class="hn">M</span>MSW quotes — temporary &amp; permanent dumpsters and carts</h4>
+    <p>The switch at the top picks the kind of quote. <b>Roll-Off</b> is the one-time job. <b>MSW · Temporary</b> is a front-load dumpster for a while:
+      delivery, the service fee for the period, and disposal extras. <b>MSW · Permanent</b> is ongoing service: delivery (often waived) and the service fees — no disposal section.
+      Coming from the Mileage Quoter’s MSW tab sets this for you.</p>
+    <ul>
+      <li><b>Delivery &amp; Hauling:</b> the mileage app’s MSW rate (temporary or permanent). Tick <b>No delivery charge</b> when it’s included — it prints as “no charge”.</li>
+      <li><b>Service Period Fees:</b> pick the <b>billing period</b> (monthly, quarterly, semi-annual, annual), then type the container and pickup — “2 yd weekly”, “95 gal every other” — and <b>Add</b>.
+        The list shows that period’s codes for the service county, grouped: service, container rent, recycling, cardboard, one-time extras (key, cart cleaning, extra dumps).
+        Changing the period re-prices lines that have a code for it.</li>
+      <li><b>What the customer sees:</b> two parts — <b>one-time charges</b> (delivery, extras, their tax) and <b>service charges per period</b> (fees, rent, recycling, their tax) — each with its own total. The big number on your screen is the per-period amount; the one-time total sits under it.</li>
+      <li><b>Taxes:</b> Solid Waste Tax applies to delivery, extras and MSW service fees; recycling and cardboard are exempt. Residential vs commercial still sets the rate.</li>
+      <li><b>Codes:</b> admins keep the MSW code list in Settings — rate, billing period, county, tax, and the customer wording.</li>
     </ul>
 
     <h4><span class="hn">4</span>Solid Waste &amp; Environmental Tax</h4>
@@ -791,9 +911,15 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.31 (2026-10-13)';
+const APP_VERSION='v0.32 (2026-10-13)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.32',d:'Oct 13, 2026',items:[
+    'MSW quotes: switch at the top for Roll-Off / MSW Temporary / MSW Permanent. Temporary keeps the roll-off layout with a Service Period Fees card in place of daily rental; Permanent drops disposal and lets you waive delivery',
+    'Service Period Fees: pick the billing period, type the container and pickup (e.g. “2 yd weekly”), and the office bill codes price it — county-aware, with rent, recycling, cardboard and one-time extras',
+    'Customer output splits one-time charges from service charges per period, each with its own tax and total — on the sheet, the email and the paste',
+    'Settings → MSW service codes: admins edit rates, billing period, county, tax and customer wording; the full code list is loaded the first time'
+  ]},
   {v:'v0.31',d:'Oct 13, 2026',items:[
     'Email now builds a ready-to-send draft in your Gmail — quote, letterhead and your Gmail signature already in it, addressed to the customer — and opens it. No more Ctrl+V. Google asks you to Allow once per login (use your work account)',
     'Settings → Email sending: choose the Gmail-draft way (default) or the old blank-message + paste way; the paste way is also the automatic fallback'
@@ -1002,6 +1128,85 @@ function autoLabel(desc){
 function codeLabel(c){ return ((c&&c.label)||'').trim() || autoLabel(c&&c.desc); }
 /* the label for a line already on the quote (custom items are what you typed) */
 function itemLabel(d){ if(!d) return ''; if(d.custom) return d.desc||''; return (d.label||'').trim() || autoLabel(d.desc); }
+/* ===== MSW (regular garbage service) billing codes =====
+   [code, description, rate, billed per, county] — the office's bill-code list. Stored in
+   Firestore (mswcodes) and editable by admins in Settings; this copy seeds it / works offline. */
+const MSW_SEED=[["101","1YD 1/WEEK",82.89,"Monthly","Otter Tail"],["101A","1YD 1/WEEK",970.68,"Annual","Otter Tail"],["101Q","1YD 1/WEEK",242.67,"Quarterly","Otter Tail"],["101S","1YD 1/WEEK",485.34,"Semi-Annual","Otter Tail"],["102","1YD 2/WEEK",160.78,"Monthly","Otter Tail"],["102A","1YD 2/WEEK",1905.36,"Annual","Otter Tail"],["103","1YD 3/WEEK",238.67,"Monthly","Otter Tail"],["104","1YD 4/WEEK",316.56,"Monthly","Otter Tail"],["105","1YD 5/WEEK",394.45,"Monthly","Otter Tail"],["10E","1YD E/O WEEK",66.92,"Monthly","Otter Tail"],["10E4","1YD E/4 WEEKS",49.97,"Monthly","Otter Tail"],["10E4A","1YD E/4 WEEKS",575.64,"Annual","Otter Tail"],["10E4Q","1YD E/4 WEEKS",143.91,"Quarterly","Otter Tail"],["10E4S","1YD E/4 WEEKS",287.82,"Semi-Annual","Otter Tail"],["10EA","1YD E/O WEEK",779.04,"Annual","Otter Tail"],["10EQ","1YD E/O WEEK",194.76,"Quarterly","Otter Tail"],["10ES","1YD E/O WEEK",389.52,"Semi-Annual","Otter Tail"],["10M","1YD 1/MONTH",49.97,"Monthly","Otter Tail"],["10MA","1YD 1/MONTH",575.64,"Annual","Otter Tail"],["10MQ","1YD 1/MONTH",143.91,"Quarterly","Otter Tail"],["111","1.5YD 1/WEEK",112.58,"Monthly","Otter Tail"],["111A","1.5YD 1/WEEK",1326.96,"Annual","Otter Tail"],["111S","1.5YD 1/WEEK",663.48,"Semi-Annual","Otter Tail"],["112","1.5YD 2/WEEK",220.16,"Monthly","Otter Tail"],["113","1.5YD 3/WEEK",327.74,"Monthly","Otter Tail"],["114","1.5YD 4/WEEK",435.32,"Monthly","Otter Tail"],["115","1.5YD 5/WEEK",542.9,"Monthly","Otter Tail"],["11E","1.5YD E/O WEEK",74.75,"Monthly","Otter Tail"],["11E4","1.5YD E/4 WEEKS",58.25,"Monthly","Otter Tail"],["11E4A","1.5YD E/4 WEEKS",675.0,"Annual","Otter Tail"],["11E4Q","1.5YD E/4 WEEKS",168.75,"Quarterly","Otter Tail"],["11E4S","1.5YD E/4 WEEKS",337.5,"Semi-Annual","Otter Tail"],["11EA","1.5YD E/O WEEK",873.0,"Annual","Otter Tail"],["11EQ","1.5YD E/O WEEK",218.25,"Quarterly","Otter Tail"],["11ES","1.5YD E/O WEEK",436.5,"Semi-Annual","Otter Tail"],["11M","1.5YD 1/MONTH",58.25,"Monthly","Otter Tail"],["11MA","1.5YD 1/MONTH",675.0,"Annual","Otter Tail"],["11MS","1.5YD 1/MONTH",337.5,"Semi-Annual","Otter Tail"],["121","2YD 1/WEEK",131.07,"Monthly","Otter Tail"],["121A","2YD 1/WEEK",1548.84,"Annual","Otter Tail"],["121S","2YD 1/WEEK",774.42,"Semi-Annual","Otter Tail"],["122","2YD 2/WEEK",257.14,"Monthly","Otter Tail"],["123","2YD 3/WEEK",383.21,"Monthly","Otter Tail"],["124","2YD 4/WEEK",509.28,"Monthly","Otter Tail"],["125","2YD 5/WEEK",635.35,"Monthly","Otter Tail"],["12E","2YD E/O WEEK",96.11,"Monthly","Otter Tail"],["12E4","2YD E/4 WEEKS",74.75,"Monthly","Otter Tail"],["12E4A","2YD E/4 WEEKS",873.0,"Annual","Otter Tail"],["12E4Q","2YD E/4 WEEKS",218.25,"Quarterly","Otter Tail"],["12EA","2YD E/O WEEK",1129.32,"Annual","Otter Tail"],["12EQ","2YD E/O WEEK",282.33,"Quarterly","Otter Tail"],["12ES","2YD E/O WEEK",564.66,"Semi-Annual","Otter Tail"],["12M","2YD 1/MONTH",74.75,"Monthly","Otter Tail"],["12MQ","2YD 1/MONTH",218.25,"Quarterly","Otter Tail"],["12MS","2YD 1/MONTH",436.5,"Semi-Annual","Otter Tail"],["131","3YD 1/WEEK",176.96,"Monthly","Otter Tail"],["131A","3YD 1/WEEK",2099.52,"Annual","Otter Tail"],["132","3YD 2/WEEK",348.92,"Monthly","Otter Tail"],["133","3YD 3/WEEK",520.88,"Monthly","Otter Tail"],["134","3YD 4/WEEK",692.84,"Monthly","Otter Tail"],["135","3YD 5/WEEK",864.8,"Monthly","Otter Tail"],["13E","3YD E/O WEEK",119.26,"Monthly","Otter Tail"],["13E4","3YD E/4 WEEKS",95.2,"Monthly","Otter Tail"],["13EA","3YD E/O WEEK",1407.12,"Annual","Otter Tail"],["13ES","3YD E/O WEEK",703.56,"Semi-Annual","Otter Tail"],["13M","3YD 1/MONTH",95.2,"Monthly","Otter Tail"],["141","4YD 1/WEEK",223.08,"Monthly","Otter Tail"],["141A","4YD 1/WEEK",2652.96,"Annual","Otter Tail"],["142","4YD 2/WEEK",441.16,"Monthly","Otter Tail"],["143","4YD 3/WEEK",659.24,"Monthly","Otter Tail"],["144","4YD 4/WEEK",877.32,"Monthly","Otter Tail"],["145","4YD 5/WEEK",1095.4,"Monthly","Otter Tail"],["14E","4YD E/O WEEK",164.82,"Monthly","Otter Tail"],["14E4","4YD E/4 WEEKS",130.8,"Monthly","Otter Tail"],["14EA","4YD E/O WEEK",1953.84,"Annual","Otter Tail"],["14M","4YD 1/MONTH",130.8,"Monthly","Otter Tail"],["161","6YD 1/WEEK",333.69,"Monthly","Otter Tail"],["162","6YD 2/WEEK",657.38,"Monthly","Otter Tail"],["163","6YD 3/WEEK",981.07,"Monthly","Otter Tail"],["164","6YD 4/WEEK",1304.76,"Monthly","Otter Tail"],["165","6YD 5/WEEK",1628.45,"Monthly","Otter Tail"],["16E","6YD E/O WEEK",193.41,"Monthly","Otter Tail"],["16E4","6YD E/4 WEEKS",152.09,"Monthly","Otter Tail"],["16M","6YD 1/MONTH",152.09,"Monthly","Otter Tail"],["181","8YD 1/WEEK",443.91,"Monthly","Otter Tail"],["182","8YD 2/WEEK",877.82,"Monthly","Otter Tail"],["183","8YD 3/WEEK",1311.73,"Monthly","Otter Tail"],["184","8YD 4/WEEK",1745.64,"Monthly","Otter Tail"],["185","8YD 5/WEEK",2179.55,"Monthly","Otter Tail"],["18E","8YD E/O WEEK",235.7,"Monthly","Otter Tail"],["18E4","8YD E/4 WEEKS",185.57,"Monthly","Otter Tail"],["18M","8YD 1/MONTH",185.57,"Monthly","Otter Tail"],["201","1YD 1/WEEK",85.29,"Monthly","Becker"],["201A","1YD 1/WEEK",999.48,"Annual","Becker"],["202","1YD 2/WEEK",165.58,"Monthly","Becker"],["203","1YD 3/WEEK",245.87,"Monthly","Becker"],["204","1YD 4/WEEK",326.16,"Monthly","Becker"],["205","1YD 5/WEEK",406.45,"Monthly","Becker"],["20E","1YD E/O WEEK",68.86,"Monthly","Becker"],["20E4","1YD E/4 WEEKS",51.42,"Monthly","Becker"],["20E4Q","1YD E/4 WEEKS",148.26,"Quarterly","Becker"],["20E4S","1YD E/4 WEEKS",296.52,"Semi-Annual","Becker"],["20EA","1YD E/O WEEK",802.32,"Annual","Becker"],["20EOMA","1YD E/O MONTH",380.08,"Annual","Becker"],["20M","1YD 1/MONTH",51.42,"Monthly","Becker"],["20MA","1YD 1/MONTH",593.04,"Annual","Becker"],["211","1.5YD 1/WEEK",115.9,"Monthly","Becker"],["211A","1.5YD 1/WEEK",1366.8,"Annual","Becker"],["212","1.5YD 2/WEEK",226.8,"Monthly","Becker"],["213","1.5YD 3/WEEK",337.7,"Monthly","Becker"],["214","1.5YD 4/WEEK",448.6,"Monthly","Becker"],["215","1.5YD 5/WEEK",559.5,"Monthly","Becker"],["21E","1.5YD E/O WEEK",76.95,"Monthly","Becker"],["21E4","1.5YD E/4 WEEKS",59.97,"Monthly","Becker"],["21E4A","1.5YD E/4 WEEKS",695.64,"Annual","Becker"],["21E4Q","1.5YD E/4 WEEKS",173.91,"Quarterly","Becker"],["21EA","1.5YD E/O WEEK",899.4,"Annual","Becker"],["21EQ","1.5YD E/O WEEK",224.85,"Quarterly","Becker"],["21M","1.5YD 1/MONTH",59.97,"Monthly","Becker"],["21MA","1.5YD 1/MONTH",695.64,"Annual","Becker"],["221","2YD 1/WEEK",134.89,"Monthly","Becker"],["221Q","2YD 1/WEEK",398.67,"Quarterly","Becker"],["222","2YD 2/WEEK",264.78,"Monthly","Becker"],["223","2YD 3/WEEK",394.67,"Monthly","Becker"],["224","2YD 4/WEEK",524.56,"Monthly","Becker"],["225","2YD 5/WEEK",654.45,"Monthly","Becker"],["22E","2YD E/O WEEK",98.93,"Monthly","Becker"],["22E4","2YD E/4 WEEKS",76.28,"Monthly","Becker"],["22E4A","2YD E/4 WEEKS",891.36,"Annual","Becker"],["22M","2YD 1/MONTH",76.28,"Monthly","Becker"],["22MA","2YD 1/MONTH",891.36,"Annual","Becker"],["231","3YD 1/WEEK",182.12,"Monthly","Becker"],["231A","3YD 1/WEEK",2161.44,"Annual","Becker"],["231Q","3YD 1/WEEK",540.36,"Quarterly","Becker"],["232","3YD 2/WEEK",359.24,"Monthly","Becker"],["233","3YD 3/WEEK",536.36,"Monthly","Becker"],["234","3YD 4/WEEK",713.48,"Monthly","Becker"],["235","3YD 5/WEEK",890.6,"Monthly","Becker"],["23E","3YD E/O WEEK",122.73,"Monthly","Becker"],["23E4","3YD E/4 WEEKS",96.11,"Monthly","Becker"],["23EQ","3YD E/O WEEK",362.19,"Quarterly","Becker"],["23ES","3YD E/O WEEK",724.38,"Semi-Annual","Becker"],["23ESH","3YD E/O WK SHARED",65.31,"Monthly","Becker"],["23M","3YD 1/MONTH",96.11,"Monthly","Becker"],["241","4YD 1/WEEK",230.12,"Monthly","Becker"],["241Q","4YD 1/WEEK",684.36,"Quarterly","Becker"],["241SH","4YD 1/WEEK SHARED",120.04,"Monthly","Becker"],["242","4YD 2/WEEK",455.24,"Monthly","Becker"],["243","4YD 3/WEEK",680.36,"Monthly","Becker"],["244","4YD 4/WEEK",905.48,"Monthly","Becker"],["245","4YD 5/WEEK",1130.6,"Monthly","Becker"],["24E","4YD E/O WEEK",166.55,"Monthly","Becker"],["24E4","4YD E/4 WEEKS",119.81,"Monthly","Becker"],["24M","4YD 1/MONTH",119.81,"Monthly","Becker"],["261","6YD 1/WEEK",317.44,"Monthly","Becker"],["262","6YD 2/WEEK",624.88,"Monthly","Becker"],["263","6YD 3/WEEK",932.32,"Monthly","Becker"],["264","6YD 4/WEEK",1239.76,"Monthly","Becker"],["265","6YD 5/WEEK",1547.2,"Monthly","Becker"],["26E","6YD E/O WEEK",193.04,"Monthly","Becker"],["26E4","6YD E/4 WEEKS",140.18,"Monthly","Becker"],["26EFED","6YD E/O WEEK",183.85,"Monthly","Becker"],["26M","6YD 1/MONTH",140.18,"Monthly","Becker"],["281","8YD 1/WEEK",395.36,"Monthly","Becker"],["282","8YD 2/WEEK",780.72,"Monthly","Becker"],["283","8YD 3/WEEK",1166.08,"Monthly","Becker"],["284","8YD 4/WEEK",1551.44,"Monthly","Becker"],["285","8YD 5/WEEK",1936.8,"Monthly","Becker"],["28E","8YD E/O WEEK",256.67,"Monthly","Becker"],["28E4","8YD E/4 WEEKS",185.42,"Monthly","Becker"],["28M","8YD 1/MONTH",185.42,"Monthly","Becker"],["352EQ","2ND 35 GAL E/O",61.08,"Quarterly","Becker"],["352Q","2ND 35 GAL 1/WEEK",77.34,"Quarterly","Becker"],["352S","2ND 35 GAL 1/WEEK",151.57,"Semi-Annual","Becker"],["35A","35 GAL 1/WEEK",354.55,"Annual","Becker"],["35ASR","35 GAL 1/WEEK SR",323.83,"Annual","Becker"],["35BM","35 GAL 1/WEEK",30.78,"Monthly","Becker"],["35E4A","35 GAL E4/WEEKS",222.91,"Annual","Becker"],["35E4AS","35 GAL E4/WEEK SR",215.23,"Annual","Becker"],["35E4Q","35 GAL E4/WEEKS",58.05,"Quarterly","Becker"],["35E4QS","35 GAL E/4WEEK SR",56.05,"Quarterly","Becker"],["35EA","35 GAL E/O WEEK",292.11,"Annual","Becker"],["35EASR","35 GAL E/O WEEKSR",276.75,"Annual","Becker"],["35EBM","35 GAL E/O WEEK",25.36,"Monthly","Becker"],["35EOMQ","35 GAL E/O MONTH",29.61,"Quarterly","Becker"],["35EQ","35 GAL E/O WEEK",76.08,"Quarterly","Becker"],["35EQSR","35 GAL E/O WK SR",72.08,"Quarterly","Becker"],["35ES","35 GAL E/O WEEK",149.1,"Semi-Annual","Becker"],["35ESSR","35 GAL E/O WEEK",141.26,"Semi-Annual","Becker"],["35MQ","35 GAL 1/MONTH",58.05,"Quarterly","Becker"],["35Q","35 GAL 1/WEEK",92.34,"Quarterly","Becker"],["35QSR","35 GAL 1/WEEK SR",84.34,"Quarterly","Becker"],["35S","35 GAL 1/WEEK",180.97,"Semi-Annual","Becker"],["35SSR","35 GAL 1/WEEK",165.29,"Semi-Annual","Becker"],["382A","2ND 38 GAL 1/WEEK",293.3,"Annual","Otter Tail"],["382Q","2ND 38 GAL 1/WEEK",76.38,"Quarterly","Otter Tail"],["382S","2ND 38 GAL 1/WEEK",149.7,"Semi-Annual","Otter Tail"],["38A","38 GAL 1/WEEK",350.9,"Annual","Otter Tail"],["38BM","38 GAL 1/WEEK",30.46,"Monthly","Otter Tail"],["38E4A","38 GAL E/4 WEEKS",266.84,"Annual","Otter Tail"],["38E4Q","38 GAL E/4 WEEKS",69.46,"Quarterly","Otter Tail"],["38E4S","38 GAL E/4 WEEKS",136.14,"Semi-Annual","Otter Tail"],["38EA","38 GAL E/O WEEK",284.74,"Annual","Otter Tail"],["38EBM","38 GAL E/O WEEK",24.72,"Monthly","Otter Tail"],["38EQ","38 GAL E/O WEEK",74.16,"Quarterly","Otter Tail"],["38ES","38 GAL E/O WEEK",145.33,"Semi-Annual","Otter Tail"],["38MQ","38 GAL 1/MONTH",69.46,"Quarterly","Otter Tail"],["38Q","38 GAL 1/WEEK",91.38,"Quarterly","Otter Tail"],["38S","38 GAL 1/WEEK",179.1,"Semi-Annual","Otter Tail"],["602A","2ND 60 GAL 1/WEEK",364.19,"Annual","Otter Tail"],["602BM","2ND 60 GAL 1/WEEK",31.61,"Monthly","Otter Tail"],["602Q","2ND 60 GAL 1/WEEK",94.83,"Quarterly","Otter Tail"],["602S","2ND 60 GAL 1/WEEK",185.89,"Semi-Annual","Otter Tail"],["60A","60 GAL 1/WEEK",421.79,"Annual","Otter Tail"],["60BM","60 GAL 1/WEEK",36.61,"Monthly","Otter Tail"],["60E4BM","60 GALL E4/WEEKS",24.72,"Monthly","Otter Tail"],["60E4Q","60 GAL E/4 WEEKS",74.16,"Quarterly","Otter Tail"],["60EA","60 GAL E/O WEEK",350.9,"Annual","Otter Tail"],["60EBM","60 GAL E/O WEEK",30.46,"Monthly","Otter Tail"],["60EQ","60 GAL E/O WEEK",91.38,"Quarterly","Otter Tail"],["60ES","60 GAL E/O WEEK",179.1,"Semi-Annual","Otter Tail"],["60MQ","60 GAL 1/MONTH",74.16,"Quarterly","Otter Tail"],["60Q","60 GAL 1/WEEK",109.83,"Quarterly","Otter Tail"],["60S","60 GAL 1/WEEK",215.29,"Semi-Annual","Otter Tail"],["62E4A","2/60 GAL E/4 WEEK",350.9,"Annual","Otter Tail"],["62E4Q","2/60 GAL E/4 WEEK",91.38,"Quarterly","Otter Tail"],["62EA","2/60 GAL E/O WEEK",421.79,"Annual","Otter Tail"],["62EBM","2/60 GAL E/O WEEK",36.61,"Monthly","Otter Tail"],["62EQ","2/60 GAL E/O WEEK",109.84,"Quarterly","Otter Tail"],["62ES","2/60 GAL E/O WEEK",215.29,"Semi-Annual","Otter Tail"],["652A","2ND 65 GAL 1/WEEK",376.47,"Annual","Becker"],["652BM","2ND 65 GAL 1/WEEK",32.68,"Monthly","Becker"],["652EQ","2/65 GAL E/O WEEK",113.04,"Quarterly","Becker"],["652Q","2ND 65 GAL 1/WEEK",98.04,"Quarterly","Becker"],["652S","2ND 65 GAL 1/WEEK",192.16,"Semi-Annual","Becker"],["65A","65 GAL 1/WEEK",434.07,"Annual","Becker"],["65ASR","65 GAL 1/WEEK SR",403.75,"Annual","Becker"],["65BM","65 GAL 1/WEEK",37.68,"Monthly","Becker"],["65E4Q","65 GAL E/4 WEEKS",76.07,"Quarterly","Becker"],["65EA","65 GAL E/O WEEK",354.55,"Annual","Becker"],["65EBM","65 GAL E/O WK",30.78,"Monthly","Becker"],["65EQ","65 GAL E/O WEEK",92.34,"Quarterly","Becker"],["65EQSR","65 GAL E/O WK SR",88.34,"Quarterly","Becker"],["65ES","65 GAL E/O WEEK",180.97,"Semi-Annual","Becker"],["65MQ","65 GAL 1/MONTH",76.07,"Quarterly","Becker"],["65Q","65 GAL 1/WEEK",113.04,"Quarterly","Becker"],["65QSR","65 GAL 1/WEEK SR",105.04,"Quarterly","Becker"],["65S","65 GAL 1/WEEK",221.56,"Semi-Annual","Becker"],["902A","2ND 90 GAL 1/WEEK",435.57,"Annual","Otter Tail"],["902BM","2ND 90 GAL 1/WEEK",37.81,"Monthly","Otter Tail"],["902Q","2ND 90 GAL 1/WK",113.43,"Quarterly","Otter Tail"],["902S","2ND 90 GAL 1/WEEK",222.32,"Semi-Annual","Otter Tail"],["902WBM","90 GAL 2/WEEK",80.62,"Monthly","Otter Tail"],["903WBM","90 GAL 3/WEEK",118.43,"Monthly","Otter Tail"],["904WBM","90 GAL 4/WEEK",156.24,"Monthly","Otter Tail"],["905WBM","90 GAL 5/WEEK",194.05,"Monthly","Otter Tail"],["90A","90 GAL 1/WEEK",493.17,"Annual","Otter Tail"],["90BM","90 GAL 1/WEEK",42.81,"Monthly","Otter Tail"],["90E4A","90 GAL E/4 WEEKS",350.9,"Annual","Otter Tail"],["90E4BM","90 GAL E/4 WEEKS",30.46,"Monthly","Otter Tail"],["90E4Q","90 GAL E/4 WEEKS",91.38,"Quarterly","Otter Tail"],["90E4S","90 GAL E/4 WEEKS",179.1,"Semi-Annual","Otter Tail"],["90EA","90 GAL E/O WEEK",421.79,"Annual","Otter Tail"],["90EBM","90 GAL E/O",36.61,"Monthly","Otter Tail"],["90EQ","90 GAL E/O WEEK",109.84,"Quarterly","Otter Tail"],["90ES","90 GAL E/O WEEK",215.29,"Semi-Annual","Otter Tail"],["90MQ","90 GAL 1/MONTH",91.38,"Quarterly","Otter Tail"],["90Q","90 GAL 1/WEEK",128.43,"Quarterly","Otter Tail"],["90S","90 GAL 1/WEEK",251.72,"Semi-Annual","Otter Tail"],["922WBM","2ND 90 GAL 2/WEEK",70.62,"Monthly","Otter Tail"],["923WBM","2ND 90 GAL 3/WEEK",103.43,"Monthly","Otter Tail"],["92E4A","2/90 GAL E/4 WKS",421.79,"Annual","Otter Tail"],["92E4BM","2/90 GAL E/4 WKS",36.61,"Monthly","Otter Tail"],["92E4Q","2/90 GAL E/4 WKS",109.84,"Quarterly","Otter Tail"],["92E4S","2/90 GAL E/4 WKS",215.29,"Semi-Annual","Otter Tail"],["92EA","2/90 GAL E/O WEEK",493.17,"Annual","Otter Tail"],["92EBM","2/90 GAL E/O WEEK",42.81,"Monthly","Otter Tail"],["92EQ","2/90 GAL E/O WEEK",128.43,"Quarterly","Otter Tail"],["92ES","2/90 GAL E/O WEEK",251.72,"Semi-Annual","Otter Tail"],["92MQ","2/90 GAL 1/MONTH",109.84,"Quarterly","Otter Tail"],["93E4A","3/90 GAL E/4 WKS",632.69,"Annual","Otter Tail"],["93E4Q","3/90 GAL E/4 WKS",164.76,"Quarterly","Otter Tail"],["9522WB","2ND 95 GAL 2/WEEK",73.1,"Monthly","Becker"],["952BM","2ND 95 GAL 1/WEEK",39.05,"Monthly","Becker"],["952E4B","2/95 GAL E/4 WKS",37.68,"Monthly","Becker"],["952E4Q","2/95 GAL E/4 WKS",113.04,"Quarterly","Becker"],["952EA","2/95 GAL E/O WEEK",507.46,"Annual","Becker"],["952EBM","2ND 95 GAL E/O",32.68,"Monthly","Becker"],["952EQ","2/95 GAL E/O WEEK",132.15,"Quarterly","Becker"],["952MQ","2/95 GAL 1/MONTH",113.04,"Quarterly","Becker"],["952Q","2ND 95 GAL 1/WEEK",117.15,"Quarterly","Becker"],["952S","2ND 95 GAL 1/WEEK",229.61,"Semi-Annual","Becker"],["952WBM","95 GAL 2/WEEK",83.1,"Monthly","Becker"],["953WBM","95 GAL 3/WEEK",122.15,"Monthly","Becker"],["954WBM","95 GAL 4/WEEK",161.2,"Monthly","Becker"],["955WBM","95 GAL 5/WEEK",200.25,"Monthly","Becker"],["95A","95 GAL 1/WEEK",507.46,"Annual","Becker"],["95BM","95 GAL 1/WEEK",44.05,"Monthly","Becker"],["95E4BM","95 GAL E/4 WEEKS",30.78,"Monthly","Becker"],["95E4Q","95 GAL E/4 WEEKS",92.34,"Quarterly","Becker"],["95EA","95 GAL E/O WEEK",434.07,"Annual","Becker"],["95EBM","95 GAL E/O WEEK",37.68,"Monthly","Becker"],["95EQ","95 GAL E/O WEEK",113.04,"Quarterly","Becker"],["95MQ","95 GAL 1/MONTH",92.34,"Quarterly","Becker"],["95Q","95 GAL 1/WEEK",132.15,"Quarterly","Becker"],["95S","95 GAL 1/WEEK",259.01,"Semi-Annual","Becker"],["BR2M","BECKER RECYCLIING",15.62,"Monthly","Becker"],["BRA","BECKER RECYCLING",93.72,"Annual","Becker"],["BRM","BECKER RECYCLING",7.81,"Monthly","Becker"],["BRQ","BECKER RECYCLING",23.43,"Quarterly","Becker"],["BRS","BECKER RECYCLING",46.86,"Semi-Annual","Becker"],["CB","CARDBOARD BIN",0.0,"Monthly",""],["CB0","1YD CARDBOARD",22.88,"Monthly",""],["CB0A","1YD CARDBOARD",274.56,"Annual",""],["CB1","1.5YD CARDBOARD",22.88,"Monthly",""],["CB1S","1.5YD CARDBOARD",137.28,"Monthly",""],["CB2","2YD CARDBOARD",26.03,"Monthly",""],["CB3","3YD CARDBOARD",30.04,"Monthly",""],["CB3A","3YD CARDBOARD",360.48,"Annual",""],["CB3S","3YD CARDBOARD",180.24,"Semi-Annual",""],["CB4","4YD CARDBOARD",40.08,"Monthly",""],["CB4S","4YD CARDBOARD",240.48,"Semi-Annual",""],["CB6","6YD CARDBOARD",60.1,"Monthly",""],["CB8","8YD CARDBOARD",70.12,"Monthly",""],["D238","DUMPED 2ND 38 GAL",7.1,"Other",""],["D260","DUMPED 2ND 60 GAL",8.7,"Other",""],["D290","DUMPED 2ND 90 GAL",10.17,"Other",""],["D35","DUMPED 35 GAL",14.78,"Other",""],["D38","DUMPED 38 GAL",14.64,"Other",""],["D60","DUMPED 60 GAL",17.59,"Other",""],["D65","DUMPED 65 GAL",18.1,"Other",""],["D90","DUMPED 90 GAL",20.57,"Other",""],["D95","DUMPED 95 GAL",21.17,"Other",""],["DLRA","RECYCLING",79.2,"Annual","Becker"],["DLRBM","RECYCLING",6.6,"Monthly","Becker"],["DLRQ","RECYCLING",19.8,"Quarterly","Becker"],["DLRS","RECYCLING",39.6,"Semi-Annual","Becker"],["DR0","1YD RENT",22.0,"Monthly",""],["DR0A","1YD RENT",264.0,"Annual",""],["DR0Q","1YD RENT",66.0,"Quarterly",""],["DR0S","1YD RENT",132.0,"Semi-Annual",""],["DR1","1.5YD RENT",22.0,"Monthly",""],["DR1A","1.5 YD RENT",264.0,"Annual",""],["DR1Q","1.5YD RENT",66.0,"Quarterly",""],["DR1S","1.5YD RENT",132.0,"Semi-Annual",""],["DR2","2YD RENT",25.05,"Monthly",""],["DR2A","2YD RENT",286.32,"Annual",""],["DR2Q","2YD RENT",75.15,"Quarterly",""],["DR2S","2YD RENT",150.3,"Semi-Annual",""],["DR3","3YD RENT",28.89,"Monthly",""],["DR3A","3YD RENT",346.68,"Annual",""],["DR3Q","3YD RENT",86.67,"Quarterly",""],["DR3S","3YD RENT",173.34,"Semi-Annual",""],["DR4","4YD RENT",38.54,"Monthly",""],["DR4Q","4YD RENT",115.62,"Quarterly",""],["DR6","6YD RENT",57.79,"Monthly",""],["DR6Q","6YD RENT",173.37,"Quarterly",""],["DR8","8YD RENT",67.43,"Monthly",""],["KEY","REQUIRES KEY",5.0,"Other",""],["S101","1YD 1/WEEK",106.81,"Monthly",""],["S10E","1YD E/O WEEK",89.0,"Monthly",""],["S10E4","1YD E/4 WEEKS",68.68,"Monthly",""],["S10M","1YD 1/MONTH",68.68,"Monthly",""],["S111","1.5YD 1/WEEK",151.35,"Monthly",""],["S11E","1.5YD E/O WEEK",102.46,"Monthly",""],["S11E4","1.5YD E/4 WEEKS",83.41,"Monthly",""],["S11M","1.5YD 1/MONTH",83.41,"Monthly",""],["S121","2YD 1/WEEK",176.36,"Monthly",""],["S122","2YD 2/WEEK",344.77,"Monthly",""],["S12E","2YD E/O WEEK",129.92,"Monthly",""],["S12E4","2YD E/4 WEEKS",104.88,"Monthly",""],["S12M","2YD 1/MONTH",104.88,"Monthly",""],["S131","3YD 1/WEEK",237.16,"Monthly",""],["S132","3YD 2/WEEK",466.36,"Monthly",""],["S13E","3YD E/O WEEK",165.66,"Monthly",""],["S13E4","3YD E/4 WEEKS",127.58,"Monthly",""],["S13M","3YD 1/MONTH",127.58,"Monthly",""],["S141","4YD 1/WEEK",299.12,"Monthly",""],["S141S","4YD 1/WEEK",1782.72,"Semi-Annual",""],["S142","4YD 2/WEEK",590.31,"Monthly",""],["S14E","4YD E/O WEEK",224.34,"Monthly",""],["S14E4","4YD E/4 WEEKS",161.53,"Monthly",""],["S14M","4YD 1/MONTH",161.53,"Monthly",""],["S161","6YD 1/WEEK",442.14,"Monthly",""],["S162","6YD 2/WEEK",868.4,"Monthly",""],["S16E","6YD E/O WEEK",336.88,"Monthly",""],["S16E4","6YD E/4 WEEKS",196.8,"Monthly",""],["S16M","6YD 1/MONTH",196.8,"Monthly",""],["S181","8YD 1/WEEK",581.61,"Monthly",""],["S18E","8YD E/O WEEK",443.15,"Monthly",""],["S18E4","8YD E/4 WEEKS",258.81,"Monthly",""],["S18M","8YD 1/MONTH",258.81,"Monthly",""],["T2R","TIER 2 RESTART",40.0,"Other",""],["TCC","TOTER CLN CHARGE",20.0,"Other",""],["TRA","TOTER RENT",24.0,"Annual",""],["TRM","TOTER RENT",2.0,"Monthly",""],["TRQ","TOTER RENT",6.0,"Quarterly",""],["TRS","TOTER RENT",12.0,"Semi-Annual",""]];
+const PERIODS=['Monthly','Quarterly','Semi-Annual','Annual'];
+function perLabel(per){ return ({Monthly:'per month',Quarterly:'per quarter','Semi-Annual':'per 6 months',Annual:'per year',Other:'one-time'})[per]||String(per||''); }
+function perShort(per){ return ({Monthly:'/mo',Quarterly:'/qtr','Semi-Annual':'/6 mo',Annual:'/yr',Other:''})[per]||''; }
+function billedLabel(per){ return ({Monthly:'billed monthly',Quarterly:'billed quarterly','Semi-Annual':'billed every 6 months',Annual:'billed yearly'})[per]||''; }
+/* customer-facing label for an MSW service code */
+function mswAutoLabel(desc){
+  let s=String(desc||'').toUpperCase().replace(/\s+/g,' ').trim();
+  s=s.replace(/\bBECKER\b|\bOTTER TAIL\b|\bOT\b|\bDL\b/g,'').replace(/RECYCLIING/,'RECYCLING').replace(/\bGALL\b/,'GAL').replace(/\s+/g,' ').trim();
+  const NUM=['','one','two','three','four','five'];
+  // special groups first
+  if(/CARDBOARD/.test(s)){ const m=s.match(/^(\d+(?:\.\d+)?)\s*YD/); return m ? (m[1]+' yd cardboard bin') : 'Cardboard bin'; }
+  if(/RECYCLING/.test(s)) return 'Recycling';
+  if(/TOTER RENT/.test(s)) return 'Cart rent';
+  if(/RENT/.test(s)){ const m=s.match(/^(\d+(?:\.\d+)?)\s*YD/); return (m?m[1]+' yd ':'')+'dumpster rent'; }
+  if(/^DUMPED/.test(s)){ const m=s.match(/(2ND )?(\d+) GAL/); return 'Extra dump — '+(m?((m[1]?'2nd ':'')+m[2]+' gal cart'):'cart'); }
+  if(/REQUIRES KEY/.test(s)) return 'Key service';
+  if(/CLN CHARGE/.test(s)) return 'Cart cleaning';
+  if(/RESTART/.test(s)) return 'Restart fee';
+  // container
+  let size='', m;
+  if((m=s.match(/^(\d+(?:\.\d+)?)\s*YD\b/))){ size=m[1]+' yd dumpster'; s=s.slice(m[0].length); }
+  else if((m=s.match(/^2ND (\d+) GAL/))){ size='2nd '+m[1]+' gal cart'; s=s.slice(m[0].length); }
+  else if((m=s.match(/^(\d)\/(\d+) GAL/))){ size=(NUM[+m[1]]||m[1])+' '+m[2]+' gal carts'; s=s.slice(m[0].length); }
+  else if((m=s.match(/^(\d+) GAL/))){ size=m[1]+' gal cart'; s=s.slice(m[0].length); }
+  s=s.trim();
+  // notes
+  let note='';
+  if(/SHARED/.test(s)){ note='(shared)'; s=s.replace(/SHARED/,''); }
+  if(/\bSR\b|SR$/.test(s)){ note='(senior rate)'; s=s.replace(/\s*SR\b|SR$/,''); }
+  s=s.replace(/\bFED\b/,'').trim();
+  // frequency
+  let freq='';
+  if(/E\s*\/?\s*4\s*\/?\s*(WEEKS?|WKS?)|E4\/WEEKS?/.test(s)) freq='every 4 weeks pickup';
+  else if((m=s.match(/(?:^|[^E\d])(\d)\s*\/\s*(WEEK|WK)\b/))) freq=(+m[1]===1)?'weekly pickup':m[1]+'× weekly pickup';
+  else if(/E\/O (WEEK|WK)|^E\/O$|E\/O(?=\s|$)/.test(s) && !/MONTH/.test(s)) freq='every other week pickup';
+  else if(/1\/MONTH/.test(s)) freq='monthly pickup';
+  else if(/E\/O MONTH/.test(s)) freq='every other month pickup';
+  let out=size||String(desc||'').trim();
+  if(freq) out+=' — '+freq;
+  if(note) out+=' '+note;
+  return out;
+}
+
+/* what kind of charge a code is — drives list order and the default tax type */
+function mswGroup(c){
+  const d=String((c&&c.desc)||'').toUpperCase();
+  if(/CARDBOARD/.test(d)) return 'cardboard';
+  if(/RECYCL/.test(d)) return 'recycling';
+  if(/RENT/.test(d)) return 'rent';
+  if(/^DUMPED|KEY|CLN CHARGE|RESTART/.test(d)) return 'extra';
+  return 'service';
+}
+function mswDefaultTax(c){ const g=mswGroup(c); return (g==='recycling'||g==='cardboard')?'None':'SWT'; }
+function mswLabel(c){ return ((c&&c.label)||'').trim() || mswAutoLabel(c&&c.desc); }
+/* sort keys: container size, then pickup frequency */
+function mswSize(c){ const d=String((c&&c.desc)||'').toUpperCase(); const extra=/^2ND /.test(d)?0.0005:(/^(\d)\//.test(d)?0.0003*(+d[0]):0);
+  let m=d.match(/(\d+(?:\.\d+)?)\s*YD/); if(m) return +m[1]+extra; m=d.match(/(\d+)\s*GAL/); if(m) return 100+(+m[1])/1000+extra; return 999; }
+function mswFreq(c){ const d=String((c&&c.desc)||'').toUpperCase();
+  if(/E\s*\/?\s*4|E4\//.test(d)) return 5; if(/1\/MONTH/.test(d)) return 6; if(/E\/O MONTH/.test(d)) return 7; if(/E\/O/.test(d)) return 4;
+  const m=d.match(/(?:^|[^E\d])(\d)\s*\/\s*(WEEK|WK)/); return m?(+m[1]):8; }
+let MSWCODES=[];
+function fallbackMswCodes(){ return MSW_SEED.map(r=>({code:r[0],desc:r[1],rate:r[2],per:r[3],county:r[4]||'',active:true})); }
+function tagMsw(){ MSWCODES.forEach(c=>{ if(!c.taxType) c.taxType=mswDefaultTax(c); if(c.county==null) c.county=''; if(!c.per) c.per='Monthly'; }); }
+function seedMswCodes(){
+  const batch=db.batch();
+  fallbackMswCodes().forEach(c=>batch.set(db.collection('mswcodes').doc(c.code),Object.assign({},c,{taxType:mswDefaultTax(c)})));
+  return batch.commit();
+}
+function loadMswCodes(){
+  if(!db){ MSWCODES=fallbackMswCodes(); tagMsw(); return Promise.resolve(); }
+  return db.collection('mswcodes').get().then(snap=>{
+    if(snap.empty){ MSWCODES=fallbackMswCodes(); tagMsw(); return seedMswCodes().catch(e=>console.warn('msw seed failed',e)); }
+    MSWCODES=[]; snap.forEach(doc=>MSWCODES.push(doc.data())); tagMsw();
+  }).catch(e=>{ console.error('msw codes load failed',e); MSWCODES=fallbackMswCodes(); tagMsw(); });
+}
 function loadCodes(){
   if(!db){ CODES=fallbackCodes(); tagCounties(); showOffline(true); return Promise.resolve(); }
   return db.collection('codes').get().then(snap=>{
@@ -1141,12 +1346,17 @@ function fillCustFromDest(dest){
 }
 /* does the current quote have anything worth preserving? */
 function quoteHasContent(){
-  return !!(Q.custName||Q.custStreet||Q.custCity||(Q.disposal&&Q.disposal.length)||(Q.haul&&effectiveHaul()>0));
+  return !!(Q.custName||Q.custStreet||Q.custCity||(Q.disposal&&Q.disposal.length)||(Q.msw&&Q.msw.length)||(Q.haul&&effectiveHaul()>0));
 }
 
-function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
-  custStreet:'',custCity:'',custState:'',custZip:'',custEmail:'',haul:null,
-  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,label:'',rates:null,
+/* ---- service type: roll-off (one-time job) or MSW garbage service (temporary / permanent) ---- */
+const SERVICES={ 'ro':{label:'Roll-Off',short:'Roll-Off'}, 'msw-temp':{label:'MSW · Temporary',short:'MSW temporary'}, 'msw-perm':{label:'MSW · Permanent',short:'MSW permanent'} };
+function svcOf(q){ const s=(q&&q.service)||'ro'; return SERVICES[s]?s:'ro'; }
+function isMSW(q){ return svcOf(q)!=='ro'; }
+function lastService(){ const s=store.get('rq_svc'); return SERVICES[s]?s:'ro'; }
+function freshQuote(){return{service:lastService(),period:'Monthly',customer:'commercial',custChosen:false,custName:'',
+  custStreet:'',custCity:'',custState:'',custZip:'',custEmail:'',haul:null,haulWaived:false,
+  haulOverride:null,rental:{size:'',days:0},disposal:[],msw:[],override:false,validDays:30,label:'',rates:null,
   savedId:null,quoteNo:null,status:'draft',sentTs:null,created:null};}
 function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
 function haulIsAdjusted(){return Q.haul&&!Q.haul.manual&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
@@ -1160,7 +1370,8 @@ function readHandoff(){
   if(!p.has('haul')&&!p.has('dest'))return null;
   const miles=parseFloat(p.get('miles')),total=parseFloat(p.get('haul'));
   return{dest:(p.get('dest')||'').trim(),county:(p.get('county')||'').trim(),
-    miles:isFinite(miles)?miles:null,total:isFinite(total)?total:0,basis:(p.get('basis')||'').trim()};
+    miles:isFinite(miles)?miles:null,total:isFinite(total)?total:0,basis:(p.get('basis')||'').trim(),
+    svc:SERVICES[p.get('svc')||'']?p.get('svc'):''};
 }
 function renderHaul(){
   const nh=el('noHaul'); if(nh) nh.style.display='none';
@@ -1177,10 +1388,11 @@ function renderHaul(){
   let html=`<label class="fld" for="haulDest">Site Address</label>
     <input type="text" id="haulDest" placeholder="Job site address" value="${esc(h.dest||'')}">
     <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
-      <label class="fld" for="haulCounty" style="margin:0">Disposal county</label>
+      <label class="fld" for="haulCounty" style="margin:0">${isMSW(Q)?'Service county':'Disposal county'}</label>
       <select id="haulCounty" style="width:auto;min-width:165px">${ctyOpts}</select>
-      <span class="card-sub">${manual?'':'set from the job’s county · '}which facility prices the disposal items — switch it to run Becker waste through Perham</span>
-    </div>`;
+      <span class="card-sub">${manual?'':'set from the job’s county · '}${isMSW(Q)?'which county’s rates the service codes come from':'which facility prices the disposal items — switch it to run Becker waste through Perham'}</span>
+    </div>
+    <label class="waive-row" id="haulWaiveRow" style="${isMSW(Q)?'':'display:none'}"><input type="checkbox" id="haulWaive"${Q.haulWaived?' checked':''}> No delivery charge — included with the service</label>`;
   if(!manual){
     html+=`<div class="kv" style="margin-top:11px;margin-bottom:4px">
       <div><div class="k">One way</div><div class="v">${h.miles!=null?h.miles.toFixed(1)+' mi':'—'}</div></div>
@@ -1200,7 +1412,10 @@ function renderHaul(){
   const sd=el('haulDest');
   if(sd) sd.addEventListener('input',()=>{ Q.haul.dest=sd.value; saveState(); });
   const hc=el('haulCounty');
-  if(hc) hc.addEventListener('change',()=>{ Q.haul.county=hc.value; saveState(); updateDispHint(); hideMenu(); });
+  if(hc) hc.addEventListener('change',()=>{ Q.haul.county=hc.value; saveState(); updateDispHint(); hideMenu(); hideMswMenu(); });
+  const hw=el('haulWaive');
+  if(hw) hw.addEventListener('change',()=>{ Q.haulWaived=hw.checked; const f=el('haulFee'); if(f) f.disabled=hw.checked; recompute(); });
+  if(el('haulFee')) el('haulFee').disabled=!!(isMSW(Q)&&Q.haulWaived);
   updateDispHint();
   const fee=el('haulFee');
   if(fee) fee.addEventListener('input',()=>{
@@ -1350,6 +1565,157 @@ function addCustom(){
   if(tax==='SWT'&&!Q.custChosen){openCustModal();}
   renderDisposal();recompute(); notify('Custom item added');
 }
+/* ===== service type switch ===== */
+function setService(mode,byUser){
+  mode=SERVICES[mode]?mode:'ro';
+  if(byUser && mode!==svcOf(Q)){
+    const losing = mode==='ro' ? (Q.msw&&Q.msw.length) : (mode==='msw-perm' ? ((Q.disposal&&Q.disposal.length)||(Q.rental&&Q.rental.days)) : (Q.rental&&Q.rental.days));
+    if(losing && !confirm('Switch to '+SERVICES[mode].label+'? Lines that don’t apply to it are set aside (they come back if you switch back).')) { applyServiceUI(); return; }
+  }
+  Q.service=mode; store.set('rq_svc',mode);
+  applyServiceUI(); recompute(); syncSaveBtn();
+}
+function applyServiceUI(){
+  const mode=svcOf(Q), msw=mode!=='ro';
+  document.querySelectorAll('#svcSeg button').forEach(b=>b.classList.toggle('on',b.dataset.svc===mode));
+  const show=(id,on)=>{ const e=el(id); if(e) e.style.display=on?'':'none'; };
+  show('rentalCard',!msw); show('svcCard',msw); show('dispCard',mode!=='msw-perm');
+  show('sumRO',!msw); show('sumMSW',msw);
+  const ht=el('haulTitle'); if(ht) ht.textContent=msw?'Delivery & Hauling':'Hauling';
+  const sp=el('svcPeriod'); if(sp) sp.value=Q.period||'Monthly';
+  const ss=el('svcSub'); if(ss) ss.textContent=(billedLabel(Q.period||'Monthly')||'')+' · tax by code';
+  const hw=el('haulWaive'); if(hw) hw.checked=!!Q.haulWaived;
+  const hwr=el('haulWaiveRow'); if(hwr) hwr.style.display=msw?'':'none';
+  const fee=el('haulFee'); if(fee) fee.disabled=!!(msw&&Q.haulWaived);
+  const tbl=document.querySelector('.totalbar .tb-l'); if(tbl) tbl.textContent=msw?perLabel(Q.period||'Monthly').replace(/^per /,'Per '):'Quote total';
+  const hs=document.querySelector('.hd-sub'); if(hs) hs.textContent=msw?'Delivery · Service fees'+(mode==='msw-temp'?' · Disposal':'')+' · Taxes':'Hauling · Rental · Disposal · Taxes';
+  renderMswLines();
+}
+/* ---- the MSW service combo (same feel as the disposal one) ---- */
+let mPick=null, mFiltered=[], mActiveIdx=-1;
+function mswVisible(c){
+  if(c.active===false) return false;
+  const jc=jobCounty(); if(jc && c.county && c.county!==jc) return false;
+  const per=Q.period||'Monthly';
+  return c.per===per || c.per==='Other';
+}
+const MSW_GROUP_ORDER={service:0,rent:1,recycling:2,cardboard:3,extra:4};
+function mswSorted(list){
+  return list.slice().sort((a,b)=>(MSW_GROUP_ORDER[mswGroup(a)]-MSW_GROUP_ORDER[mswGroup(b)])||(mswSize(a)-mswSize(b))||(mswFreq(a)-mswFreq(b))||((a.rate||0)-(b.rate||0))||String(a.code).localeCompare(String(b.code)));
+}
+/* search: the typed words have to appear in the customer label in that order ("2 yd weekly"
+   → "2 yd dumpster — weekly pickup"; a bare number must match a word exactly so "2 yd"
+   doesn't pull in 1.5 yd or 2× weekly), or the query is the start of a code / part of the
+   office description ("221", "dr2", "2yd 1/week") */
+function mswMatch(c,q){
+  const norm=x=>String(x||'').toLowerCase().replace(/×/g,'x');
+  const toks=norm(q).trim().split(/\s+/).filter(Boolean);
+  if(!toks.length) return true;
+  const words=norm(mswLabel(c)).split(/[\s—–,()]+/).filter(Boolean);
+  let i=0, okL=true;
+  for(const t of toks){
+    const num=/^\d+(\.\d+)?$/.test(t);
+    while(i<words.length && !(num ? words[i]===t : words[i].indexOf(t)===0)) i++;
+    if(i>=words.length){ okL=false; break; } i++;
+  }
+  if(okL) return true;
+  const flat=norm(q).replace(/\s+/g,'');
+  return norm(c.code).indexOf(flat)===0 || norm(c.desc).replace(/\s+/g,'').indexOf(flat)>=0;
+}
+function mswFilter(q){
+  const all=mswSorted(MSWCODES.filter(mswVisible));
+  if(!(q||'').trim()) return all;
+  return all.filter(c=>mswMatch(c,q));
+}
+function positionMenuFor(inp,menu){
+  const r=inp.getBoundingClientRect(); const space=window.innerHeight-r.bottom-14;
+  menu.style.left=r.left+'px'; menu.style.width=r.width+'px'; menu.style.top=(r.bottom+4)+'px';
+  menu.style.maxHeight=Math.max(150,Math.min(320,space))+'px';
+}
+function renderMswMenu(){
+  const menu=el('mMenu'), inp=el('mSearch'); if(!menu||!inp) return;
+  mFiltered=mswFilter(inp.value);
+  if(mActiveIdx>=mFiltered.length) mActiveIdx=mFiltered.length-1;
+  const jc=jobCounty(), per=Q.period||'Monthly';
+  const hint=(jc?esc(jc)+' County pricing · ':'')+esc(per)+' rates + one-time extras';
+  if(!mFiltered.length){ menu.innerHTML='<div class="combo-hint">'+hint+'</div><div class="combo-empty">No matches for this county / billing period — try another period, or <b>＋ Custom charge</b>.</div>'; menu.classList.add('on'); positionMenuFor(inp,menu); return; }
+  let lastG='';
+  menu.innerHTML='<div class="combo-hint">'+hint+'</div>'+mFiltered.map((c,i)=>{
+    const g=mswGroup(c); const head=(g!==lastG)?('<div class="combo-group">'+({service:'Service',rent:'Container rent',recycling:'Recycling',cardboard:'Cardboard',extra:'One-time extras'})[g]+'</div>'):''; lastG=g;
+    return head+`<div class="combo-opt${i===mActiveIdx?' hi':''}" data-mi="${i}">
+    <span class="co-desc">${esc(mswLabel(c))}</span><span class="co-code mono">${esc(c.code)}</span>${(!jc&&c.county)?'<span class="tag t-cty">'+esc(c.county)+'</span>':''}<span class="co-rate mono">${money(c.rate)}</span>
+    <span class="co-tax"><span class="tag t-per">${esc(c.per==='Other'?'one-time':perShort(c.per).replace('/',''))}</span>${TTAG[c.taxType]||''}</span></div>`; }).join('');
+  menu.classList.add('on');
+  menu.querySelectorAll('[data-mi]').forEach(o=>o.addEventListener('mousedown',e=>{ e.preventDefault(); pickMsw(mFiltered[+o.dataset.mi]); }));
+  positionMenuFor(inp,menu);
+}
+function pickMsw(c){ if(!c) return; mPick=c; el('mSearch').value=mswLabel(c); hideMswMenu(); el('mQty').focus(); }
+function hideMswMenu(){ const m=el('mMenu'); if(m) m.classList.remove('on'); mActiveIdx=-1; }
+function mswComboKey(e){
+  if(e.key==='ArrowDown'){ e.preventDefault(); if(!el('mMenu').classList.contains('on')) renderMswMenu(); mActiveIdx=Math.min(mActiveIdx+1,mFiltered.length-1); renderMswMenu(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); mActiveIdx=Math.max(mActiveIdx-1,0); renderMswMenu(); }
+  else if(e.key==='Enter'){ e.preventDefault(); const pick=mActiveIdx>=0?mFiltered[mActiveIdx]:(mFiltered[0]||null); if(pick) pickMsw(pick); }
+  else if(e.key==='Escape'){ hideMswMenu(); }
+}
+function addMswLine(){
+  let item=mPick;
+  if(!item){ const f=mswFilter(el('mSearch').value); if(f.length) item=f[0]; }
+  if(!item){ notify('Type to pick a service, or use ＋ Custom charge'); return; }
+  let qty=parseFloat(el('mQty').value); if(!isFinite(qty)||qty<=0) qty=1;
+  Q.msw=Q.msw||[];
+  Q.msw.push({code:item.code,desc:item.desc,label:mswLabel(item),rate:item.rate,per:item.per,taxType:item.taxType||mswDefaultTax(item),qty});
+  el('mQty').value='1'; el('mSearch').value=''; mPick=null; el('mSearch').blur(); hideMswMenu();
+  if(item.taxType==='SWT'&&!Q.custChosen) openCustModal();
+  renderMswLines(); recompute();
+}
+function toggleMswCustom(show){
+  const box=el('mCustomBox'); const on= show==null ? box.style.display==='none' : show;
+  box.style.display=on?'block':'none'; if(on) el('mcDesc').focus();
+}
+function addMswCustom(){
+  const desc=(el('mcDesc').value||'').trim(); let rate=parseFloat(el('mcRate').value), qty=parseFloat(el('mcQty').value);
+  const per=el('mcPer').value==='Other'?'Other':(Q.period||'Monthly'); const tax=el('mcTax').value;
+  if(!desc){ notify('Enter a description'); return; }
+  if(!isFinite(rate)||rate<0){ notify('Enter a rate'); return; }
+  if(!isFinite(qty)||qty<=0) qty=1;
+  Q.msw=Q.msw||[]; Q.msw.push({code:'CUSTOM',desc,label:desc,rate,per,taxType:tax,qty,custom:true});
+  el('mcDesc').value='';el('mcRate').value='';el('mcQty').value='1';el('mcPer').value='period';el('mcTax').value='SWT';
+  toggleMswCustom(false); if(tax==='SWT'&&!Q.custChosen) openCustModal();
+  renderMswLines(); recompute(); notify('Custom charge added');
+}
+function renderMswLines(){
+  const box=el('mLines'); if(!box) return;
+  const lines=Q.msw||[];
+  if(!lines.length){ box.innerHTML='<div class="card-sub">No service added yet — pick the container and pickup schedule above.</div>'; return; }
+  box.innerHTML=lines.map((l,i)=>{
+    const lb=mswLineLabel(l);
+    const internal=(!l.custom && l.desc && l.desc!==lb)?('<span class="mono">'+esc(l.code)+'</span> · '+esc(l.desc)+' · '):'';
+    const perTag='<span class="tag t-per">'+esc(l.per==='Other'?'one-time':perLabel(l.per))+'</span>';
+    return `<div class="line"><div class="l-d">
+    <div class="l-name">${esc(lb)}</div>
+    <div class="l-meta">${internal}${money(l.rate)} ${perTag} ${TTAG[l.taxType]||''}${l.custom?' <span class="tag t-custom">custom</span>':''}</div></div>
+    <div class="l-qty"><input type="number" min="0" step="any" value="${l.qty}" data-mqi="${i}" inputmode="decimal"></div>
+    <div class="l-amt mono">${money((l.rate||0)*(l.qty||0))}</div>
+    <button class="l-x" data-mdx="${i}" title="Remove">×</button></div>`; }).join('');
+  box.querySelectorAll('[data-mqi]').forEach(inp=>inp.addEventListener('input',()=>{ let v=parseFloat(inp.value); Q.msw[+inp.dataset.mqi].qty=isFinite(v)&&v>=0?v:0; recompute(); }));
+  box.querySelectorAll('[data-mdx]').forEach(b=>b.addEventListener('click',()=>{ Q.msw.splice(+b.dataset.mdx,1); renderMswLines(); recompute(); }));
+}
+/* changing the billing period re-prices lines that have a code for the new period */
+function setPeriod(per){
+  if(PERIODS.indexOf(per)<0) return;
+  const old=Q.period||'Monthly'; Q.period=per;
+  let swapped=0, kept=0;
+  (Q.msw||[]).forEach(l=>{
+    if(l.custom || l.per==='Other' || l.per===per) return;
+    const alt=MSWCODES.find(c=>c.active!==false && c.per===per && c.desc===l.desc && (c.county||'')===(mswCodeCounty(l.code)||''));
+    if(alt){ l.code=alt.code; l.rate=alt.rate; l.per=alt.per; l.label=mswLabel(alt); l.taxType=alt.taxType||mswDefaultTax(alt); swapped++; } else kept++;
+  });
+  if(kept) notify(kept+' line'+(kept==1?'':'s')+' ha'+(kept==1?'s':'ve')+' no '+per.toLowerCase()+' code — still priced '+perLabel(old),5000);
+  else if(swapped) notify('Re-priced '+swapped+' line'+(swapped==1?'':'s')+' at the '+per.toLowerCase()+' rate');
+  applyServiceUI(); recompute(); hideMswMenu();
+}
+function mswCodeCounty(code){ const c=MSWCODES.find(x=>x.code===code); return c?(c.county||''):''; }
+
 function renderDisposal(){
   const box=el('dLines');
   if(!Q.disposal.length){box.innerHTML='<div class="card-sub">No disposal items added yet.</div>';return;}
@@ -1383,7 +1749,16 @@ function swtBreakHtml(T){
       +`<span class="sb-f">${included?'taxed':'excluded'}</span>`
       +`<span class="sb-t mono">${money(tax)}</span></div>`;
   };
-  return '<div class="sb-row sb-head"><span class="sb-l"></span><span class="sb-v">Taxable</span><span class="sb-f"></span><span class="sb-t">Tax</span></div>'
+  const head='<div class="sb-row sb-head"><span class="sb-l"></span><span class="sb-v">Taxable</span><span class="sb-f"></span><span class="sb-t">Tax</span></div>';
+  if(T.msw){
+    return head
+      +row('Delivery & hauling',T.haul,true)
+      +row('One-time extras',T.swtItems+T.onceTaxable,true)
+      +`<div class="sb-row base"><span class="sb-l">Solid Waste Tax — one-time</span><span class="sb-v mono">${money(T.swtBase)}</span><span class="sb-f">× ${pct(r)}</span><span class="sb-t mono">${money(T.swt)}</span></div>`
+      +row('Service fees '+perLabel(T.period),T.recTaxable,true)
+      +`<div class="sb-row base"><span class="sb-l">Solid Waste Tax — ${esc(perLabel(T.period))}</span><span class="sb-v mono">${money(T.recTaxable)}</span><span class="sb-f">× ${pct(r)}</span><span class="sb-t mono">${money(T.recSwt)}</span></div>`;
+  }
+  return head
     +row('Hauling',T.haul,!ov)
     +row('Rental',T.rental,!ov)
     +row('MSW items',T.swtItems,true)
@@ -1400,8 +1775,9 @@ function recompute(){
   if(Q.haul)el('haulSub').textContent=Q.haul.manual?'Entered manually':(haulIsAdjusted()?'Manually adjusted':'From the Mileage Quoter');
   el('rentalAmt').textContent=money(rental);
   el('dispAmt').textContent=money(disp);
-  el('taxAmt').textContent=money(swt+env);
+  el('taxAmt').textContent=money(swt+env+(T.recSwt||0));
   el('envAmt').textContent=money(env);
+  const svcAmt=el('svcAmt'); if(svcAmt) svcAmt.textContent=money(T.rec||0);
   el('swtRateInline').textContent='('+pct(rate)+')';
   el('envSub').textContent=env>0?'from demolition yards / tons on the quote':'auto from demolition yards / tons';
   el('swtBreak').innerHTML=swtBreakHtml(T);
@@ -1411,15 +1787,27 @@ function recompute(){
   const banner=el('swtBanner');
   if(hasSWT){
     banner.className='swtbanner full';
-    banner.innerHTML=`<span>✓</span><div class="bw"><b>Solid Waste Tax applies to the full ticket</b> — hauling, rental, and MSW items.</div>`;
+    banner.innerHTML=T.msw
+      ? `<span>✓</span><div class="bw"><b>Solid Waste Tax applies</b> — to delivery, extras and the MSW service fees. Recycling and cardboard are exempt.</div>`
+      : `<span>✓</span><div class="bw"><b>Solid Waste Tax applies to the full ticket</b> — hauling, rental, and MSW items.</div>`;
   }else{
     banner.className='';banner.innerHTML='';
   }
 
   el('sHaul').textContent=money(haul);el('sRental').textContent=money(rental);el('sDisp').textContent=money(disp);
   el('sSwt').textContent=money(swt);el('sEnv').textContent=money(env);el('sTotal').textContent=money(total);
-  el('tbTotal').textContent=money(total);
-  el('tbSub').textContent=(Q.customer==='commercial'?'Commercial':'Residential')+(Q.haul&&Q.haul.county?' · '+Q.haul.county+' Co':'');
+  if(T.msw){
+    el('mHaul').textContent=money(haul); el('mDisp').textContent=money(disp+T.once); el('mSwt').textContent=money(swt); el('mEnv').textContent=money(env);
+    el('mDispRow').style.display=(T.mode==='msw-perm'&&!T.once)?'none':''; el('mEnvRow').style.display=env>0?'':'none';
+    el('mOnce').textContent=money(T.oneTime);
+    el('mRecSec').textContent='Service charges — '+perLabel(T.period); el('mRec').textContent=money(T.rec); el('mRecSwt').textContent=money(T.recSwt);
+    el('mRecLbl').textContent=perLabel(T.period).replace(/^per /,'Per '); el('mRecTotal').textContent=money(T.recurring);
+    el('tbTotal').textContent=money(T.recurring);
+    el('tbSub').textContent='+ '+money(T.oneTime)+' one-time · '+(Q.customer==='commercial'?'Commercial':'Residential')+(Q.haul&&Q.haul.county?' · '+Q.haul.county+' Co':'');
+  }else{
+    el('tbTotal').textContent=money(total);
+    el('tbSub').textContent=(Q.customer==='commercial'?'Commercial':'Residential')+(Q.haul&&Q.haul.county?' · '+Q.haul.county+' Co':'');
+  }
   saveState();
 }
 
@@ -1440,7 +1828,8 @@ function openSettings(){
   el('setOffline').classList.toggle('on',!db);
   if(el('setSearch'))el('setSearch').value='';
   el('settingsScreen').classList.toggle('admin',isAdmin());
-  fillRatesForm(); fillHaulForm(); renderAdminList(); renderCodeList();
+  if(el('mswSearch')) el('mswSearch').value='';
+  fillRatesForm(); fillHaulForm(); renderAdminList(); renderCodeList(); renderMswList();
   el('settingsScreen').classList.add('open');
 }
 function closeSettings(){ el('settingsScreen').classList.remove('open'); }
@@ -1524,6 +1913,59 @@ function addNewCode(){
     el('ncCode').value='';el('ncDesc').value='';el('ncRate').value='';el('ncTax').value='None';
     if(el('ncCounty')) el('ncCounty').value=''; if(el('ncLabel')) el('ncLabel').value='';
     renderCodeList();notify('Added “'+code+'”');
+  });
+}
+
+/* ===== settings — MSW service codes ===== */
+function persistMswCode(c){
+  if(!isAdmin()){ notify('Only admins can change MSW codes'); renderMswList(); return Promise.resolve(); }
+  const i=MSWCODES.findIndex(x=>x.code===c.code);
+  if(i>=0) MSWCODES[i]=Object.assign({},MSWCODES[i],c); else MSWCODES.push(Object.assign({},c));
+  if(db){ return db.collection('mswcodes').doc(c.code).set(c,{merge:true})
+    .then(()=>notify('Saved — synced to the team'))
+    .catch(e=>{console.error('msw code save failed',e); notify('Saved on this device — sync failed');}); }
+  notify('Saved on this device (offline — not synced)'); return Promise.resolve();
+}
+function mswRec(c,patch){ return Object.assign({code:c.code,desc:c.desc,rate:c.rate,per:c.per||'Monthly',county:c.county||'',taxType:c.taxType||mswDefaultTax(c),active:c.active!==false,label:(c.label||'').trim()},patch||{}); }
+function renderMswList(){
+  const box=el('mswList'); if(!box) return;
+  const q=(el('mswSearch').value||'').trim().toLowerCase();
+  const list=mswSorted(MSWCODES).filter(c=>!q||[c.code,c.desc,mswLabel(c),c.county,c.per].some(x=>String(x||'').toLowerCase().includes(q)));
+  if(!list.length){ box.innerHTML='<div class="card-sub">No MSW codes match your search.</div>'; return; }
+  const dis=isAdmin()?'':' disabled';
+  const sel=(attr,code,cur,opts)=>'<select data-'+attr+'="'+esc(code)+'"'+dis+'>'+opts.map(o=>'<option value="'+esc(o[0])+'"'+(o[0]===cur?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>';
+  box.innerHTML=list.map(c=>{
+    const on=c.active!==false;
+    return '<div class="code-row'+(on?'':' off')+'">'
+      +'<label class="sw" title="'+(on?'Active':'Inactive')+'"><input type="checkbox" data-mact="'+esc(c.code)+'"'+(on?' checked':'')+dis+'><span class="tr"></span></label>'
+      +'<div class="cr-code">'+esc(c.code)+'</div>'
+      +'<div class="cr-desc"><input type="text" data-mdesc="'+esc(c.code)+'" value="'+esc(c.desc||'')+'"'+dis+'></div>'
+      +'<div class="cr-rate"><input type="number" min="0" step="any" data-mrate="'+esc(c.code)+'" value="'+(c.rate!=null?c.rate:0)+'" inputmode="decimal"'+dis+'></div>'
+      +'<div class="cr-cty">'+sel('mper',c.code,c.per||'Monthly',[['Monthly','Monthly'],['Quarterly','Quarterly'],['Semi-Annual','Semi-Annual'],['Annual','Annual'],['Other','One-time']])+'</div>'
+      +'<div class="cr-cty">'+sel('mcty',c.code,c.county||'',[['','Both counties'],['Otter Tail','Otter Tail'],['Becker','Becker']])+'</div>'
+      +'<div class="cr-cty">'+sel('mtax',c.code,c.taxType||mswDefaultTax(c),[['SWT','Solid Waste Tax'],['None','No tax']])+'</div>'
+      +'<div class="cr-label"><span>Shows on quote as</span><input type="text" data-mlabel="'+esc(c.code)+'" value="'+esc((c.label||'').trim())+'" placeholder="'+esc(mswAutoLabel(c.desc))+'"'+dis+'></div></div>';
+  }).join('');
+  const find=code=>MSWCODES.find(x=>x.code===code);
+  box.querySelectorAll('[data-mact]').forEach(inp=>inp.addEventListener('change',()=>{ const c=find(inp.dataset.mact); if(!c)return; persistMswCode(mswRec(c,{active:inp.checked})); inp.closest('.code-row').classList.toggle('off',!inp.checked); }));
+  box.querySelectorAll('[data-mdesc]').forEach(inp=>inp.addEventListener('change',()=>{ const c=find(inp.dataset.mdesc); if(!c)return; const v=inp.value.trim(); if(!v){inp.value=c.desc||'';notify('Description can’t be empty');return;} persistMswCode(mswRec(c,{desc:v})); }));
+  box.querySelectorAll('[data-mrate]').forEach(inp=>inp.addEventListener('change',()=>{ const c=find(inp.dataset.mrate); if(!c)return; let v=parseFloat(inp.value); if(!isFinite(v)||v<0){v=c.rate||0;inp.value=v;} persistMswCode(mswRec(c,{rate:v})); }));
+  box.querySelectorAll('[data-mper]').forEach(s=>s.addEventListener('change',()=>{ const c=find(s.dataset.mper); if(c) persistMswCode(mswRec(c,{per:s.value})); }));
+  box.querySelectorAll('[data-mcty]').forEach(s=>s.addEventListener('change',()=>{ const c=find(s.dataset.mcty); if(c) persistMswCode(mswRec(c,{county:s.value})); }));
+  box.querySelectorAll('[data-mtax]').forEach(s=>s.addEventListener('change',()=>{ const c=find(s.dataset.mtax); if(c) persistMswCode(mswRec(c,{taxType:s.value})); }));
+  box.querySelectorAll('[data-mlabel]').forEach(inp=>inp.addEventListener('change',()=>{ const c=find(inp.dataset.mlabel); if(c) persistMswCode(mswRec(c,{label:inp.value.trim()})); }));
+}
+function addNewMswCode(){
+  const code=(el('nmCode').value||'').trim().toUpperCase().replace(/\s+/g,'');
+  const desc=(el('nmDesc').value||'').trim(); let rate=parseFloat(el('nmRate').value);
+  const per=el('nmPer').value, county=el('nmCounty').value, tax=el('nmTax').value, label=(el('nmLabel').value||'').trim();
+  if(!code){notify('Enter a code');return;}
+  if(!desc){notify('Enter a description');return;}
+  if(!isFinite(rate)||rate<0) rate=0;
+  if(MSWCODES.some(c=>c.code===code)){notify('MSW code “'+code+'” already exists');return;}
+  persistMswCode({code,desc,rate,per,county,taxType:tax,active:true,label}).then(()=>{
+    el('nmCode').value='';el('nmDesc').value='';el('nmRate').value='';el('nmLabel').value='';
+    renderMswList(); notify('Added “'+code+'”');
   });
 }
 
@@ -1674,6 +2116,7 @@ function saveQuoteAsync(){
       customer:Q.customer||'commercial',
       label:Q.label||'',
       validDays:validDaysFor(Q),
+      service:svcOf(Q), period:T.msw?T.period:'', recurring:T.msw?T.recurring:0, oneTime:T.msw?T.oneTime:T.total,
       total:T.total,
       by:currentEmail(),
       ts:Date.now(),
@@ -1729,7 +2172,10 @@ function savedRowHtml(r){
   const title=esc(r.name||r.site||'(no name)');
   const lab=r.label?' <span class="sv-lab">'+esc(r.label)+'</span>':'';
   const qn=r.quoteNo?'<span class="sv-qno">'+esc(r.quoteNo)+'</span>':'';
+  const msw=(r.service||'ro')!=='ro';
+  const svcTag=msw?' <span class="tag t-msw">'+esc(r.service==='msw-perm'?'MSW permanent':'MSW temporary')+'</span>':'';
   const bits=[(r.name&&r.site)?esc(r.site):'', esc(r.by||''), when];
+  if(msw) bits.push(money(r.oneTime||0)+' one-time');
   if(st==='sent' && r.sentTs){ bits.push('sent '+fmtShortDate(r.sentTs)); const x=expiresTs(r); if(x) bits.push('good through '+fmtShortDate(x)); }
   else if(st==='expired') bits.push('expired '+fmtShortDate(expiresTs(r)));
   else if((st==='accepted'||st==='declined') && r.statusTs) bits.push(QSTATUS[st].toLowerCase()+' '+fmtShortDate(r.statusTs));
@@ -1738,8 +2184,8 @@ function savedRowHtml(r){
       +(s==='sent'&&st==='expired'?'Sent (expired)':QSTATUS[s])+'</option>').join('')+'</select>';
   return '<div class="saved-row is-'+st+'">'
     +'<input type="checkbox" class="sv-check" data-sel="'+esc(r.id)+'" title="Select for combined quote / email">'
-    +'<div class="sv-main"><div class="sv-name">'+qn+title+lab+statusBadge(r)+'</div><div class="sv-sub">'+bits.filter(Boolean).join(' · ')+'</div></div>'
-    +'<div class="sv-amt mono">'+money(r.total||0)+'</div>'
+    +'<div class="sv-main"><div class="sv-name">'+qn+title+lab+svcTag+statusBadge(r)+'</div><div class="sv-sub">'+bits.filter(Boolean).join(' · ')+'</div></div>'
+    +'<div class="sv-amt mono">'+(msw?(money(r.recurring||0)+'<span style="font-size:11px;color:var(--muted)">'+esc(perShort(r.period))+'</span>'):money(r.total||0))+'</div>'
     +'<div class="sv-btns">'+sel+'<button class="btn btn-primary btn-sm" data-load="'+esc(r.id)+'">Load</button>'
     +'<button class="btn btn-ghost btn-sm" data-del="'+esc(r.id)+'">Delete</button></div></div>';
 }
@@ -1774,7 +2220,7 @@ function combineEmail(){
 function savedMatches(r,q,st){
   if(st && effectiveStatus(r)!==st) return false;
   if(!q) return true;
-  const hay=[r.quoteNo,r.name,r.site,r.street,r.city,r.state,r.zip,r.label,r.by,r.email].map(x=>String(x||'').toLowerCase()).join(' | ');
+  const hay=[r.quoteNo,r.name,r.site,r.street,r.city,r.state,r.zip,r.label,r.by,r.email,(SERVICES[r.service||'ro']||{}).label].map(x=>String(x||'').toLowerCase()).join(' | ');
   return q.split(/\s+/).filter(Boolean).every(w=>hay.indexOf(w)>=0);
 }
 /* draw the (filtered) rows from what's already loaded */
@@ -1816,16 +2262,17 @@ function exportCsv(){
   const rows=savedShown.length?savedShown:savedRows;
   if(!rows.length){ notify('Nothing to export yet'); return; }
   const d=v=>v?new Date(v).toLocaleDateString('en-US'):'';
-  const head=['Quote #','Status','Date','Sent','Good through','Customer','Street','City','State','ZIP','Email','Site address',
-    'Tax class','Option label','Hauling','Daily rental','Disposal','Solid Waste Tax','Environmental Tax','Total','Good for (days)','Saved by','Last updated'];
+  const head=['Quote #','Service','Status','Date','Sent','Good through','Customer','Street','City','State','ZIP','Email','Site address',
+    'Tax class','Option label','Hauling','Daily rental','Disposal','Solid Waste Tax','Environmental Tax','One-time total','Billing period','Service fees per period','SWT per period','Per period total','Total (first invoice)','Good for (days)','Saved by','Last updated'];
   const lines=[head.map(csvCell).join(',')];
   rows.forEach(r=>{
     const q=Object.assign(freshQuote(),rowQuote(r)); q.override=false;
     const T=calcTotalsForQ(q);
-    lines.push([r.quoteNo||'', QSTATUS[effectiveStatus(r)], d(r.created||r.ts), d(r.sentTs), d(expiresTs(r)),
+    lines.push([r.quoteNo||'', (SERVICES[svcOf(q)]||{}).label||'Roll-Off', QSTATUS[effectiveStatus(r)], d(r.created||r.ts), d(r.sentTs), d(expiresTs(r)),
       r.name||q.custName||'', r.street||q.custStreet||'', r.city||q.custCity||'', r.state||q.custState||'', r.zip||q.custZip||'',
       r.email||q.custEmail||'', (q.haul&&q.haul.dest)||'', (q.customer==='residential'?'Residential':'Commercial'), r.label||q.label||'',
-      T.haul.toFixed(2), T.rental.toFixed(2), T.disp.toFixed(2), T.swt.toFixed(2), T.env.toFixed(2), T.total.toFixed(2),
+      T.haul.toFixed(2), T.rental.toFixed(2), (T.disp+(T.once||0)).toFixed(2), T.swt.toFixed(2), T.env.toFixed(2), T.oneTime.toFixed(2),
+      T.msw?T.period:'', T.msw?T.rec.toFixed(2):'', T.msw?T.recSwt.toFixed(2):'', T.msw?T.recurring.toFixed(2):'', T.total.toFixed(2),
       validDaysFor(q), r.by||'', d(r.ts)].map(csvCell).join(','));
   });
   const blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
@@ -1852,6 +2299,7 @@ function loadQuote(r){
   el('validDays').value=(Q.validDays!=null?Q.validDays:30);
   el('qLabel').value=Q.label||'';
   el('rSize').value=Q.rental.size||''; el('rDays').value=Q.rental.days||0;
+  applyServiceUI();
   buildCatalog(); renderHaul(); renderDisposal(); recompute(); syncSaveBtn();
   window.scrollTo(0,0); notify('Loaded'+(Q.quoteNo?(' '+Q.quoteNo):'')+(Q.custName?(' — '+Q.custName):''));
 }
@@ -1882,35 +2330,60 @@ function ratesFor(q){
   return currentRates();
 }
 function ratesDiffer(a,b){ return JSON.stringify(a)!==JSON.stringify(b); }
+/* Totals for any quote object. Roll-off: one total. MSW: one-time charges (delivery,
+   extras, their tax) and service charges per billing period (their tax), plus `total`
+   = the two together (what the first invoice comes to). */
 function calcTotalsForQ(q){
   const R=ratesFor(q);
-  const haul=effHaul(q);
+  const mode=svcOf(q), msw=mode!=='ro';
+  const haul=(msw&&q.haulWaived)?0:effHaul(q);
   const r=q.rental||{};
-  const rentalRate=(r.size!==''&&r.size!=null)?(R.rental[+r.size]||0):0;
+  const rentalRate=(!msw&&r.size!==''&&r.size!=null)?(R.rental[+r.size]||0):0;
   const rental=rentalRate*(r.days||0);
   let disp=0,swtItems=0,env=0;
-  (q.disposal||[]).forEach(d=>{const lt=d.rate*(d.qty||0);disp+=lt;
+  if(mode!=='msw-perm') (q.disposal||[]).forEach(d=>{const lt=d.rate*(d.qty||0);disp+=lt;
     if(d.taxType==='SWT')swtItems+=lt;
     else if(d.taxType==='ENV-YD')env+=(d.qty||0)*R.env.perYard;
     else if(d.taxType==='ENV-TON')env+=(d.qty||0)*R.env.perTon;});
-  const hasSWT=(q.disposal||[]).some(d=>d.taxType==='SWT'&&(d.qty||0)>0);
+  let rec=0,recTaxable=0,once=0,onceTaxable=0;
+  if(msw) (q.msw||[]).forEach(l=>{ const amt=(l.rate||0)*(l.qty||0);
+    if(l.per==='Other'){ once+=amt; if(l.taxType==='SWT') onceTaxable+=amt; }
+    else { rec+=amt; if(l.taxType==='SWT') recTaxable+=amt; } });
+  const dispSWT=(mode!=='msw-perm')&&(q.disposal||[]).some(d=>d.taxType==='SWT'&&(d.qty||0)>0);
+  const mswSWT=msw&&(q.msw||[]).some(l=>l.taxType==='SWT'&&(l.qty||0)>0);
+  const hasSWT=dispSWT||mswSWT;
   const rate=(R.swt[q.customer]!=null)?R.swt[q.customer]:R.swt.commercial;
-  const swtBase=hasSWT?(q.override?swtItems:swtItems+rental+haul):0;
+  const swtBase=hasSWT?(msw?(haul+swtItems+onceTaxable):(q.override?swtItems:swtItems+rental+haul)):0;
   const swt=swtBase*rate;
-  return {haul,rental,disp,swtItems,env,hasSWT,rate,swtBase,swt,total:haul+rental+disp+swt+env};
+  const recSwt=hasSWT?recTaxable*rate:0;
+  const oneTime=haul+rental+disp+once+swt+env;
+  const recurring=rec+recSwt;
+  return {mode,msw,haul,rental,disp,once,swtItems,onceTaxable,env,hasSWT,rate,swtBase,swt,
+          rec,recTaxable,recSwt,oneTime,recurring,period:(q.period||'Monthly'),total:oneTime+recurring};
 }
+/* one-line money summary: "$81.90" or "$81.90 one-time + $182.66 per month" */
+function totalsText(T){ return T.msw ? (money(T.oneTime)+' one-time + '+money(T.recurring)+' '+perLabel(T.period)) : money(T.total); }
+/* the customer-facing lines: `items` are one-time charges, `recItems` the service charges
+   per billing period (MSW only) */
 function quoteItemsForQ(q){
   const T=calcTotalsForQ(q); const R=ratesFor(q);
-  const items=[]; const haul=T.haul;
-  if(haul>0||(q.haul&&q.haul.dest)) items.push({label:'Hauling',detail:(q.haul&&q.haul.dest)||'',amount:haul});
+  const items=[], recItems=[]; const haul=T.haul;
+  if(T.msw){
+    if(q.haulWaived) items.push({label:'Delivery & hauling',detail:'no charge',amount:0});
+    else if(haul>0||(q.haul&&q.haul.dest)) items.push({label:'Delivery & hauling',detail:(q.haul&&q.haul.dest)||'',amount:haul});
+  }else if(haul>0||(q.haul&&q.haul.dest)) items.push({label:'Hauling',detail:(q.haul&&q.haul.dest)||'',amount:haul});
   const r=q.rental||{};
-  if(r.size!==''&&r.size!=null&&(r.days||0)>0){
+  if(!T.msw && r.size!==''&&r.size!=null&&(r.days||0)>0){
     const rr=DATA.rental[+r.size], rate=R.rental[+r.size]||0;
     items.push({label:'Daily rental',detail:rr.size+' · '+r.days+' day'+((r.days||0)==1?'':'s')+' @ '+money(rate)+'/day',amount:rate*(r.days||0)});
   }
-  (q.disposal||[]).forEach(d=>{ if((d.qty||0)>0) items.push({label:itemLabel(d),detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
-  return {T,items,haul};
+  if(T.mode!=='msw-perm') (q.disposal||[]).forEach(d=>{ if((d.qty||0)>0) items.push({label:itemLabel(d),detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
+  if(T.msw) (q.msw||[]).forEach(l=>{ if((l.qty||0)<=0) return;
+    const it={label:mswLineLabel(l),detail:(l.qty||0)!==1?(fmtQty(l.qty)+' @ '+money(l.rate)):'',amount:(l.rate||0)*(l.qty||0)};
+    if(l.per==='Other') items.push(it); else recItems.push(it); });
+  return {T,items,recItems,haul};
 }
+function mswLineLabel(l){ if(!l) return ''; if(l.custom) return l.desc||''; return (l.label||'').trim()||mswAutoLabel(l.desc); }
 function quoteItems(){ return quoteItemsForQ(Q); }
 function custAddrLinesFor(q){
   return [q.custStreet,[q.custCity,q.custState].filter(Boolean).join(', ')+(q.custZip?' '+q.custZip:'')]
@@ -1947,6 +2420,8 @@ const SHEET_CSS=`
   .sumtab td.amt{font-weight:800;color:#2f6b41}
   .opt{margin-top:26px;page-break-inside:avoid}
   .opt .oh{font-size:15px;color:#234e30;margin:0;padding:8px 11px;background:#eef3ef;border-radius:7px}
+  .sec{margin-top:18px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#2f6b41;border-bottom:2px solid #2f6b41;padding-bottom:4px}
+  .sec + table{margin-top:4px}
   @media print{.pbar{display:none}body{padding:0}}
 `;
 function logoUrl(){ return new URL('letterhead.png',location.href).href; }
@@ -1957,16 +2432,35 @@ function custBlockFor(q){
   if(q.custEmail) lines.push(q.custEmail);
   return lines.map(x=>(x||'').trim()).filter(Boolean).map(esc).join('<br>')||'—';
 }
+function sheetRows(items){ return items.map(it=>`<tr><td><div class="il">${esc(it.label)}</div>${it.detail?`<div class="id">${esc(it.detail)}</div>`:''}</td><td class="amt">${money(it.amount)}</td></tr>`).join(''); }
 function sheetTableFor(q,totalLabel){
-  const {T,items}=quoteItemsForQ(q);
-  const rows=items.map(it=>`<tr><td><div class="il">${esc(it.label)}</div>${it.detail?`<div class="id">${esc(it.detail)}</div>`:''}</td><td class="amt">${money(it.amount)}</td></tr>`).join('');
+  const {T,items,recItems}=quoteItemsForQ(q);
+  if(T.msw){
+    // one-time charges, then the service charges per billing period — two tables so the
+    // customer sees what's paid once and what recurs
+    let t1='';
+    if(T.hasSWT&&T.swtBase>0) t1+=`<tr><td>Solid Waste Tax <span class="mut">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td class="amt">${money(T.swt)}</td></tr>`;
+    if(T.env>0) t1+=`<tr><td>Environmental Tax</td><td class="amt">${money(T.env)}</td></tr>`;
+    let t2='';
+    if(T.hasSWT&&T.recTaxable>0) t2+=`<tr><td>Solid Waste Tax <span class="mut">(${pct(T.rate)} on ${money(T.recTaxable)})</span></td><td class="amt">${money(T.recSwt)}</td></tr>`;
+    const per=perLabel(T.period);
+    return `<div class="sec">One-time charges</div>
+    <table><thead><tr><th>Description</th><th class="amt">Amount</th></tr></thead>
+    <tbody>${sheetRows(items)||'<tr><td class="mut">No one-time charges</td><td></td></tr>'}</tbody>
+    <tfoot>${t1}<tr class="tot"><td>One-time total</td><td class="amt">${money(T.oneTime)}</td></tr></tfoot></table>
+    <div class="sec">Service charges — ${esc(billedLabel(T.period)||per)}</div>
+    <table><thead><tr><th>Description</th><th class="amt">Amount ${esc(per)}</th></tr></thead>
+    <tbody>${sheetRows(recItems)||'<tr><td class="mut">No service lines</td><td></td></tr>'}</tbody>
+    <tfoot>${t2}<tr class="tot"><td>${esc(per.replace(/^per /,'Per '))}</td><td class="amt">${money(T.recurring)}</td></tr></tfoot></table>`;
+  }
   let taxRows='';
   if(T.hasSWT) taxRows+=`<tr><td>Solid Waste Tax <span class="mut">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td class="amt">${money(T.swt)}</td></tr>`;
   if(T.env>0) taxRows+=`<tr><td>Environmental Tax</td><td class="amt">${money(T.env)}</td></tr>`;
   return `<table><thead><tr><th>Description</th><th class="amt">Amount</th></tr></thead>
-    <tbody>${rows||'<tr><td class="mut">No line items</td><td></td></tr>'}</tbody>
+    <tbody>${sheetRows(items)||'<tr><td class="mut">No line items</td><td></td></tr>'}</tbody>
     <tfoot>${taxRows}<tr class="tot"><td>${esc(totalLabel||'Total')}</td><td class="amt">${money(T.total)}</td></tr></tfoot></table>`;
 }
+function svcTitleFor(q){ return ({'ro':'ROLL-OFF QUOTE','msw-temp':'SERVICE QUOTE','msw-perm':'SERVICE QUOTE'})[svcOf(q)]||'QUOTE'; }
 function quoteSheetHtmlFor(q){
   const {T}=quoteItemsForQ(q);
   const site=(q.haul&&q.haul.dest)?esc(q.haul.dest):'';
@@ -1975,14 +2469,15 @@ function quoteSheetHtmlFor(q){
   return headHtml('Quote — '+(q.custName||COMPANY.name))
     +`<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
     <img class="lh" src="${logoUrl()}" alt="${esc(COMPANY.name)}">
-    <div class="qrow"><div class="qt">QUOTE</div><div class="qd">${q.quoteNo?('<b>'+esc(q.quoteNo)+'</b><br>'):''}${today()}</div></div>
+    <div class="qrow"><div class="qt">${isMSW(q)?'SERVICE QUOTE':'QUOTE'}</div><div class="qd">${q.quoteNo?('<b>'+esc(q.quoteNo)+'</b><br>'):''}${today()}</div></div>
     <div class="meta">
       <div><h3>Prepared for</h3><div class="blk">${custBlockFor(q)}</div></div>
       ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
+      ${isMSW(q)?`<div><h3>Service</h3><div class="blk">${esc(SERVICES[svcOf(q)].short)} · ${esc(billedLabel(q.period||'Monthly'))}</div></div>`:''}
       <div><h3>Tax class</h3><div class="blk">${taxClass} · SWT ${pct(T.rate)}</div></div>
     </div>
     ${sheetTableFor(q,'Total')}
-    <div class="foot">This quote is good for ${days} day${days==1?'':'s'}. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
+    <div class="foot">This quote is good for ${days} day${days==1?'':'s'}.${isMSW(q)?' Service charges are '+esc(billedLabel(q.period||'Monthly'))+' in advance.':''} Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
     </body></html>`;
 }
 function combinedSheetHtml(list){
@@ -1991,7 +2486,7 @@ function combinedSheetHtml(list){
   const days=validDaysFor(c0);
   const sumRows=list.map((q,i)=>{const {T}=quoteItemsForQ(q);
     const lbl=esc(optionTitle(q,i))+(q.quoteNo?' <span class="mut">'+esc(q.quoteNo)+'</span>':'');
-    return `<tr><td>${lbl}</td><td class="amt">${money(T.total)}</td></tr>`;}).join('');
+    return `<tr><td>${lbl}</td><td class="amt">${esc(totalsText(T))}</td></tr>`;}).join('');
   const sections=list.map((q,i)=>{
     const head=esc(optionTitle(q,i))+(q.quoteNo?'<span class="qn">'+esc(q.quoteNo)+'</span>':'');
     return `<div class="opt"><h3 class="oh">${head}</h3>${sheetTableFor(q,'Option total')}</div>`;}).join('');
@@ -2019,10 +2514,25 @@ function openSheet(){
 }
 /* the itemized body for one quote (optionally headed by an option label) */
 function emailItemsFor(q,optionLabel){
-  const {T,items}=quoteItemsForQ(q);
+  const {T,items,recItems}=quoteItemsForQ(q);
   const pad=(s,amt)=>{ s=String(s); const w=Math.max(2,40-s.length); return s+' '.repeat(w)+amt; };
   const L=[];
   if(optionLabel) L.push('— '+optionLabel+' —');
+  if(T.msw){
+    const per=perLabel(T.period);
+    L.push('ONE-TIME CHARGES');
+    if(!items.length) L.push('  (none)');
+    items.forEach(it=>L.push(pad(it.label+(it.detail?' ('+it.detail+')':''),money(it.amount))));
+    if(T.hasSWT&&T.swtBase>0) L.push(pad('Solid Waste Tax ('+pct(T.rate)+' on '+money(T.swtBase)+')',money(T.swt)));
+    if(T.env>0) L.push(pad('Environmental Tax',money(T.env)));
+    L.push(pad('One-time total',money(T.oneTime)));
+    L.push('');
+    L.push('SERVICE CHARGES — '+(billedLabel(T.period)||per).toUpperCase());
+    recItems.forEach(it=>L.push(pad(it.label+(it.detail?' ('+it.detail+')':''),money(it.amount))));
+    if(T.hasSWT&&T.recTaxable>0) L.push(pad('Solid Waste Tax ('+pct(T.rate)+' on '+money(T.recTaxable)+')',money(T.recSwt)));
+    L.push(pad((per.replace(/^per /,'Per ')).toUpperCase(),money(T.recurring)));
+    return L.join('\n');
+  }
   items.forEach(it=>L.push(pad(it.label+(it.detail?' ('+it.detail+')':''),money(it.amount))));
   if(T.hasSWT) L.push(pad('Solid Waste Tax ('+pct(T.rate)+' on '+money(T.swtBase)+')',money(T.swt)));
   if(T.env>0) L.push(pad('Environmental Tax',money(T.env)));
@@ -2034,11 +2544,11 @@ function optionTitle(q,i){ return 'Option '+(i+1)+(q.label?(' — '+q.label):'')
 /* email subject for one quote: "Steve's Sanitation — Quote Q-2026-0004 for Acme" */
 function quoteSubject(q){
   const name=(q&&q.custName)||'';
-  return COMPANY.name+' — '+(q&&q.quoteNo?('Quote '+q.quoteNo):'Roll-Off Quote')+(name?(' for '+name):'');
+  return COMPANY.name+' — '+(q&&q.quoteNo?('Quote '+q.quoteNo):(isMSW(q)?'Service Quote':'Roll-Off Quote'))+(name?(' for '+name):'');
 }
 function emailTextFor(q){
   const L=[];
-  L.push(COMPANY.name+" — Roll-Off Quote");
+  L.push(COMPANY.name+(isMSW(q)?" — Service Quote ("+SERVICES[svcOf(q)].short+")":" — Roll-Off Quote"));
   if(q.quoteNo) L.push('Quote #: '+q.quoteNo);
   L.push('Date: '+new Date().toLocaleDateString('en-US'));
   L.push('');
@@ -2113,7 +2623,7 @@ function combinedEmailText(list){
   if(c0.haul&&c0.haul.dest){ L.push(''); L.push('Site address: '+c0.haul.dest); }
   L.push(''); L.push('OPTIONS AT A GLANCE');
   list.forEach((q,i)=>{const {T}=quoteItemsForQ(q);
-    L.push('  '+optionTitle(q,i)+(q.quoteNo?(' ('+q.quoteNo+')'):'')+': '+money(T.total));});
+    L.push('  '+optionTitle(q,i)+(q.quoteNo?(' ('+q.quoteNo+')'):'')+': '+totalsText(T));});
   L.push('');
   list.forEach((q,i)=>{
     L.push('------------------------------------------------');
@@ -2145,33 +2655,45 @@ function ehMeta(q,withTax){
   return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;${EH.font}"><tr>
 <td style="${cell}"><div style="${h3}">Prepared for</div>${custBlockFor(q)}</td>
 ${site?`<td style="${cell}"><div style="${h3}">Site address</div>${site}</td>`:''}
+${(withTax&&isMSW(q))?`<td style="${cell}"><div style="${h3}">Service</div>${esc(SERVICES[svcOf(q)].short)} · ${esc(billedLabel(q.period||'Monthly'))}</td>`:''}
 ${withTax?`<td style="${cell}"><div style="${h3}">Tax class</div>${q.customer==='commercial'?'Commercial':'Residential'} · SWT ${pct(T.rate)}</td>`:''}
 </tr></table>`;
 }
 function ehTable(q,totalLabel){
-  const {T,items}=quoteItemsForQ(q);
+  const {T,items,recItems}=quoteItemsForQ(q);
   const td='padding:8px 4px;border-bottom:1px solid #eeeeee;vertical-align:top;font-size:14px;color:#1d201a;'+EH.font;
   const amt=td+'text-align:right;white-space:nowrap;';
   const th='text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;border-bottom:2px solid #e2ded2;padding:6px 4px;'+EH.font;
   const tx='padding:5px 4px;font-size:14px;color:#1d201a;'+EH.font;
   const tot='border-top:2px solid #cdc8b8;font-size:17px;font-weight:bold;color:#2f6b41;padding:10px 4px 4px;'+EH.font;
-  const rows=items.map(it=>`<tr><td style="${td}"><b>${esc(it.label)}</b>${it.detail?('<br><span style="font-size:11.5px;color:#6c7065">'+esc(it.detail)+'</span>'):''}</td><td style="${amt}">${money(it.amount)}</td></tr>`).join('');
+  const sec='margin-top:18px;font-size:10.5px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#2f6b41;border-bottom:2px solid #2f6b41;padding-bottom:4px;'+EH.font;
+  const rowsOf=list=>list.map(it=>`<tr><td style="${td}"><b>${esc(it.label)}</b>${it.detail?('<br><span style="font-size:11.5px;color:#6c7065">'+esc(it.detail)+'</span>'):''}</td><td style="${amt}">${money(it.amount)}</td></tr>`).join('');
+  const table=(head,rows,taxRows,totLabel,totAmt,empty)=>`<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:6px;${EH.font}">
+<tr><td style="${th}">Description</td><td style="${th}text-align:right">${esc(head)}</td></tr>
+${rows||('<tr><td style="'+td+'color:#6c7065">'+esc(empty)+'</td><td style="'+td+'"></td></tr>')}
+${taxRows}
+<tr><td style="${tot}">${esc(totLabel)}</td><td style="${tot}text-align:right">${money(totAmt)}</td></tr>
+</table>`;
+  if(T.msw){
+    const per=perLabel(T.period);
+    let t1='', t2='';
+    if(T.hasSWT&&T.swtBase>0) t1+=`<tr><td style="${tx}">Solid Waste Tax <span style="color:#6c7065;font-size:12px">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td style="${tx}text-align:right">${money(T.swt)}</td></tr>`;
+    if(T.env>0) t1+=`<tr><td style="${tx}">Environmental Tax</td><td style="${tx}text-align:right">${money(T.env)}</td></tr>`;
+    if(T.hasSWT&&T.recTaxable>0) t2+=`<tr><td style="${tx}">Solid Waste Tax <span style="color:#6c7065;font-size:12px">(${pct(T.rate)} on ${money(T.recTaxable)})</span></td><td style="${tx}text-align:right">${money(T.recSwt)}</td></tr>`;
+    return `<div style="${sec}">One-time charges</div>`+table('Amount',rowsOf(items),t1,'One-time total',T.oneTime,'No one-time charges')
+      +`<div style="${sec}">Service charges — ${esc(billedLabel(T.period)||per)}</div>`+table('Amount '+per,rowsOf(recItems),t2,per.replace(/^per /,'Per '),T.recurring,'No service lines');
+  }
   let tax='';
   if(T.hasSWT) tax+=`<tr><td style="${tx}">Solid Waste Tax <span style="color:#6c7065;font-size:12px">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td style="${tx}text-align:right">${money(T.swt)}</td></tr>`;
   if(T.env>0) tax+=`<tr><td style="${tx}">Environmental Tax</td><td style="${tx}text-align:right">${money(T.env)}</td></tr>`;
-  return `<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:12px;${EH.font}">
-<tr><td style="${th}">Description</td><td style="${th}text-align:right">Amount</td></tr>
-${rows||('<tr><td style="'+td+'color:#6c7065">No line items</td><td style="'+td+'"></td></tr>')}
-${tax}
-<tr><td style="${tot}">${esc(totalLabel||'Total')}</td><td style="${tot}text-align:right">${money(T.total)}</td></tr>
-</table>`;
+  return table('Amount',rowsOf(items),tax,totalLabel||'Total',T.total,'No line items').replace('margin-top:6px','margin-top:12px');
 }
 function ehFoot(text){ return '<div style="margin-top:20px;padding-top:10px;border-top:1px solid #e2ded2;font-size:11.5px;color:#6c7065;'+EH.font+'">'+esc(text)+'</div>'; }
 function ehSignoff(){ return '<div style="margin-top:16px;font-size:14px;color:#1d201a;'+EH.font+'">'+signOffLines().slice(1).map(esc).join('<br>')+'</div>'; }
 function emailHtmlFor(q){
   const days=validDaysFor(q);
-  return ehWrap(ehHead(q,'QUOTE')+ehMeta(q,true)+ehTable(q,'Total')
-    +ehFoot('This quote is good for '+days+' day'+(days==1?'':'s')+'. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.')
+  return ehWrap(ehHead(q,isMSW(q)?'SERVICE QUOTE':'QUOTE')+ehMeta(q,true)+ehTable(q,'Total')
+    +ehFoot('This quote is good for '+days+' day'+(days==1?'':'s')+'.'+(isMSW(q)?' Service charges are '+billedLabel(q.period||'Monthly')+' in advance.':'')+' Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.')
     +ehSignoff());
 }
 function combinedEmailHtml(list){
@@ -2179,7 +2701,7 @@ function combinedEmailHtml(list){
   const td='padding:8px 4px;border-bottom:1px solid #eeeeee;font-size:14px;color:#1d201a;'+EH.font;
   const th='text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;border-bottom:2px solid #e2ded2;padding:6px 4px;'+EH.font;
   const sum=list.map((q,i)=>{ const {T}=quoteItemsForQ(q);
-    return `<tr><td style="${td}">${esc(optionTitle(q,i))}${q.quoteNo?(' <span style="color:#6c7065;font-size:12px">'+esc(q.quoteNo)+'</span>'):''}</td><td style="${td}text-align:right;font-weight:bold;color:#2f6b41">${money(T.total)}</td></tr>`; }).join('');
+    return `<tr><td style="${td}">${esc(optionTitle(q,i))}${q.quoteNo?(' <span style="color:#6c7065;font-size:12px">'+esc(q.quoteNo)+'</span>'):''}</td><td style="${td}text-align:right;font-weight:bold;color:#2f6b41">${esc(totalsText(T))}</td></tr>`; }).join('');
   const sections=list.map((q,i)=>`<div style="margin-top:22px"><div style="background:#eef3ef;border-radius:6px;padding:8px 11px;font-size:15px;font-weight:bold;color:#234e30;${EH.font}">${esc(optionTitle(q,i))}${q.quoteNo?('<span style="font-weight:normal;color:#6c7065;font-size:12.5px;margin-left:8px">'+esc(q.quoteNo)+'</span>'):''}</div>${ehTable(q,'Option total')}</div>`).join('');
   return ehWrap(ehHead(Object.assign({},c0,{quoteNo:null}),'QUOTE OPTIONS')+ehMeta(c0,false)
     +`<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:16px;${EH.font}"><tr><td style="${th}">Options at a glance</td><td style="${th}text-align:right">Total</td></tr>${sum}</table>`
@@ -2540,13 +3062,24 @@ let appStarted=false;
   el('rSize').addEventListener('change',()=>{Q.rental.size=el('rSize').value;recompute();});
   el('rDays').addEventListener('input',()=>{let v=parseInt(el('rDays').value,10);Q.rental.days=isFinite(v)&&v>=0?v:0;recompute();});
   el('dAdd').addEventListener('click',addDisposal);
+  document.querySelectorAll('#svcSeg button').forEach(b=>b.addEventListener('click',()=>setService(b.dataset.svc,true)));
+  el('svcPeriod').addEventListener('change',()=>setPeriod(el('svcPeriod').value));
+  el('mAdd').addEventListener('click',addMswLine);
+  el('mSearch').addEventListener('input',()=>{ mPick=null; mActiveIdx=-1; renderMswMenu(); });
+  el('mSearch').addEventListener('focus',renderMswMenu);
+  el('mSearch').addEventListener('click',renderMswMenu);
+  el('mSearch').addEventListener('keydown',mswComboKey);
+  el('mSearch').addEventListener('blur',()=>setTimeout(hideMswMenu,150));
+  el('mCustomToggle').addEventListener('click',()=>toggleMswCustom());
+  el('mcAdd').addEventListener('click',addMswCustom);
+  el('mcCancel').addEventListener('click',()=>toggleMswCustom(false));
   el('dSearch').addEventListener('input',()=>{ dPick=null; dActiveIdx=-1; renderMenu(); });
   el('dSearch').addEventListener('focus',renderMenu);
   el('dSearch').addEventListener('click',renderMenu);   // re-open after Escape, or after changing the county without leaving the box
   el('dSearch').addEventListener('keydown',comboKey);
   el('dSearch').addEventListener('blur',()=>setTimeout(hideMenu,150));
-  window.addEventListener('scroll',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); }, true);
-  window.addEventListener('resize',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); });
+  window.addEventListener('scroll',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); if(el('mMenu')&&el('mMenu').classList.contains('on')) positionMenuFor(el('mSearch'),el('mMenu')); }, true);
+  window.addEventListener('resize',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); if(el('mMenu')&&el('mMenu').classList.contains('on')) positionMenuFor(el('mSearch'),el('mMenu')); });
   el('customToggle').addEventListener('click',()=>toggleCustom());
   el('cAdd').addEventListener('click',addCustom);
   el('cCancel').addEventListener('click',()=>toggleCustom(false));
@@ -2562,6 +3095,8 @@ let appStarted=false;
   el('adminAddBtn').addEventListener('click',addAdmin);
   el('adminNew').addEventListener('keydown',e=>{if(e.key==='Enter')addAdmin();});
   el('setSearch').addEventListener('input',renderCodeList);
+  el('mswSearch').addEventListener('input',renderMswList);
+  el('nmAdd').addEventListener('click',addNewMswCode);
   el('ncCode').addEventListener('keydown',e=>{if(e.key==='Enter')el('ncDesc').focus();});
   el('saveQuoteBtn').addEventListener('click',saveQuote);
   el('savedQuotesBtn').addEventListener('click',openSaved);
@@ -2631,7 +3166,7 @@ function doLogin(){
 /* ---- the data-dependent startup, run once after sign-in ---- */
 function startApp(){
   if(appStarted) return; appStarted=true;
-  loadCodes().then(loadRates).then(loadAdmins).then(loadHaulRates).then(()=>{
+  loadCodes().then(loadMswCodes).then(loadRates).then(loadAdmins).then(loadHaulRates).then(()=>{
     refreshRateLabels();
     loadState();
     const ho=readHandoff();
@@ -2641,12 +3176,13 @@ function startApp(){
       if(quoteHasContent() && !sameAddr){
         // an in-progress quote exists for a different address — ask before replacing
         if(confirm('Start a NEW quote for:\n'+(ho.dest||'this address')+' ?\n\nOK = new quote (clears the current one).\nCancel = keep your current quote.')){
-          Q=freshQuote(); Q.haul=ho; fillCustFromDest(ho.dest);
+          Q=freshQuote(); Q.haul=ho; fillCustFromDest(ho.dest); if(ho.svc) Q.service=ho.svc;
         } // Cancel: keep current quote, ignore the incoming haul
       }else{
-        Q.haul=ho;
+        Q.haul=ho; if(ho.svc) Q.service=ho.svc;
         if(!quoteHasContent()||!curDest) fillCustFromDest(ho.dest);  // fresh quote → fill address
       }
+      if(ho.svc) store.set('rq_svc',ho.svc);
     }
     if(!Q.haul) Q.haul={dest:'',county:'',miles:null,total:0,basis:'Manual entry',manual:true};
     saveState();
@@ -2658,6 +3194,7 @@ function startApp(){
     el('validDays').value=(Q.validDays!=null?Q.validDays:30);
     el('qLabel').value=Q.label||'';
     el('rSize').value=Q.rental.size||'';el('rDays').value=Q.rental.days||0;
+    applyServiceUI();
     buildCatalog();renderHaul();renderDisposal();recompute();syncSaveBtn();
     checkNewIdeas();
   });
