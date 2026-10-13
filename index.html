@@ -1,1 +1,2691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roll-Off Quoter</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2f6b41">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="application-name" content="Roll-Off Quoter">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RO Quoter">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  :root{--paper:#f3f0e8;--surface:#ffffff;--ink:#1d201a;--muted:#6c7065;--line:#e2ded2;
+    --line-strong:#cdc8b8;--pine:#2f6b41;--pine-dk:#234e30;--rust:#c2592b;--blue:#2c5d86;
+    --amber:#b4740f;--err:#b23b2e;--shadow:0 1px 2px rgba(28,31,26,.05),0 8px 24px rgba(28,31,26,.06);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(rgba(28,31,26,.018) 1px,transparent 1px);background-size:22px 22px;padding-bottom:96px}
+  .mono{font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-feature-settings:"tnum"}
+  header{background:linear-gradient(135deg,var(--pine),var(--pine-dk));color:#fff;padding:16px 20px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .hd-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+  .hd-build{display:inline-block;margin-left:8px;font-size:10.5px;font-weight:700;opacity:.72;vertical-align:middle;
+    background:rgba(255,255,255,.16);padding:1px 7px;border-radius:999px}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+  .hd-sub{font-size:12px;opacity:.85;font-weight:500;margin-top:2px}
+  .hd-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .wrap{max-width:720px;margin:0 auto;padding:16px 16px 10px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:15px;overflow:hidden}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:#faf8f2}
+  .card-h .ch-l{display:flex;align-items:center;gap:10px;min-width:0}
+  .card-n{flex:none;width:25px;height:25px;border-radius:50%;background:var(--pine);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+  .card-t{font-size:15px;font-weight:800}
+  .card-sub{font-size:11.5px;font-weight:600;color:var(--muted)}
+  .card-amt{flex:none;font-size:17px;font-weight:800}
+  .card-b{padding:14px 16px}
+  label.fld{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  select,input[type=number],input[type=text],input[type=email]{width:100%;padding:9px 11px;border:1px solid var(--line-strong);border-radius:9px;
+    font-family:inherit;font-size:14px;color:var(--ink);background:#fcfbf7}
+  select:focus,input:focus{outline:none;border-color:var(--pine);box-shadow:0 0 0 3px rgba(47,107,65,.13)}
+  .row{display:flex;gap:11px;flex-wrap:wrap}
+  .row > div{flex:1;min-width:110px}
+  .seg{display:inline-flex;background:#efece3;border-radius:10px;padding:3px}
+  .seg button{font-family:inherit;font-weight:800;font-size:13.5px;border:0;background:none;color:var(--muted);padding:8px 15px;border-radius:8px;cursor:pointer}
+  .seg button.on{background:var(--pine);color:#fff}
+  .tag{font-size:9.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;border-radius:999px;padding:2px 7px;white-space:nowrap}
+  .t-swt{background:#fbe6d9;color:#9c4418}
+  .t-env{background:#e6eef6;color:var(--blue)}
+  .t-non{background:#e7efe9;color:var(--pine)}
+  .t-cty{background:#eef3f7;color:var(--blue);border:1px solid #cfe0ee}
+  .kv{display:flex;flex-wrap:wrap;gap:3px 20px}
+  .kv > div{min-width:110px}
+  .kv .k{font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+  .kv .v{font-size:14px;font-weight:700}
+  .line{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .line:first-child{border-top:0}
+  .line .l-d{flex:1;min-width:0}
+  .line .l-name{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .line .l-meta{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .line .l-qty{width:66px;flex:none}
+  .line .l-qty input{padding:6px 8px;text-align:center}
+  .line .l-amt{width:74px;flex:none;text-align:right;font-weight:800;font-size:14px}
+  .line .l-x{flex:none;width:26px;height:26px;border-radius:7px;border:0;cursor:pointer;background:#f0ece2;color:var(--muted);font-size:16px;line-height:1}
+  .line .l-x:hover{background:#dcb6b1;color:#7a2e26}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-family:inherit;font-weight:800;font-size:13.5px;border:0;border-radius:9px;padding:9px 15px;cursor:pointer}
+  .btn-primary{background:var(--pine);color:#fff}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line-strong)}
+  .btn-sm{font-size:12.5px;padding:7px 12px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .notice{background:#fff;border:1px dashed var(--line-strong);border-radius:12px;padding:15px 16px;margin-bottom:15px;font-size:14px}
+  .notice b{font-weight:800}
+  .taxrow{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:5px 0}
+  .taxrow .r-sub{font-size:11.5px;color:var(--muted);font-weight:600}
+  .swtbanner{border-radius:10px;padding:11px 13px;font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .swtbanner.full{background:#e7efe9;color:#1d3b26;border:1px solid #bcd7c4}
+  .swtbanner.over{background:#fdf0dc;color:#6b4708;border:1px solid #eccf9a}
+  .swtbanner .bw{flex:1;min-width:150px}
+  .swtbanner b{font-weight:800}
+  .taxed-on{font-size:11.5px;font-weight:700;color:var(--muted);margin-top:3px}
+  .taxed-on span{display:inline-block;margin-right:9px}
+  .sum-row{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:4px 0}
+  .sum-row.muted{color:var(--muted)}
+  .sum-total{display:flex;justify-content:space-between;margin-top:8px;padding-top:9px;border-top:1.5px solid var(--line-strong);font-size:18px;font-weight:800;color:var(--pine)}
+  textarea{width:100%;min-height:70px;resize:vertical;padding:10px 12px;border:1px solid var(--line-strong);border-radius:9px;font-family:inherit;font-size:14px;color:var(--ink);background:#fcfbf7}
+  textarea:focus{outline:none;border-color:var(--pine);box-shadow:0 0 0 3px rgba(47,107,65,.13)}
+  .cl-entry{border-top:1px solid var(--line);padding:9px 0}
+  .cl-entry:first-child{border-top:0}
+  .cl-v{font-size:13px;font-weight:800}
+  .cl-d{font-size:11px;color:var(--muted);font-weight:600}
+  .cl-entry ul{margin:5px 0 0 18px;font-size:12.5px;color:var(--ink)}
+  details > summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--pine);list-style:none}
+  details > summary::-webkit-details-marker{display:none}
+  .totalbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:linear-gradient(135deg,var(--pine),var(--pine-dk));color:#fff;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 20px;box-shadow:0 -6px 22px rgba(0,0,0,.22)}
+  .totalbar .tb-l{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.85}
+  .totalbar .tb-sub{font-size:11px;opacity:.8;font-weight:600}
+  .totalbar .tb-v{font-size:25px;font-weight:800;letter-spacing:-.01em}
+  .modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(20,24,20,.55);align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-card{background:var(--surface);border-radius:14px;width:100%;max-width:400px;box-shadow:0 18px 50px rgba(0,0,0,.4);overflow:hidden}
+  .modal-h{padding:16px 20px;font-size:16px;font-weight:800;background:#f7f5ee;border-bottom:1px solid var(--line)}
+  .modal-h small{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+  .modal-b{padding:18px 20px;display:flex;gap:11px}
+  .modal-b button{flex:1;font-family:inherit;font-weight:800;font-size:15px;border:2px solid var(--pine);border-radius:11px;padding:16px 10px;cursor:pointer;background:#fff;color:var(--pine)}
+  .modal-b button:hover{background:var(--pine);color:#fff}
+  .modal-b button .pct{display:block;font-size:12px;font-weight:700;opacity:.8;margin-top:2px}
+  .notif{position:fixed;right:18px;bottom:78px;z-index:250;background:var(--pine);color:#fff;font-weight:700;font-size:13.5px;
+    padding:12px 16px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.28);opacity:0;transform:translateY(10px);
+    transition:opacity .22s,transform .22s;pointer-events:none;max-width:320px}
+  .notif.on{opacity:1;transform:translateY(0)}
+  @keyframes ub-slide{from{transform:translate(-50%,-120%);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+  .update-bar{position:fixed;left:50%;top:14px;transform:translate(-50%,0);z-index:400;max-width:620px;width:calc(100% - 28px);
+    background:linear-gradient(100deg,#f7a022,#ef7d18);color:#231402;display:none;align-items:center;gap:13px;padding:12px 15px;
+    border-radius:13px;border:2px solid #fff3;box-shadow:0 14px 40px rgba(0,0,0,.4);font-size:14px;font-weight:700}
+  .update-bar.on{display:flex;animation:ub-slide .38s cubic-bezier(.2,.9,.3,1.3)}
+  .update-bar .ub-txt{flex:1;min-width:0}
+  .update-bar button{flex:none;font-family:inherit;font-weight:800;font-size:13px;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+  .update-bar .ub-go{background:#1d3b26;color:#fff}
+  .update-bar .ub-x{background:rgba(35,20,2,.14);color:#231402;padding:8px 11px}
+  .update-bar.draft{background:linear-gradient(100deg,#2f6b41,#234e30);color:#fff;border-color:#ffffff33}
+  .update-bar.draft .ub-go{background:#fff;color:#234e30}
+  .update-bar.draft .ub-x{background:rgba(255,255,255,.18);color:#fff}
+  .radio-row{display:flex;align-items:flex-start;gap:10px;margin-top:9px;cursor:pointer;font-size:13.5px;line-height:1.5}
+  .radio-row input{width:18px;height:18px;accent-color:var(--pine);flex:none;margin-top:2px}
+  .radio-row b{font-weight:800}
 
+  /* ---- login gate ---- */
+  #loginScreen{position:fixed;inset:0;z-index:500;background:linear-gradient(135deg,var(--pine),var(--pine-dk));
+    display:flex;align-items:center;justify-content:center;padding:24px}
+  .login-card{background:var(--surface);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.4);
+    width:100%;max-width:360px;padding:28px 26px;text-align:center}
+  .login-card img{height:64px;width:auto;margin-bottom:10px}
+  .login-card h2{font-size:21px;font-weight:800;color:var(--ink)}
+  .login-card .lc-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+  .login-card input{width:100%;padding:12px 13px;margin-bottom:11px;border:1px solid var(--line-strong);
+    border-radius:10px;font-family:inherit;font-size:15px;background:#fcfbf7;color:var(--ink)}
+  .login-card input:focus{outline:none;border-color:var(--pine);box-shadow:0 0 0 3px rgba(47,107,65,.14)}
+  .login-card button{width:100%;font-family:inherit;font-weight:800;font-size:15px;border:0;border-radius:11px;
+    padding:13px;cursor:pointer;background:var(--pine);color:#fff}
+  .login-card button:hover:not(:disabled){background:var(--pine-dk)}
+  .login-card button:disabled{opacity:.6;cursor:not-allowed}
+  .login-err{min-height:18px;margin-top:11px;font-size:13px;font-weight:700;color:var(--err)}
+  .login-note{margin-top:14px;font-size:11.5px;color:var(--muted);line-height:1.4}
+  body.authed #loginScreen{display:none}
+
+  /* ---- connection / sign-out ---- */
+  .offline-chip{display:none;margin:0 auto 14px;max-width:720px;background:#fdecd9;border:1px solid #eccf9a;
+    color:#7a5209;border-radius:10px;padding:9px 13px;font-size:12.5px;font-weight:700}
+  .offline-chip.on{display:block}
+  .signout-row{max-width:720px;margin:4px auto 20px;text-align:center}
+  .signout-row button{background:none;border:0;color:var(--muted);font-family:inherit;font-weight:700;
+    font-size:12.5px;cursor:pointer;text-decoration:underline}
+
+  /* ---- settings / codes panel ---- */
+  .settings-screen{display:none;position:fixed;inset:0;z-index:460;background:var(--paper);overflow-y:auto;
+    background-image:radial-gradient(rgba(28,31,26,.018) 1px,transparent 1px);background-size:22px 22px}
+  .settings-screen.open{display:block}
+  .set-head{position:sticky;top:0;z-index:2;background:linear-gradient(135deg,var(--pine),var(--pine-dk));color:#fff;
+    padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .set-head h2{font-size:19px;font-weight:800}
+  .set-head .sh-sub{font-size:12px;opacity:.85;font-weight:500;margin-top:2px}
+  .set-close{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.34);color:#fff;
+    font-family:inherit;font-weight:800;font-size:13.5px;border-radius:9px;padding:9px 16px;cursor:pointer}
+  .set-close:hover{background:rgba(255,255,255,.3)}
+  .set-wrap{max-width:720px;margin:0 auto;padding:16px 16px 70px}
+  .set-section-t{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:20px 2px 10px}
+  .settings-screen:not(.admin) .admin-only{display:none !important}
+  .settings-screen.admin .non-admin-only{display:none !important}
+  .settings-screen:not(.admin) .code-row{opacity:.85}
+  .settings-screen:not(.admin) .sw{pointer-events:none}
+  .code-row{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:11px;
+    background:var(--surface);margin-bottom:7px;flex-wrap:wrap}
+  .code-row.off{opacity:.6;background:#f6f4ee}
+  .code-row .cr-code{font-family:'DM Mono',monospace;font-weight:600;font-size:12.5px;flex:0 0 64px;color:var(--muted);word-break:break-all}
+  .code-row .cr-desc{flex:3 1 140px}
+  .code-row .cr-rate{flex:0 0 84px}
+  .code-row .cr-tax{flex:1 1 128px}
+  .code-row .cr-cty{flex:0 0 116px}
+  .code-row .cr-label{flex:1 1 100%;display:flex;align-items:center;gap:9px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  .code-row .cr-label input{flex:1;text-transform:none;letter-spacing:0;font-weight:600;max-width:360px}
+  .code-row .cr-label input::placeholder{color:#a9ab9f;font-weight:600}
+  .code-row input,.code-row select{padding:7px 9px;font-size:13px}
+  .sw{position:relative;flex:0 0 auto;width:42px;height:24px;cursor:pointer;display:inline-block}
+  .sw input{position:absolute;opacity:0;width:0;height:0}
+  .sw .tr{position:absolute;inset:0;background:#cdc8b8;border-radius:999px;transition:background .15s}
+  .sw .tr::before{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;
+    transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .sw input:checked + .tr{background:var(--pine)}
+  .sw input:checked + .tr::before{transform:translateX(18px)}
+
+  /* ---- saved quotes ---- */
+  .saved-row{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;
+    background:var(--surface);margin-bottom:8px;flex-wrap:wrap}
+  .saved-row .sv-main{flex:2 1 160px;min-width:0}
+  .saved-row .sv-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .saved-row .sv-sub{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .saved-row .sv-amt{flex:0 0 auto;font-size:16px;font-weight:800;color:var(--pine)}
+  .saved-row .sv-btns{flex:0 0 auto;display:flex;gap:7px}
+  .saved-row .sv-check{flex:0 0 auto;width:18px;height:18px;cursor:pointer;accent-color:var(--pine)}
+  .sv-lab{display:inline-block;font-size:10.5px;font-weight:800;background:#eef3ef;color:var(--pine);border-radius:999px;padding:1px 8px;margin-left:4px;vertical-align:middle}
+  .saved-bar{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+  .saved-tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .saved-tools input[type=text]{flex:2 1 210px;width:auto}
+  .saved-tools select{flex:1 1 130px;width:auto}
+  .sv-qno{font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;font-weight:700;color:var(--blue);margin-right:7px}
+  .saved-row .sv-name,.saved-row .sv-sub{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
+  .saved-row .sv-name .st-badge{margin-left:5px;vertical-align:middle}
+  .saved-row.is-declined .sv-name,.saved-row.is-expired .sv-name{color:var(--muted)}
+  .saved-row.is-declined .sv-amt,.saved-row.is-expired .sv-amt{color:var(--muted)}
+  select.sv-status{width:auto;padding:6px 26px 6px 9px;font-size:12.5px;font-weight:700;border-radius:8px;background:#fcfbf7}
+  .qno-tag{display:inline-block;margin-left:8px;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:700;
+    color:var(--blue);background:#e6eef6;border-radius:999px;padding:2px 9px;vertical-align:middle}
+
+  /* ---- ideas ---- */
+  .idea-badge{display:inline-block;margin-left:8px;background:var(--rust);color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px;vertical-align:middle}
+  .idea-row{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);margin-bottom:8px;flex-wrap:wrap}
+  .idea-row.done,.idea-row.cancelled{opacity:.6}
+  .idea-row .ir-main{flex:2 1 180px;min-width:0}
+  .idea-row .ir-text{font-size:13.5px;white-space:pre-wrap;line-height:1.5}
+  .idea-row .ir-text.struck{text-decoration:line-through;color:var(--muted)}
+  .idea-row .ir-sub{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+  .idea-row .ir-btns{flex:0 0 auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .st-badge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;border-radius:999px;padding:2px 8px;white-space:nowrap}
+  .st-open{background:#e6eef6;color:var(--blue)}
+  .st-done{background:#e7efe9;color:var(--pine)}
+  .st-cancelled{background:#f0ece2;color:var(--muted)}
+  /* quote statuses */
+  .st-draft{background:#efece3;color:var(--muted)}
+  .st-sent{background:#e6eef6;color:var(--blue)}
+  .st-accepted{background:#e7efe9;color:var(--pine)}
+  .st-declined{background:#f7e6e0;color:var(--rust)}
+  .st-expired{background:#f7eedb;color:var(--amber)}
+
+  /* ---- help ---- */
+  .help-wrap h4{font-size:14px;font-weight:800;color:var(--pine);margin:20px 0 6px;display:flex;align-items:center;gap:8px}
+  .help-wrap h4 .hn{flex:none;width:22px;height:22px;border-radius:50%;background:var(--pine);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .help-wrap p{font-size:13.5px;margin:0 0 7px;color:var(--ink);line-height:1.55}
+  .help-wrap ul{margin:0 0 7px 20px;font-size:13.5px;line-height:1.55}
+  .help-wrap li{margin:3px 0}
+  .help-wrap b{font-weight:800}
+  .help-step{background:#eef3ef;border:1px solid #cfe0d5;border-radius:11px;padding:13px 15px;margin-bottom:16px;font-size:13.5px;line-height:1.55}
+  .help-chip{display:inline-block;background:#f0ece2;border:1px solid var(--line-strong);border-radius:6px;padding:0 6px;font-size:12.5px;font-weight:700}
+
+  /* ---- type-ahead combo for disposal items ---- */
+  .combo-menu{display:none;position:fixed;z-index:400;background:#fff;
+    border:1px solid var(--line-strong);border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.2);max-height:300px;overflow-y:auto}
+  .combo-menu.on{display:block}
+  .combo-opt{display:flex;align-items:center;gap:9px;padding:9px 11px;cursor:pointer;border-top:1px solid var(--line)}
+  .combo-opt:first-child{border-top:0}
+  .combo-opt:hover,.combo-opt.hi{background:#eef3ef}
+  .combo-opt .co-desc{flex:1;min-width:0;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .combo-opt .co-rate{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted)}
+  .combo-opt .co-code{flex:0 0 auto;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+  .combo-foot{padding:8px 11px;font-size:11px;font-weight:600;color:var(--muted);border-top:1px solid var(--line);background:#faf8f2}
+  .combo-opt .co-tax{flex:0 0 auto}
+  .combo-empty{padding:11px;font-size:12.5px;color:var(--muted)}
+  .combo-hint{padding:7px 11px;font-size:11px;font-weight:800;color:var(--blue);background:#eef3f7;border-bottom:1px solid var(--line);letter-spacing:.02em}
+  .combo-opt.other-cty{opacity:.5}
+  .combo-opt.other-cty:hover,.combo-opt.other-cty.hi{opacity:.85}
+  .t-oth{background:#f1efe8;color:var(--muted);border:1px solid #e2ded2}
+  .combo-custom-link{display:inline-block;font-size:12.5px;font-weight:800;color:var(--pine);cursor:pointer;text-decoration:underline}
+  .custom-box{margin-top:11px;padding:12px;border:1px dashed var(--line-strong);border-radius:11px;background:#faf8f2}
+  .tag.t-custom{background:#efe7f6;color:#5b3b8c}
+
+  /* ---- SWT component breakdown ---- */
+  .swt-break{margin-top:7px}
+  .sb-row{display:flex;align-items:center;gap:7px;font-size:12px;padding:3px 0}
+  .sb-row .sb-l{flex:1 1 56px;min-width:0;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sb-row .sb-v{flex:0 0 64px;text-align:right;font-weight:700}
+  .sb-row .sb-f{flex:0 0 52px;text-align:center;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--pine)}
+  .sb-row .sb-t{flex:0 0 64px;text-align:right;font-weight:700}
+  .sb-row.ex .sb-v,.sb-row.ex .sb-t{text-decoration:line-through;color:var(--muted)}
+  .sb-row.ex .sb-f{color:var(--muted)}
+  .sb-row.sb-head{padding-bottom:1px}
+  .sb-row.sb-head span{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .sb-row.base{border-top:1px solid var(--line);margin-top:4px;padding-top:6px}
+  .sb-row.base .sb-l{color:var(--ink);font-weight:800}
+  .sb-row.base .sb-v{color:var(--ink)}
+  .sb-row.base .sb-f{color:var(--muted)}
+  .sb-row.base .sb-t{color:var(--pine);font-weight:800;font-size:13.5px}
+  .sb-none{font-size:12px;color:var(--muted);font-weight:600}
+</style>
+
+<!-- ===== Firebase (compat SDK — gives a global `firebase`) ===== -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<!-- Google sign-in: lets the Email button create a ready-to-send draft in the user's Gmail -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <img src="icon-512.png" alt="">
+    <h2>Roll-Off Quoter</h2>
+    <div class="lc-sub">Sign in to continue</div>
+    <input id="loginEmail" type="email" placeholder="Email" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <input id="loginPin" type="password" placeholder="PIN" autocomplete="current-password" inputmode="numeric">
+    <button id="loginBtn">Unlock</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-note">You stay signed in on this device · Steve's Sanitation</div>
+  </div>
+</div>
+
+<header>
+  <div>
+    <div class="hd-eyebrow">Steve's Sanitation<span class="hd-build" id="buildBadge"></span></div>
+    <h1>Roll-Off Quoter</h1>
+    <div class="hd-sub">Hauling · Rental · Disposal · Taxes</div>
+  </div>
+  <div class="hd-btns">
+    <a class="btn btn-ghost btn-sm" id="backMileage" href="../ro/" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);text-decoration:none">← Mileage Quoter</a>
+    <button class="btn btn-ghost btn-sm" id="dupBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">Duplicate</button>
+    <button class="btn btn-ghost btn-sm" id="clearBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">New quote</button>
+    <button class="btn btn-ghost btn-sm" id="savedTopBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">📁 Saved</button>
+    <button class="btn btn-ghost btn-sm" id="settingsBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">⚙ Settings</button>
+    <button class="btn btn-ghost btn-sm" id="helpBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">❔ Help</button>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+
+    <div class="offline-chip" id="offlineChip">⚠️ Offline — using built-in codes. Changes won't sync until you reconnect.</div>
+
+    <!-- CUSTOMER -->
+    <div class="card">
+      <div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">C</div>
+        <div class="card-t">Customer</div></div>
+        <span class="card-sub" id="swtRateLbl">SWT 17%</span></div>
+      <div class="card-b">
+        <div class="row">
+          <div><label class="fld" for="custName">Name</label><input type="text" id="custName" placeholder="Customer or company"></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div><label class="fld" for="custStreet">Address</label><input type="text" id="custStreet" placeholder="Street address"></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div style="flex:2 1 150px"><label class="fld" for="custCity">City</label><input type="text" id="custCity" placeholder="City"></div>
+          <div style="flex:0 0 72px"><label class="fld" for="custState">State</label><input type="text" id="custState" placeholder="MN" maxlength="2" autocapitalize="characters" style="text-transform:uppercase"></div>
+          <div style="flex:0 0 104px"><label class="fld" for="custZip">ZIP</label><input type="text" id="custZip" placeholder="56573" maxlength="10" inputmode="numeric"></div>
+        </div>
+        <div class="card-sub" id="zipNote" style="margin-top:5px;min-height:14px"></div>
+        <div class="row" style="margin-top:4px">
+          <div><label class="fld" for="custEmail">Email <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— for sending the quote</span></label>
+            <input type="email" id="custEmail" placeholder="customer@email.com" autocapitalize="none" spellcheck="false"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span class="fld" style="margin:0">Tax class</span>
+          <div class="seg" id="custSeg">
+            <button data-cust="commercial">Commercial · 17%</button>
+            <button data-cust="residential">Residential · 9.75%</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice" id="noHaul" style="display:none"><b>No hauling data yet.</b>
+      Open the Mileage Quoter, calculate a haul, and tap <b>Create Quote</b> to send it here.
+      <div style="margin-top:11px"><a class="btn btn-primary" href="../ro/">Open Mileage Quoter →</a></div></div>
+
+    <!-- 1 HAULING -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n">1</div>
+      <div><div class="card-t">Hauling</div><div class="card-sub" id="haulSub">From the Mileage Quoter</div></div></div>
+      <div class="card-amt mono" id="haulAmt">$0.00</div></div>
+      <div class="card-b" id="haulBody"><div class="card-sub">Waiting for hauling data…</div></div></div>
+
+    <!-- 2 RENTAL -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">2</div>
+      <div><div class="card-t">Daily Rental</div><div class="card-sub">Tax follows the ticket</div></div></div>
+      <div class="card-amt mono" id="rentalAmt">$0.00</div></div>
+      <div class="card-b"><div class="row">
+        <div><label class="fld" for="rSize">Container size</label>
+          <select id="rSize"><option value="">— none —</option>
+            <option value="0">10/20 yd — $3.30/day</option><option value="1">30/40 yd — $5.00/day</option></select></div>
+        <div><label class="fld" for="rDays">Days</label><input type="number" id="rDays" min="0" step="1" value="0" inputmode="numeric"></div>
+      </div></div></div>
+
+    <!-- 3 DISPOSAL -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--rust)">3</div>
+      <div><div class="card-t">Disposal</div><div class="card-sub" id="dispSub">Itemized · tax by code</div></div></div>
+      <div class="card-amt mono" id="dispAmt">$0.00</div></div>
+      <div class="card-b">
+        <div class="row" style="align-items:flex-end">
+          <div style="flex:2 1 150px;position:relative">
+            <label class="fld" for="dSearch">Add item</label>
+            <input type="text" id="dSearch" placeholder="Type to search items…" autocomplete="off" spellcheck="false">
+            <div class="combo-menu" id="dMenu"></div>
+          </div>
+          <div style="flex:0 0 72px"><label class="fld" for="dQty">Qty</label><input type="number" id="dQty" min="0" step="any" value="1" inputmode="decimal"></div>
+          <div style="flex:0 0 auto"><button class="btn btn-primary" id="dAdd">Add</button></div>
+        </div>
+        <div style="margin-top:9px"><a class="combo-custom-link" id="customToggle">＋ Custom item not in the list</a></div>
+        <div id="customBox" class="custom-box" style="display:none">
+          <div class="row" style="align-items:flex-end">
+            <div style="flex:2 1 150px"><label class="fld" for="cDesc">Description</label><input type="text" id="cDesc" placeholder="What it is"></div>
+            <div style="flex:0 0 100px"><label class="fld" for="cRate">Rate ($)</label><input type="number" id="cRate" min="0" step="any" placeholder="0.00" inputmode="decimal"></div>
+            <div style="flex:0 0 66px"><label class="fld" for="cQty">Qty</label><input type="number" id="cQty" min="0" step="any" value="1" inputmode="decimal"></div>
+          </div>
+          <div style="margin-top:10px"><label class="fld" for="cTax">Tax type</label>
+            <select id="cTax">
+              <option value="None">No tax</option>
+              <option value="SWT">Solid Waste Tax</option>
+              <option value="ENV-YD">Environmental — $0.60 / yd</option>
+              <option value="ENV-TON">Environmental — $2.00 / ton</option>
+            </select></div>
+          <div style="margin-top:11px;display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" id="cAdd">Add custom item</button>
+            <button class="btn btn-ghost btn-sm" id="cCancel">Cancel</button></div>
+        </div>
+        <div id="dLines" style="margin-top:12px"></div></div></div>
+
+    <!-- 4 TAXES -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#7a5bb0">4</div>
+      <div><div class="card-t">Solid Waste &amp; Environmental Tax</div><div class="card-sub">Auto by code</div></div></div>
+      <div class="card-amt mono" id="taxAmt">$0.00</div></div>
+      <div class="card-b">
+        <div id="swtBanner"></div>
+        <div style="padding:4px 0"><div style="font-weight:700;font-size:13.5px">Solid Waste Tax <span id="swtRateInline">(17%)</span></div>
+          <div class="swt-break" id="swtBreak"></div></div>
+        <div style="border-top:1px solid var(--line);margin:10px 0"></div>
+        <div class="taxrow"><div><div>Environmental Tax</div>
+          <div class="r-sub" id="envSub">auto from demolition yards / tons</div></div>
+          <div class="mono" style="font-weight:800" id="envAmt">$0.00</div></div>
+      </div></div>
+
+    <!-- SUMMARY -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">Σ</div>
+      <div class="card-t">Quote Summary<span class="qno-tag" id="qnoTag" style="display:none" title="Quote number"></span></div></div></div>
+      <div class="card-b">
+        <div class="sum-row"><span>Hauling</span><span class="mono" id="sHaul">$0.00</span></div>
+        <div class="sum-row"><span>Daily rental</span><span class="mono" id="sRental">$0.00</span></div>
+        <div class="sum-row"><span>Disposal</span><span class="mono" id="sDisp">$0.00</span></div>
+        <div class="sum-row"><span>Solid Waste Tax</span><span class="mono" id="sSwt">$0.00</span></div>
+        <div class="sum-row"><span>Environmental Tax</span><span class="mono" id="sEnv">$0.00</span></div>
+        <div class="sum-total"><span>Quote total</span><span class="mono" id="sTotal">$0.00</span></div>
+        <div style="margin-top:12px">
+          <label class="fld" for="qLabel">Label this option <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— optional, e.g. “30 yd + demo”. Shows when sending multiple options.</span></label>
+          <input type="text" id="qLabel" placeholder="Option name">
+        </div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:9px">
+          <label class="fld" for="validDays" style="margin:0">Quote good for</label>
+          <input type="number" id="validDays" min="0" step="1" value="30" style="width:72px;text-align:center" inputmode="numeric">
+          <span class="card-sub">days</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:9px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="saveQuoteBtn">Save quote</button>
+          <button class="btn btn-ghost" id="savedQuotesBtn">Saved quotes</button>
+          <button class="btn btn-ghost" id="sheetBtn">Quote sheet</button>
+          <button class="btn btn-ghost" id="emailBtn">Email</button>
+          <button class="btn btn-ghost" id="copyBtn">Copy</button>
+        </div>
+        <div class="card-sub" id="savedState" style="margin-top:8px;min-height:14px"></div>
+      </div></div>
+
+    <!-- IDEAS + CHANGELOG -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#1d201a">!</div>
+      <div class="card-t">Ideas &amp; Change Log<span class="idea-badge" id="ideaBadge" style="display:none"></span></div></div></div>
+      <div class="card-b">
+        <label class="fld" for="ideaText">Suggestion / change request</label>
+        <textarea id="ideaText" placeholder="Anything you'd like added or changed…"></textarea>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="ideaSend">Submit idea</button>
+          <button class="btn btn-ghost btn-sm" id="ideaView" style="margin-left:auto">View / manage</button>
+        </div>
+        <details style="margin-top:14px"><summary>Change log</summary>
+          <div id="changelog" style="margin-top:8px"></div></details>
+      </div></div>
+
+    <div class="signout-row"><button id="signoutBtn">Sign out</button></div>
+
+  </div>
+</main>
+
+<div class="totalbar"><div><div class="tb-l">Quote total</div><div class="tb-sub" id="tbSub">—</div></div>
+  <span class="tb-v mono" id="tbTotal">$0.00</span></div>
+
+<div class="modal" id="custModal"><div class="modal-card">
+  <div class="modal-h">Taxable item added<small>Is this quote commercial or residential?</small></div>
+  <div class="modal-b">
+    <button data-pick="commercial">Commercial<span class="pct">SWT 17%</span></button>
+    <button data-pick="residential">Residential<span class="pct">SWT 9.75%</span></button>
+  </div></div></div>
+
+<div class="settings-screen" id="settingsScreen">
+  <div class="set-head">
+    <div><h2>Settings</h2><div class="sh-sub">Billing codes sync to the team · email account is per-device</div></div>
+    <button class="set-close" id="setClose">Done</button>
+  </div>
+  <div class="set-wrap">
+    <div class="offline-chip" id="setOffline" style="margin-bottom:14px">⚠️ Offline — edits save on this device only and won't sync until you reconnect.</div>
+
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">✉</div>
+      <div class="card-t">Email sending</div></div><span class="card-sub">This device only</span></div>
+      <div class="card-b">
+        <label class="fld" for="gmailUser">Work Gmail address (for sending)</label>
+        <input type="text" id="gmailUser" placeholder="you@stevessanitation.com" autocapitalize="none" spellcheck="false" style="max-width:280px">
+        <div class="card-sub" style="margin-top:8px;line-height:1.55">Points the <b>Email</b> button at your work account.
+          <b>If work &amp; personal are in separate Chrome profiles,</b> the sure fix is to open this quoter
+          in your <b>work</b> Chrome profile (or install it there) — the Email button always opens Gmail in that same profile.
+          Saved on this device only.</div>
+        <label class="fld" style="margin-top:18px">How the Email button works</label>
+        <label class="radio-row"><input type="radio" name="emailMode" value="draft">
+          <span><b>Build a ready-to-send draft in Gmail</b> (recommended) — the quote, the letterhead and your Gmail signature are already in it;
+            Gmail opens on the draft and you just press Send. Google asks you to <b>Allow</b> once per login (choose your work account).</span></label>
+        <label class="radio-row"><input type="radio" name="emailMode" value="clipboard">
+          <span><b>Open a blank Gmail message and copy the quote</b> — press <b>Ctrl+V</b> to paste it in above your signature (the previous way; also the automatic fallback if Google can’t be reached).</span></label>
+
+        <label style="display:flex;align-items:center;gap:10px;margin-top:18px;cursor:pointer;font-size:13.5px;font-weight:800">
+          <input type="checkbox" id="useGmailSig" style="width:18px;height:18px;accent-color:var(--pine);flex:none">
+          Use my Gmail signature (with the company logo)
+        </label>
+        <div class="card-sub" style="margin-top:6px;line-height:1.55"><b>On by default.</b> Your existing Gmail signature is used as-is — nothing to set up.
+          With drafts it’s read straight from your Gmail settings and placed under the quote; with the copy method Gmail adds it to the blank message itself.
+          Turn this off to sign with the plain-text signature typed below instead.</div>
+
+        <label style="display:flex;align-items:center;gap:10px;margin-top:16px;cursor:pointer;font-size:13.5px;font-weight:800">
+          <input type="checkbox" id="useRichCopy" style="width:18px;height:18px;accent-color:var(--pine);flex:none">
+          Copy the quote formatted (letterhead + table)
+        </label>
+        <div class="card-sub" style="margin-top:6px;line-height:1.55"><b>On by default.</b> <b>Email</b> and <b>Copy</b> put a formatted quote on your clipboard —
+          pasted into Gmail or Google Docs it looks like the quote sheet, with the letterhead and an itemized table.
+          Pasting into a plain-text box still gives plain text. Turn off to always copy plain text.</div>
+
+        <div id="textSigWrap">
+          <label class="fld" for="emailSig" style="margin-top:16px">…or type a plain-text signature here</label>
+          <textarea id="emailSig" placeholder="Kelly Melgard&#10;Steve's Sanitation&#10;(218) 346-4834&#10;stevessanitation.com" style="min-height:110px"></textarea>
+          <div class="card-sub" style="margin-top:6px;line-height:1.5">Used when the box above is off. Replaces the default company sign-off. Plain text only (no logo).</div>
+        </div>
+        <div class="card-sub" style="margin-top:10px"><b>Saved to your login</b> — both settings follow you to any computer.</div>
+      </div></div>
+
+    <div class="notice non-admin-only" style="margin-bottom:15px"><b>View only.</b> Rates and billing codes can only be changed by an admin
+      (<span id="adminNames"></span>). Ask them if something needs updating.</div>
+
+    <!-- RATES -->
+    <div class="card" id="ratesCard"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--rust)">$</div>
+      <div class="card-t">Rates</div></div><span class="card-sub">Synced to the team</span></div>
+      <div class="card-b">
+        <div class="set-section-t" style="margin-top:0">Daily rental</div>
+        <div class="row">
+          <div><label class="fld" for="rtRental1020">10/20 yd — $ per day</label><input type="number" id="rtRental1020" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="rtRental3040">30/40 yd — $ per day</label><input type="number" id="rtRental3040" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">Solid Waste Tax</div>
+        <div class="row">
+          <div><label class="fld" for="rtSwtCom">Commercial — %</label><input type="number" id="rtSwtCom" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="rtSwtRes">Residential — %</label><input type="number" id="rtSwtRes" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">Environmental Tax</div>
+        <div class="row">
+          <div><label class="fld" for="rtEnvYd">$ per cubic yard</label><input type="number" id="rtEnvYd" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="rtEnvTon">$ per ton</label><input type="number" id="rtEnvTon" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="admin-only" style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="saveRatesBtn">Save rates</button>
+          <span class="card-sub">Applies to new quotes right away. Quotes already saved keep the rates they were priced with.</span>
+        </div>
+      </div></div>
+
+    <div class="card" id="haulRatesCard"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--blue)">mi</div>
+      <div class="card-t">Hauling rates — Mileage Quoter</div></div><span class="card-sub">Synced to the team</span></div>
+      <div class="card-b">
+        <div class="card-sub" style="margin-bottom:10px;line-height:1.5">What the <b>Mileage Quoter</b> charges per one-way mile, plus the base fee for each dispatch point. Per-mile is one way; the quote total is rounded to $5 there.</div>
+        <div class="set-section-t" style="margin-top:0">Roll-Off</div>
+        <div class="row">
+          <div><label class="fld" for="hrRoMile">$ per mile</label><input type="number" id="hrRoMile" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrRoDL">Detroit Lakes base $</label><input type="number" id="hrRoDL" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrRoPer">Perham base $</label><input type="number" id="hrRoPer" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">MSW — Temporary</div>
+        <div class="row">
+          <div><label class="fld" for="hrMtMile">$ per mile</label><input type="number" id="hrMtMile" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrMtBase">Perham base $</label><input type="number" id="hrMtBase" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="set-section-t">MSW — Permanent</div>
+        <div class="row">
+          <div><label class="fld" for="hrMpMile">$ per mile</label><input type="number" id="hrMpMile" min="0" step="0.01" inputmode="decimal"></div>
+          <div><label class="fld" for="hrMpBase">Perham base $</label><input type="number" id="hrMpBase" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="admin-only" style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="saveHaulRatesBtn">Save hauling rates</button>
+          <span class="card-sub">The Mileage Quoter picks these up the next time it opens or refreshes.</span>
+        </div>
+      </div></div>
+
+    <!-- ADMINS -->
+    <div class="card"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:#7a5bb0">★</div>
+      <div class="card-t">Admins</div></div><span class="card-sub">Can change rates &amp; codes</span></div>
+      <div class="card-b">
+        <div id="adminList"></div>
+        <div class="admin-only row" style="margin-top:12px;align-items:flex-end">
+          <div style="flex:2 1 200px"><label class="fld" for="adminNew">Add an admin by login email</label>
+            <input type="email" id="adminNew" placeholder="name@stevessanitation.com" autocapitalize="none" spellcheck="false"></div>
+          <div style="flex:0 0 auto"><button class="btn btn-ghost" id="adminAddBtn">Add</button></div>
+        </div>
+      </div></div>
+
+    <div class="card admin-only"><div class="card-h"><div class="ch-l"><div class="card-n" style="background:var(--pine)">+</div>
+      <div class="card-t">Add a new code</div></div></div>
+      <div class="card-b">
+        <div class="row" style="align-items:flex-end">
+          <div style="flex:0 0 120px"><label class="fld" for="ncCode">Code</label>
+            <input type="text" id="ncCode" placeholder="e.g. CARDBD" maxlength="14" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"></div>
+          <div style="flex:3 1 170px"><label class="fld" for="ncDesc">Description</label>
+            <input type="text" id="ncDesc" placeholder="What it is"></div>
+          <div style="flex:0 0 110px"><label class="fld" for="ncRate">Rate ($)</label>
+            <input type="number" id="ncRate" min="0" step="any" placeholder="0.00" inputmode="decimal"></div>
+        </div>
+        <div class="row" style="margin-top:11px">
+          <div><label class="fld" for="ncTax">Tax type</label>
+          <select id="ncTax">
+            <option value="None">No tax</option>
+            <option value="SWT">Solid Waste Tax</option>
+            <option value="ENV-YD">Environmental — $0.60 / yd</option>
+            <option value="ENV-TON">Environmental — $2.00 / ton</option>
+          </select></div>
+          <div><label class="fld" for="ncCounty">County facility</label>
+          <select id="ncCounty">
+            <option value="">Any county</option>
+            <option value="Otter Tail">Otter Tail</option>
+            <option value="Becker">Becker</option>
+            <option value="Wadena">Wadena</option>
+          </select></div>
+        </div>
+        <div style="margin-top:11px"><label class="fld" for="ncLabel">Shows on quote as <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— optional; blank = the description without the county, tidied up</span></label>
+          <input type="text" id="ncLabel" placeholder="e.g. Clean Demo"></div>
+        <div class="card-sub" style="margin-top:7px">Each code carries exactly one tax type. The county says which facility the code is for — it’s listed only when that county is picked on a quote.</div>
+        <div style="margin-top:12px"><button class="btn btn-primary" id="ncAdd">Add code</button></div>
+      </div></div>
+
+    <div class="set-section-t">All codes</div>
+    <input type="text" id="setSearch" placeholder="Search by code or description…" spellcheck="false" style="margin-bottom:11px">
+    <div id="codeList"></div>
+    <div class="card-sub" style="margin-top:10px;line-height:1.5">Toggle a code off to hide it from the disposal list without deleting it.
+      Edits here don't change quotes already saved. The county dropdown marks which county’s facility a code is for — it’s listed
+      only when that county is picked on the quote (guessed from the description until you set it). <b>Shows on quote as</b> is the
+      customer-facing name: the county is left out automatically (“CLEAN DEMO - OT” → “Clean Demo”); type your own to override.</div>
+  </div>
+</div>
+
+<div class="settings-screen" id="savedScreen">
+  <div class="set-head">
+    <div><h2>Saved Quotes</h2><div class="sh-sub" id="savedSub">Shared across the team</div></div>
+    <button class="set-close" id="savedClose">Done</button>
+  </div>
+  <div class="set-wrap">
+    <div class="saved-tools">
+      <input type="text" id="savedSearch" placeholder="Search name, address, quote # or label…" spellcheck="false" autocomplete="off">
+      <select id="savedFilter" title="Show only quotes with this status">
+        <option value="">All statuses</option>
+        <option value="draft">Draft</option>
+        <option value="sent">Sent</option>
+        <option value="accepted">Accepted</option>
+        <option value="declined">Declined</option>
+        <option value="expired">Expired</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" id="exportCsv" title="Download the quotes listed below as a CSV spreadsheet (opens in Google Sheets or Excel)">⬇ Export CSV</button>
+    </div>
+    <div class="saved-bar"><span class="card-sub" id="selCount">Tick options to combine</span>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost btn-sm" id="combineSheet">Quote sheet</button>
+      <button class="btn btn-ghost btn-sm" id="combineCopy">Copy</button>
+      <button class="btn btn-primary btn-sm" id="combineEmail">Email</button></div>
+    <div id="savedList"></div>
+  </div>
+</div>
+
+<div class="settings-screen" id="helpScreen">
+  <div class="set-head">
+    <div><h2>How to use the Quoter</h2><div class="sh-sub">A quick guide to every feature</div></div>
+    <button class="set-close" id="helpClose">Done</button>
+  </div>
+  <div class="set-wrap help-wrap">
+
+    <div class="help-step"><b>The short version:</b> fill in the customer, add the hauling, rental and disposal items,
+      check the tax, then <b>Save quote</b>. To send it, use <b>Quote sheet</b> (print or save a PDF) or <b>Email</b>
+      (opens a ready-to-send message). For a job with choices, save each version and send them together — see “Several options” below.</div>
+
+    <h4><span class="hn">C</span>Customer</h4>
+    <p>Enter the name and address. Type the <b>ZIP</b> and the city/state fill in automatically. The <b>Email</b>
+      field is used as the “To” when you email the quote. <b>Tax class</b> (Commercial / Residential) sets the
+      Solid Waste Tax rate — the first time you add a taxable item, the app asks which one.</p>
+
+    <h4><span class="hn">1</span>Hauling</h4>
+    <p>If you came from the Mileage Quoter with <b>Create Quote</b>, the haul fee is filled in. You can also type a
+      <b>Site Address</b> and <b>Haul fee</b> by hand. To change a mileage-based fee (e.g. a donation), just edit the Haul fee —
+      a note shows it was adjusted, and <span class="help-chip">Reset to mileage</span> puts it back. The
+      <span class="help-chip">← Mileage Quoter</span> button up top takes you back to calculate by distance.</p>
+
+    <h4><span class="hn">2</span>Daily rental</h4>
+    <p>Pick the container size and number of days. Rental is taxed only when the ticket has Solid Waste Tax (see Taxes).</p>
+
+    <h4><span class="hn">3</span>Disposal</h4>
+    <ul>
+      <li><b>Add item:</b> start typing in the box — it filters by description or code. Tap one, set the <b>Qty</b>, then <b>Add</b>.</li>
+      <li><b>By county:</b> the <b>Disposal county</b> on the Hauling card (set from the job’s county when you come from the Mileage Quoter) decides which facility’s items are listed — that county’s codes plus the ones that apply anywhere. To run Becker waste through Perham, switch it to Otter Tail. Leave it on “all counties” to see everything, with a county tag on each.</li>
+      <li><b>What the customer sees:</b> the county never shows on the quote — “CLEAN DEMO - OT” prints as <b>Clean Demo</b>. The internal code and description still show in small type on your screen so you know which facility you picked. Admins can set the customer wording per code in Settings (“Shows on quote as”).</li>
+      <li><b>Custom item:</b> tap <b>＋ Custom item not in the list</b> for a one-off charge — enter a description, rate, qty and tax type. It won’t change your saved code list.</li>
+      <li>Change a quantity or remove a line right in the list after adding.</li>
+    </ul>
+
+    <h4><span class="hn">4</span>Solid Waste &amp; Environmental Tax</h4>
+    <p>Taxes figure themselves out from the items:</p>
+    <ul>
+      <li><b>Solid Waste Tax</b> turns on automatically when there’s an MSW item, and applies to hauling + rental + MSW items. The breakdown shows each piece and the tax it adds.</li>
+      <li><b>Environmental Tax</b> (per yard or per ton) is figured automatically from demolition items — nothing to enter.</li>
+    </ul>
+
+    <h4><span class="hn">✓</span>Finishing a quote</h4>
+    <ul>
+      <li><b>Quote good for __ days</b> (default 30) and an optional <b>Label this option</b> show on the sheet/email.</li>
+      <li><b>Save quote</b> stores it in the cloud for everyone and gives it a <b>quote number</b> (Q-2026-0101, Q-2026-0102…) that shows on the sheet, in the email subject and in the Saved list. Re-saving a loaded quote updates it and keeps its number.</li>
+      <li><b>Quote sheet</b> opens a printable quote — use its <b>Print / Save as PDF</b> button.</li>
+      <li><b>Email</b> saves the quote (so it has a number), marks it <b>Sent</b>, and builds the message in your Gmail: the formatted quote — letterhead, quote number, itemized table — with your Gmail signature under it, addressed to the customer. Gmail opens on the draft; look it over and press <b>Send</b>. The first time, Google asks you to <b>Allow</b> the quoter to create drafts and read your signature — pick your <b>work</b> account. Pop-up blocked? Tap <b>Open draft</b> on the green bar.</li>
+      <li>Prefer the old way, or Google can’t be reached? Settings → Email sending → <b>Open a blank Gmail message and copy the quote</b>: Gmail opens blank with your signature and the quote is on your clipboard — press <b>Ctrl+V</b>.</li>
+      <li><b>New quote</b> clears everything; <b>Duplicate</b> keeps the customer + address to start a variation (it gets its own number when saved).</li>
+    </ul>
+
+    <h4><span class="hn">📁</span>Saved quotes &amp; status</h4>
+    <ul>
+      <li><b>Search</b> by customer, address, quote # or label; the <b>status</b> dropdown narrows the list to Draft, Sent, Accepted, Declined or Expired.</li>
+      <li>Each quote has a status: <b>Draft</b> (saved, not sent) → <b>Sent</b> (set automatically when you Email it, or pick it yourself if you printed or handed it over) → <b>Accepted</b> / <b>Declined</b> when the customer answers. Change it with the dropdown on the row.</li>
+      <li>A Sent quote past its “good for” days shows as <b>Expired</b> automatically. Re-sending it (Email again) restarts the clock.</li>
+      <li><b>Load</b> reopens a quote on the main screen; <b>Delete</b> removes it for everyone.</li>
+      <li><b>⬇ Export CSV</b> downloads whatever is listed (after your search/filter) as a spreadsheet — totals, taxes, status, dates — that opens straight in Google Sheets or Excel.</li>
+    </ul>
+
+    <h4><span class="hn">≡</span>Several options on one job</h4>
+    <ul>
+      <li>Build the first version, give it a <b>Label</b> (e.g. “20 yd haul-only”), and <b>Save</b>.</li>
+      <li><b>Duplicate</b>, change it to the next version, relabel, and save again.</li>
+      <li>Open <b>📁 Saved</b>, <b>tick</b> the options, then <b>Quote sheet</b> (one PDF with all options) or <b>Email</b> (one message with all options).</li>
+    </ul>
+
+    <h4><span class="hn">⚙</span>Settings</h4>
+    <ul>
+      <li><b>Rates:</b> daily rental, Solid Waste Tax % and Environmental Tax rates. Change them here and every new quote uses them; quotes already saved keep the rates they were priced with.</li>
+      <li><b>Hauling rates:</b> the $ per mile and base fees the <b>Mileage Quoter</b> charges (Roll-Off, MSW temporary, MSW permanent). Save them here and the Mileage Quoter picks them up on its next refresh — no more editing its code.</li>
+      <li><b>Billing codes:</b> turn a code on/off, change its rate, tax type, county facility or customer-facing name (“Shows on quote as”), or add a new code. Changes sync to the whole team.</li>
+      <li><b>Admins:</b> only admins can change rates, codes and the admin list — everyone else sees them read-only. Admins can add or remove other admins here.</li>
+      <li><b>Email sending:</b> if you keep several Gmail accounts open, set your <b>work email</b> here so the Email button uses the right one (saved on your device).</li>
+    </ul>
+
+    <h4><span class="hn">↯</span>Handy extras</h4>
+    <ul>
+      <li><b>Copy</b> (by Email) copies the whole quote to paste anywhere — formatted (letterhead + table) in Gmail or Google Docs, plain text in a plain-text box. In Saved, tick options and <b>Copy</b> grabs them all. Prefer plain text everywhere? Turn off <b>Copy the quote formatted</b> in Settings → Email sending.</li>
+      <li>Set <b>your email signature</b> in Settings → Email sending — it replaces the default sign-off at the bottom of your quote emails, and is saved to your login so it follows you to any computer.</li>
+    </ul>
+
+    <h4><span class="hn">✎</span>Your Gmail signature &amp; the logo</h4>
+    <p><b>Your existing Gmail signature is used</b> — nothing to set up. With Gmail drafts it’s read straight from your Gmail settings and
+      placed under the quote. With the copy method, Gmail adds it to the blank message itself and you paste the quote above it with <b>Ctrl+V</b>.</p>
+    <p>Prefer a plain sign-off? Turn off <b>Use my Gmail signature</b> in Settings — the email then ends with the default company sign-off
+      or your typed plain-text signature instead.</p>
+    <p>To add the <b>company logo</b> to your signature (optional, one time, in Gmail):</p>
+    <ul>
+      <li>Gmail → gear ⚙ → <b>See all settings</b> → <b>General</b> → scroll to <b>Signature</b> → click your signature to edit it.</li>
+      <li>Click the <b>Insert image</b> icon → <b>Web Address (URL)</b> → paste
+        <b style="word-break:break-all">https://melgard05.github.io/quoter/logo-sig.png</b> → Select. Resize with Small / Medium / Large if needed.</li>
+      <li><b>Save Changes</b> at the bottom. Done — the logo now shows on every email, including quotes.</li>
+      <li><b>Ideas:</b> submit a request, then <b>View / manage</b> to see all of them and mark each <b>Done</b> or <b>Cancel</b>. A red <b>“new”</b> badge shows when ideas have come in since you last looked.</li>
+    </ul>
+
+    <p style="margin-top:18px;color:var(--muted)">Found a bug or want something added? Use the <b>Ideas &amp; Change Log</b> box at the bottom of the main screen — it goes to the whole team.</p>
+
+  </div>
+</div>
+
+<div class="settings-screen" id="ideasScreen">
+  <div class="set-head">
+    <div><h2>Ideas &amp; Requests</h2><div class="sh-sub">Mark each one done or cancelled</div></div>
+    <button class="set-close" id="ideasClose">Done</button>
+  </div>
+  <div class="set-wrap"><div id="ideasList"></div></div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<div class="update-bar draft" id="draftBar" role="status">
+  <span class="ub-txt" id="draftTxt"><b>Draft ready in Gmail</b> — quote and signature are in it.</span>
+  <button class="ub-go" id="draftOpen">Open draft</button><button class="ub-x" id="draftX">✕</button></div>
+<div class="update-bar" id="updateBar" role="alert">
+  <span class="ub-txt"><b>New version available</b> — refresh to update.</span>
+  <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
+
+<script>
+const APP_VERSION='v0.31 (2026-10-13)';
+const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
+const CHANGELOG=[
+  {v:'v0.31',d:'Oct 13, 2026',items:[
+    'Email now builds a ready-to-send draft in your Gmail — quote, letterhead and your Gmail signature already in it, addressed to the customer — and opens it. No more Ctrl+V. Google asks you to Allow once per login (use your work account)',
+    'Settings → Email sending: choose the Gmail-draft way (default) or the old blank-message + paste way; the paste way is also the automatic fallback'
+  ]},
+  {v:'v0.30',d:'Oct 12, 2026',items:[
+    'Disposal items print without the county: “CLEAN DEMO - OT” shows on the quote, sheet and email as “Clean Demo” (admins can set the wording per code in Settings)',
+    'The Disposal county on the Hauling card now picks which facility’s items are listed — switch it to Otter Tail to run Becker waste through Perham',
+    'The on-screen item list still shows the code and full description so you know which facility you picked'
+  ]},
+  {v:'v0.29',d:'Oct 12, 2026',items:[
+    'Settings → Hauling rates: the Mileage Quoter’s $ per mile and base fees now live here (admins) and sync to it automatically'
+  ]},
+  {v:'v0.28',d:'Oct 12, 2026',items:[
+    'Email / Copy now put a formatted quote on the clipboard — letterhead, quote number and an itemized table — so the Gmail paste looks like the quote sheet (plain text still comes through in plain-text boxes; switchable in Settings)',
+    'Disposal list is county-aware: set the Job county on the Hauling card (automatic from the Mileage Quoter) and that county’s facility items are listed first, others greyed out, with a heads-up if you add one',
+    'Admins can set each billing code’s county facility in Settings (guessed from the description until set)'
+  ]},
+  {v:'v0.27',d:'Oct 12, 2026',items:[
+    'Quote numbers now start at 0101 each year (Q-2026-0101, 0102…)'
+  ]},
+  {v:'v0.26',d:'Oct 12, 2026',items:[
+    'Every saved quote gets a quote number (Q-2026-0001…) — shown on the sheet, in the email subject and in the Saved list',
+    'Quote status: Draft → Sent (automatic when you Email) → Accepted / Declined; a sent quote past its “good for” days shows as Expired',
+    'Saved quotes: search by customer, address, quote # or label, and filter by status',
+    'Export CSV downloads the listed quotes (totals, taxes, status, dates) for Google Sheets or Excel',
+    'Email saves the quote first so it always goes out with its number — no need to tap Save'
+  ]},
+  {v:'v0.25',d:'Oct 12, 2026',items:[
+    'Rates (rental, Solid Waste Tax %, Environmental) are now in Settings — change them yourself, synced to the team',
+    'Admin lock: only admins can change rates, billing codes and the admin list; everyone else sees them read-only',
+    'Saved quotes keep the rates they were priced with, even after rates change',
+    'Offline support: codes, rates and saved quotes are cached on the device and sync when back online'
+  ]},
+  {v:'v0.24',d:'Oct 12, 2026',items:[
+    'Email now opens a blank message with your real Gmail signature (logo included) and copies the quote — press Ctrl+V to paste it in'
+  ]},
+  {v:'v0.23',d:'Oct 12, 2026',items:[
+    'Your existing Gmail signature is now used automatically on quote emails — nothing to set up'
+  ]},
+  {v:'v0.22',d:'Oct 12, 2026',items:[
+    '“Let Gmail add my signature” option — use your Gmail signature (with the company logo) as the sign-off',
+    'Help → Logo in your signature: step-by-step Gmail setup'
+  ]},
+  {v:'v0.21',d:'Oct 12, 2026',items:[
+    'Email signature is now saved to your login (follows you to any computer) and replaces the default company sign-off'
+  ]},
+  {v:'v0.20',d:'Oct 12, 2026',items:[
+    'Removed the Solid Waste Tax override button — tax always applies to the full ticket',
+    'Copy open ideas button in the Ideas manager'
+  ]},
+  {v:'v0.19',d:'Oct 12, 2026',items:[
+    'Copy button — copies the whole quote (or combined options) as text to paste anywhere',
+    'Add your own email signature in Settings — it goes on the bottom of every quote email',
+    'Ideas can now be marked Done or Cancelled, and a “new” badge shows when ideas come in'
+  ]},
+  {v:'v0.18',d:'Oct 8, 2026',items:[
+    'The item search list now closes after you add an item, so it no longer covers the line you just added'
+  ]},
+  {v:'v0.17',d:'Oct 8, 2026',items:[
+    'Disposal dropdown no longer gets cut off — it now floats above the box',
+    'Added a Help guide (❔ Help in the header) covering every feature'
+  ]},
+  {v:'v0.16',d:'Oct 8, 2026',items:[
+    'Send several saved quotes as options in one go — tick them in Saved Quotes, then Quote sheet or Email',
+    'Combined quote sheet shows an options-at-a-glance summary plus each option in full',
+    'Optional “Label this option” field (e.g. 30 yd + demo) to name each option'
+  ]},
+  {v:'v0.15',d:'Oct 8, 2026',items:[
+    'Email sending setting now takes your work email address (more reliable across Gmail accounts)'
+  ]},
+  {v:'v0.14',d:'Oct 8, 2026',items:[
+    'Quote sheet now uses the full company letterhead (logo, address, phone, fax, web)',
+    '“Quote good for ___ days” field on the quote (defaults to 30) — shows on the sheet and email',
+    'Settings → Email sending: pick which Gmail account the Email button uses (per device)'
+  ]},
+  {v:'v0.13',d:'Oct 8, 2026',items:[
+    'Quote sheet now uses the Steve’s Sanitation logo',
+    'Email button fixed — opens a prefilled Gmail compose window'
+  ]},
+  {v:'v0.12',d:'Oct 8, 2026',items:[
+    'Quote sheet button — a clean, printable quote you can save as a PDF',
+    'Email button — opens a ready-to-send draft in your own work email with the quote filled in',
+    'Optional customer email field (fills the “To” line)'
+  ]},
+  {v:'v0.11',d:'Oct 8, 2026',items:[
+    'Solid Waste Tax breakdown now shows the tax amount for hauling, rental and MSW items',
+    'The SWT subtotal moved to the bottom of the breakdown'
+  ]},
+  {v:'v0.10',d:'Oct 8, 2026',items:[
+    'Disposal “Add item” is now type-to-search — start typing to filter the list',
+    'Add a custom one-off item with your own description, rate and tax type',
+    'Solid Waste Tax now shows the taxable amount from hauling, rental and MSW items separately'
+  ]},
+  {v:'v0.9',d:'Oct 8, 2026',items:[
+    'Save quotes to the cloud and reload them anytime (📁 Saved)',
+    'Saved quotes are shared across the team, with customer, total, who saved it and when',
+    'Re-saving a loaded quote updates it; Delete removes it'
+  ]},
+  {v:'v0.8',d:'Oct 8, 2026',items:[
+    'Settings panel (⚙ in the header) to manage billing codes — synced to the whole team',
+    'Turn any code active or inactive without deleting it',
+    'Edit a code’s description, rate, or tax type; add brand-new codes',
+    'Suggestions / ideas now sync through the cloud (and show who sent them)'
+  ]},
+  {v:'v0.7',d:'Oct 8, 2026',items:[
+    'Hauling can now be filled in manually (site address + haul fee) without the Mileage Quoter',
+    'Bringing in a new address from the Mileage Quoter asks whether to start a new quote',
+    'Starting a new quote now updates the customer address to match the new site',
+    'Hauling label changed from Destination to Site Address'
+  ]},
+  {v:'v0.6',d:'Oct 8, 2026',items:[
+    'Customer address split into Name / Street / City / State / ZIP',
+    'Address auto-fills from the hauling destination (and stays editable)',
+    'Typing a 5-digit ZIP fills in the city and state'
+  ]},
+  {v:'v0.5',d:'Oct 8, 2026',items:[
+    'Sign-in added (email + PIN) — the quoter is now private to your team',
+    'Billing codes moved to the cloud (Firebase), shared across everyone’s devices',
+    'Built-in codes kept as an offline fallback so the quoter still works if the connection drops'
+  ]},
+  {v:'v0.4',d:'Oct 8, 2026',items:[
+    'Haul fee can be manually overridden (e.g. donations) with a Reset-to-mileage button',
+    'Back to Mileage Quoter button in the header'
+  ]},
+  {v:'v0.3',d:'Oct 7, 2026',items:[
+    'Tax engine: each code carries one tax type — Solid Waste Tax, Environmental $0.60/yd, Environmental $2.00/ton, or none',
+    'SWT auto-applies to the whole ticket (hauling + rental + MSW items) once an MSW item is on the quote',
+    'Override button for the MN one-third rule — drops SWT from hauling & rental; MSW items stay taxed; environmental still applies',
+    'Commercial / Residential prompt on the first taxable item (once per quote)',
+    'Customer name & address; Duplicate quote keeps only name & address',
+    'Environmental tax auto-figures from demolition yards / tons — no manual entry',
+    'Ideas box and this change log'
+  ]},
+  {v:'v0.2',d:'Oct 7, 2026',items:['Rental, disposal catalog (36 codes), tax, quote summary']},
+  {v:'v0.1',d:'Oct 7, 2026',items:['Skeleton; hauling hand-off from the Mileage Quoter']}
+];
+
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+const el=id=>document.getElementById(id);
+
+/* ===== Firebase ===== */
+const firebaseConfig={
+  apiKey:"AIzaSyDVL0LfS-IPh9Wo5XnCpOXy_AFPpEh3UZg",
+  authDomain:"steves-quoter.firebaseapp.com",
+  projectId:"steves-quoter",
+  storageBucket:"steves-quoter.firebasestorage.app",
+  messagingSenderId:"515021535878",
+  appId:"1:515021535878:web:e8187462ca088c30f72f07"
+};
+let db=null, fbReady=false;
+try{
+  if(typeof firebase!=='undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db=firebase.firestore();
+    // Offline support: codes, rates and saved quotes are cached on the device and
+    // changes made offline sync when the connection returns.
+    try{ db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+    fbReady=true;
+  }
+}catch(e){ console.error('Firebase init failed',e); }
+
+/* billing codes — loaded from Firestore, with the built-in list as fallback */
+let CODES=[];
+function fallbackCodes(){ return DATA.disposal.map(d=>({code:d.code,desc:d.desc,rate:d.rate,taxType:d.taxType,active:true})); }
+function seedCodes(){
+  const batch=db.batch();
+  DATA.disposal.forEach(d=>batch.set(db.collection('codes').doc(d.code),
+    {code:d.code,desc:d.desc,rate:d.rate,taxType:d.taxType,active:true}));
+  return batch.commit();
+}
+function showOffline(on){ const c=el('offlineChip'); if(c) c.classList.toggle('on',!!on); }
+/* ---- which county's facility a code belongs to (drives the disposal suggestions) ----
+   Admins set it per code in Settings; until they do, it's read off the description
+   (BECK → Becker, OT/OTTER → Otter Tail, WA/WADENA → Wadena). */
+const COUNTIES=['Otter Tail','Becker','Wadena'];
+function guessCounty(c){
+  const s=((c.desc||'')+' '+(c.code||'')).toUpperCase();
+  if(/BECK/.test(s)) return 'Becker';
+  if(/\bOT\b|OTTER/.test(s)) return 'Otter Tail';
+  if(/\bWA\b|WADENA/.test(s)) return 'Wadena';
+  return '';
+}
+function codeCounty(c){ return (c && c.county!=null) ? c.county : guessCounty(c||{}); }
+function tagCounties(){ CODES.forEach(c=>{ if(c.county==null) c.county=guessCounty(c); }); }
+function jobCounty(){ const c=(Q.haul&&Q.haul.county)||''; return COUNTIES.indexOf(c)>=0?c:''; }
+
+/* ---- what the customer sees: the billing description minus the county/facility
+   tag, tidied up ("CLEAN DEMO - OT" → "Clean Demo"). Admins can override it per
+   code in Settings ("Shows on quote as"). The internal description still tells
+   staff which facility the code is for. ---- */
+const LABEL_ACRONYMS={MSW:1,RR:1,TV:1,CPU:1,DVD:1,VCR:1,WM:1,'A/C':1,'S/W':1,C:1,D:1};
+function autoLabel(desc){
+  let s=' '+String(desc||'').toUpperCase().replace(/\s+/g,' ').trim()+' ';
+  const CTY='(OT|OTTER-T|OTTER\\s*TAIL|OTTER|BECK|BECKER|WA|WADENA)';
+  s=s.replace(new RegExp('\\s*[-–]\\s*'+CTY+'(?=\\s)','g'),' ');     // "CLEAN DEMO - OT"
+  s=s.replace(new RegExp('\\s'+CTY+'(?=\\s)','g'),' ');              // "BECKER LOOSE GARB", "MIXED MSW OTTER-T"
+  s=s.replace(/\s+/g,' ').trim();
+  if(!s) s=String(desc||'').trim();
+  s=s.replace(/\bCLN\b/g,'CLEAN').replace(/\bGARB\b/g,'GARBAGE').replace(/\bAPPL\b/g,'APPLIANCE');
+  return s.split(' ').map(w=>{
+    if(LABEL_ACRONYMS[w]) return w;
+    return w.split('/').map(p=>LABEL_ACRONYMS[p]?p:(p.charAt(0)+p.slice(1).toLowerCase())).join('/');
+  }).join(' ');
+}
+function codeLabel(c){ return ((c&&c.label)||'').trim() || autoLabel(c&&c.desc); }
+/* the label for a line already on the quote (custom items are what you typed) */
+function itemLabel(d){ if(!d) return ''; if(d.custom) return d.desc||''; return (d.label||'').trim() || autoLabel(d.desc); }
+function loadCodes(){
+  if(!db){ CODES=fallbackCodes(); tagCounties(); showOffline(true); return Promise.resolve(); }
+  return db.collection('codes').get().then(snap=>{
+    if(snap.empty){ return seedCodes().then(()=>{ CODES=fallbackCodes(); tagCounties(); showOffline(false); }); }
+    CODES=[]; snap.forEach(doc=>CODES.push(doc.data())); tagCounties();
+    showOffline(false);
+  }).catch(e=>{ console.error('codes load failed',e); CODES=fallbackCodes(); tagCounties(); showOffline(true); });
+}
+
+/* ===== rates (rental / SWT / environmental) — editable in Settings, synced ===== */
+function ratesDoc(){ return {
+  rental1020:DATA.rental[0].rate, rental3040:DATA.rental[1].rate,
+  swtCommercial:DATA.swt.commercial, swtResidential:DATA.swt.residential,
+  envPerYard:DATA.env.perYard, envPerTon:DATA.env.perTon }; }
+function applyRates(d){
+  if(!d) return;
+  const n=(v,f)=>{ v=parseFloat(v); return (isFinite(v)&&v>=0)?v:f; };
+  DATA.rental[0].rate=n(d.rental1020,DATA.rental[0].rate);
+  DATA.rental[1].rate=n(d.rental3040,DATA.rental[1].rate);
+  DATA.swt.commercial=n(d.swtCommercial,DATA.swt.commercial);
+  DATA.swt.residential=n(d.swtResidential,DATA.swt.residential);
+  DATA.env.perYard=n(d.envPerYard,DATA.env.perYard);
+  DATA.env.perTon=n(d.envPerTon,DATA.env.perTon);
+}
+function loadRates(){
+  if(!db) return Promise.resolve();
+  return db.collection('settings').doc('rates').get().then(doc=>{
+    if(doc.exists) applyRates(doc.data());
+    else db.collection('settings').doc('rates').set(Object.assign({updatedTs:Date.now()},ratesDoc())).catch(()=>{});
+  }).catch(e=>{ console.error('rates load failed',e); });
+}
+
+/* ===== hauling rates for the Mileage Quoter (settings/haulRates — it reads this doc without a login) ===== */
+const HAUL_DEFAULTS={ ro:{perMile:7,baseDetroitLakes:175,basePerham:100}, mswTemporary:{perMile:7,basePerham:70}, mswPermanent:{perMile:3,basePerham:0} };
+let HAUL=JSON.parse(JSON.stringify(HAUL_DEFAULTS));
+function applyHaul(d){
+  if(!d) return;
+  const n=(v,f)=>{ v=parseFloat(v); return (isFinite(v)&&v>=0)?v:f; };
+  const ro=d.ro||{}, mt=d.mswTemporary||{}, mp=d.mswPermanent||{};
+  HAUL={ ro:{ perMile:n(ro.perMile,HAUL.ro.perMile), baseDetroitLakes:n(ro.baseDetroitLakes,HAUL.ro.baseDetroitLakes), basePerham:n(ro.basePerham,HAUL.ro.basePerham) },
+         mswTemporary:{ perMile:n(mt.perMile,HAUL.mswTemporary.perMile), basePerham:n(mt.basePerham,HAUL.mswTemporary.basePerham) },
+         mswPermanent:{ perMile:n(mp.perMile,HAUL.mswPermanent.perMile), basePerham:n(mp.basePerham,HAUL.mswPermanent.basePerham) } };
+}
+function loadHaulRates(){
+  if(!db) return Promise.resolve();
+  return db.collection('settings').doc('haulRates').get().then(doc=>{
+    if(doc.exists) applyHaul(doc.data());
+    else db.collection('settings').doc('haulRates').set(Object.assign({updatedTs:Date.now()},HAUL_DEFAULTS)).catch(()=>{});
+  }).catch(e=>{ console.error('hauling rates load failed',e); });
+}
+function fillHaulForm(){
+  const set=(id,v)=>{ const e=el(id); if(e) e.value=v; };
+  set('hrRoMile',HAUL.ro.perMile); set('hrRoDL',HAUL.ro.baseDetroitLakes); set('hrRoPer',HAUL.ro.basePerham);
+  set('hrMtMile',HAUL.mswTemporary.perMile); set('hrMtBase',HAUL.mswTemporary.basePerham);
+  set('hrMpMile',HAUL.mswPermanent.perMile); set('hrMpBase',HAUL.mswPermanent.basePerham);
+  document.querySelectorAll('#haulRatesCard input').forEach(i=>i.disabled=!isAdmin());
+}
+function saveHaulRates(){
+  if(!isAdmin()){ notify('Only admins can change hauling rates'); return; }
+  const num=id=>{ const v=parseFloat(el(id).value); return (isFinite(v)&&v>=0)?v:null; };
+  const v=['hrRoMile','hrRoDL','hrRoPer','hrMtMile','hrMtBase','hrMpMile','hrMpBase'].map(num);
+  if(v.some(x=>x==null)){ notify('Check the hauling rates — every box needs a number'); return; }
+  const doc={ ro:{perMile:v[0],baseDetroitLakes:v[1],basePerham:v[2]}, mswTemporary:{perMile:v[3],basePerham:v[4]}, mswPermanent:{perMile:v[5],basePerham:v[6]},
+    updatedTs:Date.now(), updatedBy:currentEmail() };
+  applyHaul(doc);
+  if(!db){ notify('Offline — hauling rates not synced'); return; }
+  db.collection('settings').doc('haulRates').set(doc)
+    .then(()=>notify('Hauling rates saved — the Mileage Quoter uses them on its next refresh'))
+    .catch(e=>{ console.error('hauling rates save failed',e); notify('Save failed — check your connection'); });
+}
+
+/* ===== admins — who may change codes, rates and the admin list ===== */
+const DEFAULT_ADMINS=['kelly@stevessanitation.com','casey@stevessanitation.com'];
+let ADMINS=DEFAULT_ADMINS.slice();
+function isAdmin(){ const e=(currentEmail()||'').toLowerCase(); return ADMINS.map(a=>a.toLowerCase()).indexOf(e)>=0; }
+function loadAdmins(){
+  if(!db) return Promise.resolve();
+  return db.collection('settings').doc('admins').get().then(doc=>{
+    if(doc.exists && Array.isArray((doc.data()||{}).emails) && doc.data().emails.length) ADMINS=doc.data().emails.slice();
+    else db.collection('settings').doc('admins').set({emails:DEFAULT_ADMINS,updatedTs:Date.now()}).catch(()=>{});
+  }).catch(e=>{ console.error('admins load failed',e); });
+}
+
+function friendlyAuthErr(e){
+  const c=(e&&e.code)||'';
+  if(c==='auth/invalid-email') return 'That email doesn’t look right.';
+  if(c==='auth/user-not-found'||c==='auth/wrong-password'||c==='auth/invalid-credential') return 'Email or PIN is incorrect.';
+  if(c==='auth/too-many-requests') return 'Too many tries — wait a minute and try again.';
+  if(c==='auth/network-request-failed') return 'No connection — check your internet.';
+  return 'Sign-in failed. '+(e&&e.message?e.message:'');
+}
+const usd=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+const money=n=>usd.format(Math.round((n+Number.EPSILON)*100)/100);
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function pct(r){return (r*100).toFixed((r*100)%1?2:0)+'%';}
+/* split a formatted address "123 Main St, Perham, MN 56573" into parts */
+function parseAddress(s){
+  const out={street:'',city:'',state:'',zip:''};
+  if(!s) return out;
+  s=String(s).replace(/,\s*(USA|United States)\s*$/i,'').trim();
+  const parts=s.split(',').map(x=>x.trim()).filter(Boolean);
+  if(!parts.length) return out;
+  const last=parts[parts.length-1];                    // "MN 56573" / "56573" / "MN"
+  const m=last.match(/^([A-Za-z]{2})?\s*(\d{5}(?:-\d{4})?)?$/);
+  if(m && (m[1]||m[2])){
+    out.state=(m[1]||'').toUpperCase(); out.zip=m[2]||'';
+    parts.pop();
+    if(parts.length) out.city=parts.pop();
+    out.street=parts.join(', ');
+  }else{
+    out.street=parts[0]||''; if(parts.length>1) out.city=parts[1];
+  }
+  return out;
+}
+
+/* ZIP -> city/state via a free lookup (best-effort; manual entry always works) */
+function zipLookup(zip){
+  zip=String(zip||'').trim();
+  if(!/^\d{5}$/.test(zip)){ el('zipNote').textContent=''; return; }
+  el('zipNote').textContent='Looking up ZIP…';
+  fetch('https://api.zippopotam.us/us/'+zip)
+    .then(r=> r.ok ? r.json() : Promise.reject())
+    .then(d=>{
+      const p=d && d.places && d.places[0]; if(!p) throw 0;
+      const city=p['place name']||'', st=p['state abbreviation']||'';
+      if(city){ el('custCity').value=city; Q.custCity=city; }
+      if(st){ el('custState').value=st; Q.custState=st; }
+      el('zipNote').textContent=''; saveState();
+    })
+    .catch(()=>{ el('zipNote').textContent=''; });      // silent — user types city/state
+}
+
+/* overwrite the customer address fields from a formatted site address */
+function fillCustFromDest(dest){
+  const a=parseAddress(dest||'');
+  Q.custStreet=a.street; Q.custCity=a.city; Q.custState=a.state; Q.custZip=a.zip;
+}
+/* does the current quote have anything worth preserving? */
+function quoteHasContent(){
+  return !!(Q.custName||Q.custStreet||Q.custCity||(Q.disposal&&Q.disposal.length)||(Q.haul&&effectiveHaul()>0));
+}
+
+function freshQuote(){return{customer:'commercial',custChosen:false,custName:'',
+  custStreet:'',custCity:'',custState:'',custZip:'',custEmail:'',haul:null,
+  haulOverride:null,rental:{size:'',days:0},disposal:[],override:false,validDays:30,label:'',rates:null,
+  savedId:null,quoteNo:null,status:'draft',sentTs:null,created:null};}
+function effectiveHaul(){return Q.haul?(Q.haulOverride!=null?Q.haulOverride:Q.haul.total):0;}
+function haulIsAdjusted(){return Q.haul&&!Q.haul.manual&&Q.haulOverride!=null&&Math.abs(Q.haulOverride-Q.haul.total)>0.005;}
+let Q=freshQuote();
+
+function saveState(){store.set('rq_state',JSON.stringify(Q));}
+function loadState(){try{const s=JSON.parse(store.get('rq_state')||'null');if(s&&typeof s==='object')Q=Object.assign(freshQuote(),s);}catch(e){}}
+
+function readHandoff(){
+  const p=new URLSearchParams(location.search);
+  if(!p.has('haul')&&!p.has('dest'))return null;
+  const miles=parseFloat(p.get('miles')),total=parseFloat(p.get('haul'));
+  return{dest:(p.get('dest')||'').trim(),county:(p.get('county')||'').trim(),
+    miles:isFinite(miles)?miles:null,total:isFinite(total)?total:0,basis:(p.get('basis')||'').trim()};
+}
+function renderHaul(){
+  const nh=el('noHaul'); if(nh) nh.style.display='none';
+  const h=Q.haul || (Q.haul={dest:'',county:'',miles:null,total:0,basis:'Manual entry',manual:true});
+  const manual=!!h.manual;
+  const eff=effectiveHaul(), adj=haulIsAdjusted();
+  el('haulSub').textContent=manual?'Entered manually':(adj?'Manually adjusted':'From the Mileage Quoter');
+
+  // job county: from the Mileage Quoter hand-off, or picked here — it decides which
+  // county's disposal items are suggested first
+  const cur=h.county||'';
+  const ctyList=[''].concat(COUNTIES, (cur && COUNTIES.indexOf(cur)<0)?[cur]:[]);
+  const ctyOpts=ctyList.map(c=>'<option value="'+esc(c)+'"'+(c===cur?' selected':'')+'>'+(c?esc(c)+' County':'— all counties —')+'</option>').join('');
+  let html=`<label class="fld" for="haulDest">Site Address</label>
+    <input type="text" id="haulDest" placeholder="Job site address" value="${esc(h.dest||'')}">
+    <div style="margin-top:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+      <label class="fld" for="haulCounty" style="margin:0">Disposal county</label>
+      <select id="haulCounty" style="width:auto;min-width:165px">${ctyOpts}</select>
+      <span class="card-sub">${manual?'':'set from the job’s county · '}which facility prices the disposal items — switch it to run Becker waste through Perham</span>
+    </div>`;
+  if(!manual){
+    html+=`<div class="kv" style="margin-top:11px;margin-bottom:4px">
+      <div><div class="k">One way</div><div class="v">${h.miles!=null?h.miles.toFixed(1)+' mi':'—'}</div></div>
+      <div><div class="k">Basis</div><div class="v">${esc(h.basis)||'—'}</div></div></div>`;
+  }
+  html+=`<label class="fld" for="haulFee" style="margin-top:11px">Haul fee${manual?'':' <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">— edit to override (e.g. donation)</span>'}</label>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="flex:0 0 150px"><input type="number" id="haulFee" min="0" step="any" value="${eff.toFixed(2)}" inputmode="decimal"></div>
+      ${manual?'':`<div class="card-sub">Mileage quote: <b class="mono">${money(h.total)}</b></div>
+      <button class="btn btn-ghost btn-sm" id="haulReset" style="${adj?'':'display:none'}">Reset to mileage</button>`}
+    </div>
+    ${manual
+      ?'<div class="card-sub" style="margin-top:7px">Entered manually — or use <b>← Mileage Quoter</b> to calculate by distance.</div>'
+      :`<div class="card-sub" id="haulAdjNote" style="margin-top:7px;color:var(--rust);${adj?'':'display:none'}">● Haul fee manually adjusted (mileage quote was ${money(h.total)})</div>`}`;
+  el('haulBody').innerHTML=html;
+
+  const sd=el('haulDest');
+  if(sd) sd.addEventListener('input',()=>{ Q.haul.dest=sd.value; saveState(); });
+  const hc=el('haulCounty');
+  if(hc) hc.addEventListener('change',()=>{ Q.haul.county=hc.value; saveState(); updateDispHint(); hideMenu(); });
+  updateDispHint();
+  const fee=el('haulFee');
+  if(fee) fee.addEventListener('input',()=>{
+    let v=parseFloat(fee.value); v=(isFinite(v)&&v>=0)?v:0;
+    if(manual){ Q.haul.total=v; Q.haulOverride=null; }
+    else{ Q.haulOverride=v; }
+    if(!manual){ const a=haulIsAdjusted();
+      const rb=el('haulReset'); if(rb) rb.style.display=a?'':'none';
+      const nt=el('haulAdjNote'); if(nt) nt.style.display=a?'':'none'; }
+    recompute();
+  });
+  const rb=el('haulReset');
+  if(rb) rb.addEventListener('click',()=>{Q.haulOverride=null;renderHaul();recompute();});
+}
+
+let TTAG={};
+function envYdLbl(){ return '$'+DATA.env.perYard.toFixed(2)+'/yd'; }
+function envTonLbl(){ return '$'+DATA.env.perTon.toFixed(2)+'/ton'; }
+function buildTTAG(){
+  TTAG={'SWT':'<span class="tag t-swt">SWT</span>','ENV-YD':'<span class="tag t-env">Env '+envYdLbl()+'</span>',
+    'ENV-TON':'<span class="tag t-env">Env '+envTonLbl()+'</span>','None':'<span class="tag t-non">No tax</span>'};
+}
+buildTTAG();
+/* push the current rates into every label that shows one */
+function refreshRateLabels(){
+  buildTTAG();
+  const rs=el('rSize');
+  if(rs){ const v=rs.value; rs.innerHTML='<option value="">— none —</option>'
+    +DATA.rental.map((r,i)=>'<option value="'+i+'">'+esc(r.size)+' — '+money(r.rate)+'/day</option>').join(''); rs.value=v; }
+  document.querySelectorAll('#custSeg button').forEach(b=>{
+    b.textContent=(b.dataset.cust==='commercial'?'Commercial':'Residential')+' · '+pct(DATA.swt[b.dataset.cust]); });
+  document.querySelectorAll('#custModal [data-pick]').forEach(b=>{
+    const p=b.querySelector('.pct'); if(p) p.textContent='SWT '+pct(DATA.swt[b.dataset.pick]); });
+  ['cTax','ncTax'].forEach(id=>{ const s=el(id); if(!s) return; const v=s.value;
+    s.innerHTML=TAXOPTS().map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join(''); s.value=v||'None'; });
+  const lbl=el('swtRateLbl'); if(lbl) lbl.textContent='SWT '+pct(DATA.swt[Q.customer]||DATA.swt.commercial);
+}
+/* ---- type-ahead combo for the disposal catalog ---- */
+let dPick=null, dFiltered=[], dActiveIdx=-1;
+function activeCodes(){ return CODES.filter(c=>c.active!==false).slice().sort((a,b)=>codeLabel(a).localeCompare(codeLabel(b))||a.desc.localeCompare(b.desc)); }
+/* With a disposal county set, the list is that county's facility items (first) plus
+   items that apply anywhere; other counties' items are left out — change the county
+   on the Hauling card to get them. With no county set, everything is listed. */
+let hiddenByCounty=0;
+function countyVisible(c){
+  const jc=jobCounty(); if(!jc) return true;
+  const cc=codeCounty(c); return !cc || cc===jc;
+}
+function rankByCounty(list){
+  const jc=jobCounty(); if(!jc) return list;
+  const mine=[],any=[];
+  list.forEach(c=>{ (codeCounty(c)===jc?mine:any).push(c); });
+  return mine.concat(any);
+}
+function comboFilter(q){
+  q=(q||'').trim().toLowerCase();
+  const all=activeCodes();
+  const seen=all.filter(countyVisible);
+  hiddenByCounty=all.length-seen.length;
+  if(!q) return rankByCounty(seen);
+  // match on the customer label, the billing description OR the code; rank by whether it starts with the text
+  const starts=[], has=[];
+  seen.forEach(c=>{
+    const d=c.desc.toLowerCase(), cd=c.code.toLowerCase(), lb=codeLabel(c).toLowerCase();
+    if(lb.startsWith(q)||d.startsWith(q)||cd.startsWith(q)) starts.push(c);
+    else if(lb.includes(q)||d.includes(q)||cd.includes(q)) has.push(c);
+  });
+  return rankByCounty(starts).concat(rankByCounty(has));
+}
+/* county tag — only needed when no county is picked and look-alike labels are all listed */
+function countyTag(c){
+  if(jobCounty()) return '';
+  const cc=codeCounty(c);
+  return cc ? '<span class="tag t-cty">'+esc(cc)+'</span>' : '';
+}
+function updateDispHint(){
+  const s=el('dispSub'); if(!s) return;
+  const jc=jobCounty();
+  s.textContent='Itemized · tax by code'+(jc?(' · '+jc+' County pricing'):' · all counties');
+}
+function positionMenu(){
+  const inp=el('dSearch'), menu=el('dMenu'); if(!inp||!menu) return;
+  const r=inp.getBoundingClientRect();
+  const space=window.innerHeight-r.bottom-14;          // room below the box
+  menu.style.left=r.left+'px';
+  menu.style.width=r.width+'px';
+  menu.style.top=(r.bottom+4)+'px';
+  menu.style.maxHeight=Math.max(150,Math.min(320,space))+'px';
+}
+function renderMenu(){
+  const menu=el('dMenu'); if(!menu) return;
+  dFiltered=comboFilter(el('dSearch').value);
+  if(dActiveIdx>=dFiltered.length) dActiveIdx=dFiltered.length-1;
+  if(!dFiltered.length){
+    menu.innerHTML='<div class="combo-empty">No matches — use <b>＋ Custom item</b> below.</div>';
+    menu.classList.add('on'); positionMenu(); return;
+  }
+  const jc=jobCounty();
+  menu.innerHTML=(jc?`<div class="combo-hint">${esc(jc)} County pricing — change the disposal county on the Hauling card for another facility’s items</div>`:'')
+    +dFiltered.map((c,i)=>`<div class="combo-opt${i===dActiveIdx?' hi':''}" data-ci="${i}">
+    <span class="co-desc">${esc(codeLabel(c))}</span><span class="co-code mono">${esc(c.code)}</span>${countyTag(c)}<span class="co-rate mono">${money(c.rate)}</span>
+    <span class="co-tax">${TTAG[c.taxType]||''}</span></div>`).join('')
+    +(hiddenByCounty?`<div class="combo-foot">${hiddenByCounty} other-county item${hiddenByCounty==1?'':'s'} not shown</div>`:'');
+  menu.classList.add('on');
+  menu.querySelectorAll('[data-ci]').forEach(o=>o.addEventListener('mousedown',e=>{
+    e.preventDefault(); pickCombo(dFiltered[+o.dataset.ci]); }));
+  positionMenu();
+}
+function pickCombo(c){ if(!c)return; dPick=c; el('dSearch').value=codeLabel(c); hideMenu(); el('dQty').focus(); }
+function hideMenu(){ const m=el('dMenu'); if(m)m.classList.remove('on'); dActiveIdx=-1; }
+function comboKey(e){
+  if(e.key==='ArrowDown'){ e.preventDefault(); if(!el('dMenu').classList.contains('on'))renderMenu();
+    dActiveIdx=Math.min(dActiveIdx+1,dFiltered.length-1); renderMenu(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); dActiveIdx=Math.max(dActiveIdx-1,0); renderMenu(); }
+  else if(e.key==='Enter'){ e.preventDefault();
+    const pick = dActiveIdx>=0 ? dFiltered[dActiveIdx] : (dFiltered[0]||null);
+    if(pick){ pickCombo(pick); } }
+  else if(e.key==='Escape'){ hideMenu(); }
+}
+function buildCatalog(){ dPick=null; if(el('dSearch')) el('dSearch').value=''; hideMenu(); }
+function addDisposal(){
+  let item=dPick;
+  if(!item){ const f=comboFilter(el('dSearch').value); if(f.length) item=f[0]; }
+  if(!item){ notify('Type to pick an item, or use ＋ Custom item'); return; }
+  let qty=parseFloat(el('dQty').value); if(!isFinite(qty)||qty<=0)qty=1;
+  Q.disposal.push({code:item.code,desc:item.desc,label:codeLabel(item),rate:item.rate,taxType:item.taxType,qty});
+  el('dQty').value='1'; el('dSearch').value=''; dPick=null;
+  el('dSearch').blur(); hideMenu();   // keep the menu closed so it doesn't cover the new line
+  if(item.taxType==='SWT'&&!Q.custChosen){openCustModal();}
+  renderDisposal();recompute();
+}
+function toggleCustom(show){
+  const box=el('customBox'); const on = show==null ? box.style.display==='none' : show;
+  box.style.display=on?'block':'none';
+  if(on) el('cDesc').focus();
+}
+function addCustom(){
+  const desc=(el('cDesc').value||'').trim();
+  let rate=parseFloat(el('cRate').value), qty=parseFloat(el('cQty').value);
+  const tax=el('cTax').value;
+  if(!desc){ notify('Enter a description'); return; }
+  if(!isFinite(rate)||rate<0){ notify('Enter a rate'); return; }
+  if(!isFinite(qty)||qty<=0) qty=1;
+  Q.disposal.push({code:'CUSTOM',desc:desc,rate:rate,taxType:tax,qty:qty,custom:true});
+  el('cDesc').value='';el('cRate').value='';el('cQty').value='1';el('cTax').value='None';
+  toggleCustom(false);
+  if(tax==='SWT'&&!Q.custChosen){openCustModal();}
+  renderDisposal();recompute(); notify('Custom item added');
+}
+function renderDisposal(){
+  const box=el('dLines');
+  if(!Q.disposal.length){box.innerHTML='<div class="card-sub">No disposal items added yet.</div>';return;}
+  box.innerHTML=Q.disposal.map((d,i)=>{
+    const lb=itemLabel(d);
+    // staff still see which code / facility this is; the customer sees only the label
+    const internal=(!d.custom && d.desc && d.desc!==lb) ? ('<span class="mono">'+esc(d.code)+'</span> · '+esc(d.desc)+' · ') : '';
+    return `<div class="line"><div class="l-d">
+    <div class="l-name">${esc(lb)}</div>
+    <div class="l-meta">${internal}${money(d.rate)} each ${TTAG[d.taxType]||''}${d.custom?' <span class="tag t-custom">custom</span>':''}</div></div>
+    <div class="l-qty"><input type="number" min="0" step="any" value="${d.qty}" data-qi="${i}" inputmode="decimal"></div>
+    <div class="l-amt mono">${money(d.rate*d.qty)}</div>
+    <button class="l-x" data-dx="${i}" title="Remove">×</button></div>`; }).join('');
+  box.querySelectorAll('[data-qi]').forEach(inp=>inp.addEventListener('input',()=>{
+    let v=parseFloat(inp.value);Q.disposal[+inp.dataset.qi].qty=isFinite(v)&&v>=0?v:0;recompute();}));
+  box.querySelectorAll('[data-dx]').forEach(b=>b.addEventListener('click',()=>{
+    Q.disposal.splice(+b.dataset.dx,1);renderDisposal();recompute();}));
+}
+
+/* pure totals — used by both the live display and when saving a quote */
+function calcTotals(){ return calcTotalsForQ(Q); }
+/* per-component breakdown of what the Solid Waste Tax is figured on */
+function swtBreakHtml(T){
+  if(!T.hasSWT) return '<span class="sb-none">No MSW item on the quote — no Solid Waste Tax.</span>';
+  const ov=Q.override, r=T.rate;
+  const row=(label,amt,included)=>{
+    const tax=included?amt*r:0;
+    return `<div class="sb-row${included?'':' ex'}">`
+      +`<span class="sb-l">${label}</span>`
+      +`<span class="sb-v mono">${money(amt)}</span>`
+      +`<span class="sb-f">${included?'taxed':'excluded'}</span>`
+      +`<span class="sb-t mono">${money(tax)}</span></div>`;
+  };
+  return '<div class="sb-row sb-head"><span class="sb-l"></span><span class="sb-v">Taxable</span><span class="sb-f"></span><span class="sb-t">Tax</span></div>'
+    +row('Hauling',T.haul,!ov)
+    +row('Rental',T.rental,!ov)
+    +row('MSW items',T.swtItems,true)
+    +`<div class="sb-row base"><span class="sb-l">Solid Waste Tax</span>`
+    +`<span class="sb-v mono">${money(T.swtBase)}</span>`
+    +`<span class="sb-f">× ${pct(r)}</span>`
+    +`<span class="sb-t mono">${money(T.swt)}</span></div>`;
+}
+function recompute(){
+  const T=calcTotals();
+  const {haul,rental,disp,env,hasSWT,rate,swtBase,swt,total}=T;
+
+  el('haulAmt').textContent=money(haul);
+  if(Q.haul)el('haulSub').textContent=Q.haul.manual?'Entered manually':(haulIsAdjusted()?'Manually adjusted':'From the Mileage Quoter');
+  el('rentalAmt').textContent=money(rental);
+  el('dispAmt').textContent=money(disp);
+  el('taxAmt').textContent=money(swt+env);
+  el('envAmt').textContent=money(env);
+  el('swtRateInline').textContent='('+pct(rate)+')';
+  el('envSub').textContent=env>0?'from demolition yards / tons on the quote':'auto from demolition yards / tons';
+  el('swtBreak').innerHTML=swtBreakHtml(T);
+
+  // SWT banner — tax always applies to the full ticket (override removed)
+  Q.override=false;
+  const banner=el('swtBanner');
+  if(hasSWT){
+    banner.className='swtbanner full';
+    banner.innerHTML=`<span>✓</span><div class="bw"><b>Solid Waste Tax applies to the full ticket</b> — hauling, rental, and MSW items.</div>`;
+  }else{
+    banner.className='';banner.innerHTML='';
+  }
+
+  el('sHaul').textContent=money(haul);el('sRental').textContent=money(rental);el('sDisp').textContent=money(disp);
+  el('sSwt').textContent=money(swt);el('sEnv').textContent=money(env);el('sTotal').textContent=money(total);
+  el('tbTotal').textContent=money(total);
+  el('tbSub').textContent=(Q.customer==='commercial'?'Commercial':'Residential')+(Q.haul&&Q.haul.county?' · '+Q.haul.county+' Co':'');
+  saveState();
+}
+
+function setCustomer(c,byUser){
+  Q.customer=c;if(byUser)Q.custChosen=true;
+  document.querySelectorAll('#custSeg button').forEach(b=>b.classList.toggle('on',b.dataset.cust===c));
+  el('swtRateLbl').textContent='SWT '+pct(DATA.swt[c]);
+  recompute();
+}
+function openCustModal(){el('custModal').classList.add('open');}
+function closeCustModal(){el('custModal').classList.remove('open');}
+
+function notify(m,ms){const n=el('notif');n.textContent=m;n.classList.add('on');clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('on'),ms||Math.max(2600,Math.min(7000,String(m).length*45)));}
+
+/* ===== settings — billing codes (synced via Firestore) ===== */
+function TAXOPTS(){ return [['None','No tax'],['SWT','Solid Waste Tax'],['ENV-YD','Environmental — '+envYdLbl()],['ENV-TON','Environmental — '+envTonLbl()]]; }
+function openSettings(){
+  el('setOffline').classList.toggle('on',!db);
+  if(el('setSearch'))el('setSearch').value='';
+  el('settingsScreen').classList.toggle('admin',isAdmin());
+  fillRatesForm(); fillHaulForm(); renderAdminList(); renderCodeList();
+  el('settingsScreen').classList.add('open');
+}
+function closeSettings(){ el('settingsScreen').classList.remove('open'); }
+function persistCode(c){
+  if(!isAdmin()){ notify('Only admins can change billing codes'); renderCodeList(); return Promise.resolve(); }
+  const i=CODES.findIndex(x=>x.code===c.code);
+  if(i>=0) CODES[i]=Object.assign({},CODES[i],c); else CODES.push(Object.assign({},c));
+  buildCatalog();
+  if(db){ return db.collection('codes').doc(c.code).set(c,{merge:true})
+    .then(()=>notify('Saved — synced to the team'))
+    .catch(e=>{console.error('code save failed',e); notify('Saved on this device — sync failed');}); }
+  notify('Saved on this device (offline — not synced)'); return Promise.resolve();
+}
+function taxSel(code,current){
+  return '<select data-tax="'+esc(code)+'"'+(isAdmin()?'':' disabled')+'>'+TAXOPTS().map(o=>
+    '<option value="'+o[0]+'"'+(o[0]===current?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
+}
+function ctySel(code,current){
+  return '<select data-cty="'+esc(code)+'"'+(isAdmin()?'':' disabled')+' title="Which county’s facility this code is for — it gets suggested first on jobs in that county">'
+    +'<option value="">Any county</option>'+COUNTIES.map(c=>'<option value="'+esc(c)+'"'+(c===current?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>';
+}
+/* the full record for a code, with any field changed */
+function codeRec(c,patch){ return Object.assign({code:c.code,desc:c.desc,rate:c.rate,taxType:c.taxType,active:c.active!==false,county:codeCounty(c)||'',label:(c.label||'').trim()},patch||{}); }
+function renderCodeList(){
+  const q=(el('setSearch').value||'').trim().toLowerCase();
+  const list=CODES.slice().sort((a,b)=>a.code.localeCompare(b.code))
+    .filter(c=>!q||c.code.toLowerCase().includes(q)||String(c.desc||'').toLowerCase().includes(q)||codeLabel(c).toLowerCase().includes(q)||String(codeCounty(c)).toLowerCase().includes(q));
+  const box=el('codeList');
+  if(!list.length){ box.innerHTML='<div class="card-sub">No codes match your search.</div>'; return; }
+  const dis=isAdmin()?'':' disabled';
+  box.innerHTML=list.map(c=>{
+    const on=c.active!==false;
+    return '<div class="code-row'+(on?'':' off')+'">'
+      +'<label class="sw" title="'+(on?'Active':'Inactive')+'"><input type="checkbox" data-act="'+esc(c.code)+'"'+(on?' checked':'')+dis+'><span class="tr"></span></label>'
+      +'<div class="cr-code">'+esc(c.code)+'</div>'
+      +'<div class="cr-desc"><input type="text" data-desc="'+esc(c.code)+'" value="'+esc(c.desc||'')+'"'+dis+'></div>'
+      +'<div class="cr-rate"><input type="number" min="0" step="any" data-rate="'+esc(c.code)+'" value="'+(c.rate!=null?c.rate:0)+'" inputmode="decimal"'+dis+'></div>'
+      +'<div class="cr-tax">'+taxSel(c.code,c.taxType||'None')+'</div>'
+      +'<div class="cr-cty">'+ctySel(c.code,codeCounty(c)||'')+'</div>'
+      +'<div class="cr-label"><span>Shows on quote as</span><input type="text" data-label="'+esc(c.code)+'" value="'+esc((c.label||'').trim())+'" placeholder="'+esc(autoLabel(c.desc))+'"'+dis+' title="Leave blank to use the automatic label shown in grey"></div></div>';
+  }).join('');
+  box.querySelectorAll('[data-act]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.act); if(!c)return;
+    persistCode(codeRec(c,{active:inp.checked}));
+    inp.closest('.code-row').classList.toggle('off',!inp.checked);
+  }));
+  box.querySelectorAll('[data-tax]').forEach(sel=>sel.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===sel.dataset.tax); if(!c)return;
+    persistCode(codeRec(c,{taxType:sel.value}));
+  }));
+  box.querySelectorAll('[data-cty]').forEach(sel=>sel.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===sel.dataset.cty); if(!c)return;
+    persistCode(codeRec(c,{county:sel.value}));
+  }));
+  box.querySelectorAll('[data-label]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.label); if(!c)return;
+    persistCode(codeRec(c,{label:inp.value.trim()}));
+  }));
+  box.querySelectorAll('[data-desc]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.desc); if(!c)return;
+    const v=inp.value.trim(); if(!v){inp.value=c.desc||'';notify('Description can’t be empty');return;}
+    persistCode(codeRec(c,{desc:v}));
+  }));
+  box.querySelectorAll('[data-rate]').forEach(inp=>inp.addEventListener('change',()=>{
+    const c=CODES.find(x=>x.code===inp.dataset.rate); if(!c)return;
+    let v=parseFloat(inp.value); if(!isFinite(v)||v<0){v=c.rate||0;inp.value=v;}
+    persistCode(codeRec(c,{rate:v}));
+  }));
+}
+function addNewCode(){
+  const code=(el('ncCode').value||'').trim().toUpperCase().replace(/\s+/g,'');
+  const desc=(el('ncDesc').value||'').trim();
+  let rate=parseFloat(el('ncRate').value); const tax=el('ncTax').value;
+  const county=el('ncCounty')?el('ncCounty').value:'';
+  const label=el('ncLabel')?el('ncLabel').value.trim():'';
+  if(!code){notify('Enter a code');return;}
+  if(!desc){notify('Enter a description');return;}
+  if(!isFinite(rate)||rate<0)rate=0;
+  if(CODES.some(c=>c.code===code)){notify('Code “'+code+'” already exists');return;}
+  persistCode({code:code,desc:desc,rate:rate,taxType:tax,active:true,county:county,label:label}).then(()=>{
+    el('ncCode').value='';el('ncDesc').value='';el('ncRate').value='';el('ncTax').value='None';
+    if(el('ncCounty')) el('ncCounty').value=''; if(el('ncLabel')) el('ncLabel').value='';
+    renderCodeList();notify('Added “'+code+'”');
+  });
+}
+
+/* ===== settings — rates form ===== */
+function fillRatesForm(){
+  const set=(id,v)=>{ const e=el(id); if(e) e.value=v; };
+  set('rtRental1020',DATA.rental[0].rate); set('rtRental3040',DATA.rental[1].rate);
+  set('rtSwtCom',+(DATA.swt.commercial*100).toFixed(4)); set('rtSwtRes',+(DATA.swt.residential*100).toFixed(4));
+  set('rtEnvYd',DATA.env.perYard); set('rtEnvTon',DATA.env.perTon);
+  document.querySelectorAll('#ratesCard input').forEach(i=>i.disabled=!isAdmin());
+}
+function saveRates(){
+  if(!isAdmin()){ notify('Only admins can change rates'); return; }
+  const num=(id,min)=>{ const v=parseFloat(el(id).value); return (isFinite(v)&&v>=(min||0))?v:null; };
+  const r1=num('rtRental1020'), r2=num('rtRental3040'), sc=num('rtSwtCom'), sr=num('rtSwtRes'), ey=num('rtEnvYd'), et=num('rtEnvTon');
+  if([r1,r2,sc,sr,ey,et].some(v=>v==null)){ notify('Check the rates — every box needs a number'); return; }
+  const doc={rental1020:r1,rental3040:r2,swtCommercial:sc/100,swtResidential:sr/100,envPerYard:ey,envPerTon:et,
+    updatedTs:Date.now(),updatedBy:currentEmail()};
+  applyRates(doc); refreshRateLabels(); renderCodeList(); recompute(); syncSaveBtn();
+  if(!db){ notify('Rates applied here — offline, not synced'); return; }
+  db.collection('settings').doc('rates').set(doc)
+    .then(()=>notify('Rates saved — synced to the team'))
+    .catch(e=>{ console.error('rates save failed',e); notify('Rates save failed — are you an admin?'); });
+}
+
+/* ===== settings — admin list ===== */
+function renderAdminList(){
+  const box=el('adminList'); if(!box) return;
+  const n=el('adminNames'); if(n) n.textContent=ADMINS.join(', ');
+  const me=(currentEmail()||'').toLowerCase();
+  box.innerHTML=ADMINS.map(a=>'<div class="line"><div class="l-d"><div class="l-name">'+esc(a)+(a.toLowerCase()===me?' <span class="tag t-non">you</span>':'')+'</div></div>'
+    +(isAdmin()?'<button class="l-x" data-rmadmin="'+esc(a)+'" title="Remove admin">×</button>':'')+'</div>').join('');
+  box.querySelectorAll('[data-rmadmin]').forEach(b=>b.addEventListener('click',()=>removeAdmin(b.dataset.rmadmin)));
+}
+function saveAdmins(next,msg){
+  if(!db){ notify('Needs a connection'); return; }
+  db.collection('settings').doc('admins').set({emails:next,updatedTs:Date.now(),updatedBy:currentEmail()})
+    .then(()=>{ ADMINS=next; renderAdminList(); el('settingsScreen').classList.toggle('admin',isAdmin()); notify(msg||'Admins updated'); })
+    .catch(e=>{ console.error('admins save failed',e); notify('Couldn’t update admins — are you an admin?'); });
+}
+function addAdmin(){
+  if(!isAdmin()){ notify('Only admins can add admins'); return; }
+  const v=(el('adminNew').value||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){ notify('Enter a valid email'); return; }
+  if(ADMINS.map(a=>a.toLowerCase()).indexOf(v)>=0){ notify('Already an admin'); return; }
+  el('adminNew').value='';
+  saveAdmins(ADMINS.concat([v]),'Added '+v);
+}
+function removeAdmin(a){
+  if(!isAdmin()){ notify('Only admins can remove admins'); return; }
+  const next=ADMINS.filter(x=>x.toLowerCase()!==a.toLowerCase());
+  if(!next.length){ notify('There must be at least one admin'); return; }
+  if(a.toLowerCase()===(currentEmail()||'').toLowerCase() && !confirm('Remove yourself as an admin? You won’t be able to change codes or rates afterwards.')) return;
+  saveAdmins(next,'Removed '+a);
+}
+
+/* ===== saved quotes (Firestore) ===== */
+const QSTATUS={draft:'Draft',sent:'Sent',accepted:'Accepted',declined:'Declined',expired:'Expired'};
+function fmtShortDate(ts){ return ts?new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''; }
+/* resolve with `tv` if the promise takes longer than ms (so a slow/offline connection never hangs the UI) */
+function withTimeout(p,ms,tv){
+  return new Promise((res,rej)=>{
+    let done=false; const t=setTimeout(()=>{ if(!done){ done=true; res(tv); } },ms);
+    Promise.resolve(p).then(v=>{ if(!done){ done=true; clearTimeout(t); res(v); } },
+                            e=>{ if(!done){ done=true; clearTimeout(t); rej(e); } });
+  });
+}
+/* the saved quote's stored quote object (parsed once per row) */
+function rowQuote(r){ if(!r.__q){ try{ r.__q=JSON.parse(r.data||'{}')||{}; }catch(e){ r.__q={}; } } return r.__q; }
+/* when a SENT quote stops being good: sent date + its "good for" days (0 = never) */
+function expiresTs(r){
+  if(!r||!r.sentTs) return null;
+  const days=validDaysFor(r.validDays!=null?r:rowQuote(r));
+  return days>0 ? r.sentTs+days*86400000 : null;
+}
+/* a quote's status as shown: stored status, except a sent quote past its window is Expired */
+function effectiveStatus(r){
+  const st=(r&&r.status)||'draft';
+  if(st==='sent'){ const x=expiresTs(r); if(x && Date.now()>x) return 'expired'; }
+  return QSTATUS[st]?st:'draft';
+}
+function statusBadge(r){ const s=effectiveStatus(r); return '<span class="st-badge st-'+s+'">'+QSTATUS[s]+'</span>'; }
+
+/* Quote numbers: Q-YYYY-NNNN, handed out in order from one shared counter
+   (counters/quotes). A transaction keeps two people from getting the same number.
+   Needs a connection — resolves null if it can't get one. */
+const QUOTE_NO_START=101;   // first number handed out each year: Q-YYYY-0101
+function nextQuoteNo(){
+  if(!db || !db.runTransaction) return Promise.resolve(null);
+  const year=new Date().getFullYear();
+  const ref=db.collection('counters').doc('quotes');
+  return db.runTransaction(t=>t.get(ref).then(doc=>{
+    const d=(doc&&doc.exists)?(doc.data()||{}):{};
+    // next in sequence, but never below the starting number (so test quotes numbered
+    // earlier don't hold it back)
+    const seq=(d.year===year && isFinite(d.seq))?Math.max(d.seq+1,QUOTE_NO_START):QUOTE_NO_START;
+    t.set(ref,{year:year,seq:seq,updated:Date.now()});
+    return 'Q-'+year+'-'+String(seq).padStart(4,'0');
+  })).catch(e=>{ console.warn('quote number not assigned',e); return null; });
+}
+function syncSaveBtn(){
+  const b=el('saveQuoteBtn'), s=el('savedState'), tag=el('qnoTag');
+  if(!b) return;
+  b.textContent = Q.savedId ? 'Update saved quote' : 'Save quote';
+  let msg='';
+  if(Q.savedId){
+    msg='✓ Saved'+(Q.quoteNo?(' as '+Q.quoteNo):'')+' — changes update it.';
+    const st=effectiveStatus({status:Q.status,sentTs:Q.sentTs,validDays:Q.validDays});
+    if(st==='sent') msg+=' Sent '+fmtShortDate(Q.sentTs)+'.';
+    else if(st==='expired') msg+=' Sent '+fmtShortDate(Q.sentTs)+' — now expired.';
+    else if(st==='accepted') msg+=' Accepted by the customer.';
+    else if(st==='declined') msg+=' Declined by the customer.';
+  }
+  if(Q.rates && ratesDiffer(Q.rates,currentRates()))
+    msg += ' Priced with the rates in effect when it was saved (rates have changed since).';
+  if(s) s.textContent = msg;
+  if(tag){ tag.textContent=Q.quoteNo||''; tag.style.display=Q.quoteNo?'':'none'; }
+}
+/* Save (or update) the on-screen quote. Resolves 'saved', or 'queued' when offline
+   (the write is kept on the device and syncs later). A new quote gets the next
+   quote number; if the counter can't be reached it saves without one and picks
+   a number up on the next save. */
+function saveQuoteAsync(){
+  if(!db) return Promise.reject(new Error('offline'));
+  const T=calcTotals();
+  if(T.total<=0 && !Q.custName) return Promise.reject(new Error('empty'));
+  if(!Q.rates) Q.rates=currentRates();           // lock in today's rates for this quote
+  const isNew=!Q.savedId;
+  const ref=isNew ? db.collection('quotes').doc() : db.collection('quotes').doc(Q.savedId);
+  const id=ref.id;
+  if(isNew){ Q.savedId=id; Q.created=Date.now(); Q.status='draft'; Q.sentTs=null; }
+  let issued=false;
+  let numP=Promise.resolve(Q.quoteNo||null);
+  if(!Q.quoteNo){
+    numP=nextQuoteNo();
+    // number arrives after we've already written (slow connection): attach it then
+    numP.then(no=>{ if(no && issued && !Q.quoteNo && Q.savedId===id){
+      Q.quoteNo=no; saveState(); syncSaveBtn();
+      ref.update({quoteNo:no}).catch(()=>{}); } });
+  }
+  return withTimeout(numP,2500,null).then(no=>{
+    if(no && !Q.quoteNo && Q.savedId===id) Q.quoteNo=no;
+    const rec={
+      name:Q.custName||'',
+      site:[Q.custStreet,Q.custCity].filter(Boolean).join(', '),
+      street:Q.custStreet||'', city:Q.custCity||'', state:Q.custState||'', zip:Q.custZip||'',
+      email:(Q.custEmail||'').trim(),
+      customer:Q.customer||'commercial',
+      label:Q.label||'',
+      validDays:validDaysFor(Q),
+      total:T.total,
+      by:currentEmail(),
+      ts:Date.now(),
+      data:JSON.stringify(Q)
+    };
+    if(Q.quoteNo) rec.quoteNo=Q.quoteNo;
+    if(isNew){ rec.status='draft'; rec.created=Q.created; rec.createdBy=currentEmail(); }
+    issued=true; saveState(); syncSaveBtn();
+    return withTimeout(ref.set(rec,{merge:true}),4000,'queued');
+  }).then(res=>{ saveState(); syncSaveBtn(); return res||'saved'; })
+  .catch(e=>{
+    if(isNew && Q.savedId===id){ Q.savedId=null; Q.created=null; }   // keep Q.quoteNo: it's ours, reused next try
+    saveState(); syncSaveBtn(); throw e;
+  });
+}
+function saveQuote(){
+  if(!db){ notify('Can’t save while offline'); return; }
+  const T=calcTotals();
+  if(T.total<=0 && !Q.custName){ notify('Nothing to save yet'); return; }
+  const b=el('saveQuoteBtn'); b.disabled=true;
+  saveQuoteAsync().then(res=>{
+    b.disabled=false;
+    const who=Q.custName?(' — '+Q.custName):'';
+    if(res==='queued') notify('Saved on this device — will sync when you’re back online');
+    else notify((Q.quoteNo?('Saved as '+Q.quoteNo):'Quote saved')+who);
+  }).catch(e=>{ console.error('quote save failed',e); b.disabled=false; notify('Save failed — check your connection'); });
+}
+/* change a saved quote's status (Draft / Sent / Accepted / Declined) */
+function setQuoteStatus(id,status,opts){
+  if(!db || !QSTATUS[status] || status==='expired' || !id) return Promise.resolve();
+  const patch={status:status,statusTs:Date.now(),statusBy:currentEmail()};
+  if(status==='sent') patch.sentTs=patch.statusTs;
+  const r=savedRows.find(x=>x.id===id); if(r) Object.assign(r,patch);
+  if(Q.savedId===id){ Q.status=status; if(status==='sent') Q.sentTs=patch.sentTs; saveState(); syncSaveBtn(); }
+  return db.collection('quotes').doc(id).update(patch)
+    .then(()=>{ if(!(opts&&opts.quiet)) notify('Marked '+QSTATUS[status].toLowerCase()+(r&&r.quoteNo?(' — '+r.quoteNo):'')); })
+    .catch(e=>{ console.error('status update failed',e); notify('Couldn’t update the status — check your connection'); });
+}
+/* after a quote is emailed: mark it Sent unless the customer already answered */
+function markSentAfterEmail(id){
+  if(!id) return Promise.resolve();
+  const r=savedRows.find(x=>x.id===id);
+  const cur=(Q.savedId===id)?(Q.status||'draft'):((r&&r.status)||'draft');
+  if(cur==='accepted'||cur==='declined') return Promise.resolve();
+  return setQuoteStatus(id,'sent',{quiet:true});
+}
+function openSaved(){ el('savedScreen').classList.add('open'); renderSavedList(); }
+function closeSaved(){ el('savedScreen').classList.remove('open'); }
+let savedRows=[], savedShown=[];
+function savedRowHtml(r){
+  const st=effectiveStatus(r);
+  const when=fmtShortDate(r.created||r.ts||Date.now());
+  const title=esc(r.name||r.site||'(no name)');
+  const lab=r.label?' <span class="sv-lab">'+esc(r.label)+'</span>':'';
+  const qn=r.quoteNo?'<span class="sv-qno">'+esc(r.quoteNo)+'</span>':'';
+  const bits=[(r.name&&r.site)?esc(r.site):'', esc(r.by||''), when];
+  if(st==='sent' && r.sentTs){ bits.push('sent '+fmtShortDate(r.sentTs)); const x=expiresTs(r); if(x) bits.push('good through '+fmtShortDate(x)); }
+  else if(st==='expired') bits.push('expired '+fmtShortDate(expiresTs(r)));
+  else if((st==='accepted'||st==='declined') && r.statusTs) bits.push(QSTATUS[st].toLowerCase()+' '+fmtShortDate(r.statusTs));
+  const sel='<select class="sv-status" data-status="'+esc(r.id)+'" title="Quote status">'
+    +['draft','sent','accepted','declined'].map(s=>'<option value="'+s+'"'+(((r.status||'draft')===s)?' selected':'')+'>'
+      +(s==='sent'&&st==='expired'?'Sent (expired)':QSTATUS[s])+'</option>').join('')+'</select>';
+  return '<div class="saved-row is-'+st+'">'
+    +'<input type="checkbox" class="sv-check" data-sel="'+esc(r.id)+'" title="Select for combined quote / email">'
+    +'<div class="sv-main"><div class="sv-name">'+qn+title+lab+statusBadge(r)+'</div><div class="sv-sub">'+bits.filter(Boolean).join(' · ')+'</div></div>'
+    +'<div class="sv-amt mono">'+money(r.total||0)+'</div>'
+    +'<div class="sv-btns">'+sel+'<button class="btn btn-primary btn-sm" data-load="'+esc(r.id)+'">Load</button>'
+    +'<button class="btn btn-ghost btn-sm" data-del="'+esc(r.id)+'">Delete</button></div></div>';
+}
+function updateSelCount(){
+  const n=document.querySelectorAll('#savedList [data-sel]:checked').length;
+  const s=el('selCount'); if(s) s.textContent = n ? (n+' selected') : 'Tick options to combine';
+}
+function selectedSavedIds(){ return [...document.querySelectorAll('#savedList [data-sel]:checked')].map(c=>c.dataset.sel); }
+function selectedSavedQuotes(){
+  const out=[];
+  selectedSavedIds().forEach(id=>{ const r=savedRows.find(x=>x.id===id); if(!r)return;
+    try{ const q=JSON.parse(r.data); if(!q.label && r.label) q.label=r.label; if(r.quoteNo) q.quoteNo=r.quoteNo; q.override=false; out.push(q); }catch(e){} });
+  return out;
+}
+function combineSheet(){
+  const list=selectedSavedQuotes();
+  if(!list.length){ notify('Tick one or more quotes first'); return; }
+  openWin(list.length===1 ? quoteSheetHtmlFor(list[0]) : combinedSheetHtml(list));
+}
+function combineEmail(){
+  const list=selectedSavedQuotes(), ids=selectedSavedIds();
+  if(!list.length){ notify('Tick one or more quotes first'); return; }
+  const c0=list[0], name=c0.custName||'', to=(c0.custEmail||'').trim();
+  const one=list.length===1;
+  const build=()=>({ to, subj: one ? quoteSubject(c0) : (COMPANY.name+' — Quote options'+(name?(' for '+name):'')),
+                     text: one ? emailTextFor(c0) : combinedEmailText(list), html: one ? emailHtmlFor(c0) : combinedEmailHtml(list) });
+  const done=()=>Promise.all(ids.map(markSentAfterEmail)).then(drawSavedRows);
+  if(EMAIL_MODE==='draft' && gmailAvailable()){ emailViaDraft(build,{ save:false, onDone:done }); return; }
+  const m=build(); sendQuoteEmail(m.to,m.subj,m.text,m.html); done();
+}
+/* does a saved row match the search box + status filter? */
+function savedMatches(r,q,st){
+  if(st && effectiveStatus(r)!==st) return false;
+  if(!q) return true;
+  const hay=[r.quoteNo,r.name,r.site,r.street,r.city,r.state,r.zip,r.label,r.by,r.email].map(x=>String(x||'').toLowerCase()).join(' | ');
+  return q.split(/\s+/).filter(Boolean).every(w=>hay.indexOf(w)>=0);
+}
+/* draw the (filtered) rows from what's already loaded */
+function drawSavedRows(){
+  const box=el('savedList'); if(!box) return;
+  const q=(el('savedSearch').value||'').trim().toLowerCase(), st=el('savedFilter').value||'';
+  const rows=savedRows.filter(r=>savedMatches(r,q,st));
+  savedShown=rows;
+  const sub=el('savedSub');
+  if(sub) sub.textContent = !savedRows.length ? 'Shared across the team'
+    : (rows.length===savedRows.length ? savedRows.length+' saved · shared across the team' : rows.length+' of '+savedRows.length+' shown');
+  const was=new Set(selectedSavedIds());
+  if(!savedRows.length){ box.innerHTML='<div class="card-sub">No saved quotes yet. Build a quote and tap <b>Save quote</b>.</div>'; updateSelCount(); return; }
+  if(!rows.length){ box.innerHTML='<div class="card-sub">No saved quotes match that search / status.</div>'; updateSelCount(); return; }
+  box.innerHTML=rows.map(savedRowHtml).join('');
+  box.querySelectorAll('[data-sel]').forEach(c=>{ if(was.has(c.dataset.sel)) c.checked=true; c.addEventListener('change',updateSelCount); });
+  box.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{
+    const r=savedRows.find(x=>x.id===b.dataset.load); if(r) loadQuote(r);
+  }));
+  box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteQuote(b.dataset.del)));
+  box.querySelectorAll('[data-status]').forEach(s=>s.addEventListener('change',()=>setQuoteStatus(s.dataset.status,s.value).then(drawSavedRows)));
+  updateSelCount();
+}
+function renderSavedList(){
+  const box=el('savedList');
+  if(!db){ box.innerHTML='<div class="card-sub">Saved quotes need a connection — you’re offline right now.</div>'; return; }
+  box.innerHTML='<div class="card-sub">Loading…</div>';
+  db.collection('quotes').orderBy('ts','desc').limit(500).get().then(snap=>{
+    const rows=[]; snap.forEach(d=>rows.push(Object.assign({id:d.id},d.data())));
+    savedRows=rows; drawSavedRows();
+    // keep the on-screen quote's number/status in step with what the team has done to it
+    const mine=Q.savedId && rows.find(r=>r.id===Q.savedId);
+    if(mine){ Q.quoteNo=mine.quoteNo||Q.quoteNo||null; Q.status=mine.status||'draft'; Q.sentTs=mine.sentTs||null; saveState(); syncSaveBtn(); }
+  }).catch(e=>{ console.error('quotes load failed',e); box.innerHTML='<div class="card-sub">Couldn’t load saved quotes — check your connection.</div>'; });
+}
+/* Export the listed quotes as a CSV file (opens in Google Sheets / Excel) */
+function csvCell(v){ v=(v==null)?'':String(v); return /[",\n\r]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v; }
+function exportCsv(){
+  const rows=savedShown.length?savedShown:savedRows;
+  if(!rows.length){ notify('Nothing to export yet'); return; }
+  const d=v=>v?new Date(v).toLocaleDateString('en-US'):'';
+  const head=['Quote #','Status','Date','Sent','Good through','Customer','Street','City','State','ZIP','Email','Site address',
+    'Tax class','Option label','Hauling','Daily rental','Disposal','Solid Waste Tax','Environmental Tax','Total','Good for (days)','Saved by','Last updated'];
+  const lines=[head.map(csvCell).join(',')];
+  rows.forEach(r=>{
+    const q=Object.assign(freshQuote(),rowQuote(r)); q.override=false;
+    const T=calcTotalsForQ(q);
+    lines.push([r.quoteNo||'', QSTATUS[effectiveStatus(r)], d(r.created||r.ts), d(r.sentTs), d(expiresTs(r)),
+      r.name||q.custName||'', r.street||q.custStreet||'', r.city||q.custCity||'', r.state||q.custState||'', r.zip||q.custZip||'',
+      r.email||q.custEmail||'', (q.haul&&q.haul.dest)||'', (q.customer==='residential'?'Residential':'Commercial'), r.label||q.label||'',
+      T.haul.toFixed(2), T.rental.toFixed(2), T.disp.toFixed(2), T.swt.toFixed(2), T.env.toFixed(2), T.total.toFixed(2),
+      validDaysFor(q), r.by||'', d(r.ts)].map(csvCell).join(','));
+  });
+  const blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='quotes-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },800);
+  notify('Downloaded '+rows.length+' quote'+(rows.length==1?'':'s')+' as CSV — open it in Google Sheets or Excel');
+}
+function loadQuote(r){
+  if(quoteHasContent() && !confirm('Load this saved quote?\n\nYour current quote on screen will be replaced'+(Q.savedId?'':' (and isn’t saved)')+'.')) return;
+  let data; try{ data=JSON.parse(r.data); }catch(e){ notify('Couldn’t read that quote'); return; }
+  Q=Object.assign(freshQuote(),data); Q.savedId=r.id;
+  // the record's own fields win over the snapshot (status can change from the Saved list)
+  Q.quoteNo=r.quoteNo||Q.quoteNo||null; Q.status=r.status||'draft'; Q.sentTs=r.sentTs||null; Q.created=r.created||Q.created||r.ts||null;
+  saveState();
+  closeSaved();
+  if(!Q.haul) Q.haul={dest:'',county:'',miles:null,total:0,basis:'Manual entry',manual:true};
+  setCustomer(Q.customer||'commercial',false);
+  el('custName').value=Q.custName||'';
+  el('custStreet').value=Q.custStreet||''; el('custCity').value=Q.custCity||'';
+  el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
+  el('custEmail').value=Q.custEmail||'';
+  el('validDays').value=(Q.validDays!=null?Q.validDays:30);
+  el('qLabel').value=Q.label||'';
+  el('rSize').value=Q.rental.size||''; el('rDays').value=Q.rental.days||0;
+  buildCatalog(); renderHaul(); renderDisposal(); recompute(); syncSaveBtn();
+  window.scrollTo(0,0); notify('Loaded'+(Q.quoteNo?(' '+Q.quoteNo):'')+(Q.custName?(' — '+Q.custName):''));
+}
+function deleteQuote(id){
+  if(!db){ notify('Offline'); return; }
+  const r=savedRows.find(x=>x.id===id);
+  const what=r?((r.quoteNo?r.quoteNo+' ':'')+(r.name||r.site||'')).trim():'';
+  if(!confirm('Delete '+(what?('saved quote '+what):'this saved quote')+'? This can’t be undone.')) return;
+  db.collection('quotes').doc(id).delete().then(()=>{
+    if(Q.savedId===id){ Q.savedId=null; saveState(); syncSaveBtn(); }
+    renderSavedList(); notify('Quote deleted');
+  }).catch(e=>{ console.error('delete failed',e); notify('Delete failed'); });
+}
+
+/* ===== quote sheet + email ===== */
+const COMPANY={name:"Steve's Sanitation",addr:['140 6th Ave NE','Perham, MN 56573'],
+  phone:'(218) 346-4834',fax:'(218) 346-4799',web:'stevessanitation.com'};
+function fmtQty(q){return (Math.round((q||0)*100)/100).toString();}
+function validDaysFor(q){ const d=parseInt(q&&q.validDays,10); return (isFinite(d)&&d>=0)?d:30; }
+function quoteValidDays(){ return validDaysFor(Q); }
+function effHaul(q){ return (q&&q.haul)?(q.haulOverride!=null?q.haulOverride:q.haul.total):0; }
+/* totals for ANY quote object (so saved quotes can be rendered off-screen) */
+/* the rates a quote is priced with: the snapshot it was saved with, else today's */
+function currentRates(){ return {rental:DATA.rental.map(r=>r.rate),swt:{commercial:DATA.swt.commercial,residential:DATA.swt.residential},env:{perYard:DATA.env.perYard,perTon:DATA.env.perTon}}; }
+function ratesFor(q){
+  const R=q&&q.rates;
+  if(R&&Array.isArray(R.rental)&&R.swt&&R.env) return R;
+  return currentRates();
+}
+function ratesDiffer(a,b){ return JSON.stringify(a)!==JSON.stringify(b); }
+function calcTotalsForQ(q){
+  const R=ratesFor(q);
+  const haul=effHaul(q);
+  const r=q.rental||{};
+  const rentalRate=(r.size!==''&&r.size!=null)?(R.rental[+r.size]||0):0;
+  const rental=rentalRate*(r.days||0);
+  let disp=0,swtItems=0,env=0;
+  (q.disposal||[]).forEach(d=>{const lt=d.rate*(d.qty||0);disp+=lt;
+    if(d.taxType==='SWT')swtItems+=lt;
+    else if(d.taxType==='ENV-YD')env+=(d.qty||0)*R.env.perYard;
+    else if(d.taxType==='ENV-TON')env+=(d.qty||0)*R.env.perTon;});
+  const hasSWT=(q.disposal||[]).some(d=>d.taxType==='SWT'&&(d.qty||0)>0);
+  const rate=(R.swt[q.customer]!=null)?R.swt[q.customer]:R.swt.commercial;
+  const swtBase=hasSWT?(q.override?swtItems:swtItems+rental+haul):0;
+  const swt=swtBase*rate;
+  return {haul,rental,disp,swtItems,env,hasSWT,rate,swtBase,swt,total:haul+rental+disp+swt+env};
+}
+function quoteItemsForQ(q){
+  const T=calcTotalsForQ(q); const R=ratesFor(q);
+  const items=[]; const haul=T.haul;
+  if(haul>0||(q.haul&&q.haul.dest)) items.push({label:'Hauling',detail:(q.haul&&q.haul.dest)||'',amount:haul});
+  const r=q.rental||{};
+  if(r.size!==''&&r.size!=null&&(r.days||0)>0){
+    const rr=DATA.rental[+r.size], rate=R.rental[+r.size]||0;
+    items.push({label:'Daily rental',detail:rr.size+' · '+r.days+' day'+((r.days||0)==1?'':'s')+' @ '+money(rate)+'/day',amount:rate*(r.days||0)});
+  }
+  (q.disposal||[]).forEach(d=>{ if((d.qty||0)>0) items.push({label:itemLabel(d),detail:fmtQty(d.qty)+' @ '+money(d.rate),amount:d.rate*(d.qty||0)}); });
+  return {T,items,haul};
+}
+function quoteItems(){ return quoteItemsForQ(Q); }
+function custAddrLinesFor(q){
+  return [q.custStreet,[q.custCity,q.custState].filter(Boolean).join(', ')+(q.custZip?' '+q.custZip:'')]
+    .map(x=>(x||'').trim()).filter(Boolean);
+}
+function custAddrLines(){ return custAddrLinesFor(Q); }
+const SHEET_CSS=`
+  @page{margin:0.6in}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1d201a;margin:0 auto;padding:28px;max-width:760px;font-size:14px;line-height:1.5}
+  .lh{display:block;width:100%;height:auto}
+  .qrow{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
+  .qrow .qt{font-size:22px;font-weight:800;letter-spacing:.06em;color:#2f6b41}
+  .qrow .qd{font-size:13px;color:#6c7065;text-align:right}
+  .qrow .qd b{color:#2c5d86;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px}
+  .oh .qn{font-weight:600;color:#6c7065;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-left:8px}
+  .meta{display:flex;gap:30px;flex-wrap:wrap;margin:20px 0 8px}
+  .meta h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#6c7065;margin:0 0 5px}
+  .meta .blk{font-size:13.5px}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:#6c7065;border-bottom:2px solid #e2ded2;padding:7px 4px}
+  th.amt,td.amt{text-align:right;white-space:nowrap}
+  td{padding:9px 4px;border-bottom:1px solid #eee;vertical-align:top}
+  .il{font-weight:700}
+  .id{font-size:11.5px;color:#6c7065;margin-top:1px}
+  .amt{font-variant-numeric:tabular-nums}
+  tfoot td{border-bottom:0;padding:5px 4px}
+  tfoot .tot td{border-top:2px solid #cdc8b8;font-size:17px;font-weight:800;color:#2f6b41;padding-top:10px}
+  .mut{color:#6c7065;font-weight:500;font-size:12px}
+  .foot{margin-top:26px;font-size:11.5px;color:#6c7065;border-top:1px solid #e2ded2;padding-top:12px}
+  .pbar{margin:0 0 18px;text-align:right}
+  .pbar button{font-family:inherit;font-weight:800;font-size:13px;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;background:#2f6b41;color:#fff}
+  .sumtab{margin-top:16px}
+  .sumtab td.amt{font-weight:800;color:#2f6b41}
+  .opt{margin-top:26px;page-break-inside:avoid}
+  .opt .oh{font-size:15px;color:#234e30;margin:0;padding:8px 11px;background:#eef3ef;border-radius:7px}
+  @media print{.pbar{display:none}body{padding:0}}
+`;
+function logoUrl(){ return new URL('letterhead.png',location.href).href; }
+function today(){ return new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); }
+function headHtml(title){ return '<!doctype html><html><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>'+SHEET_CSS+'</style></head><body>'; }
+function custBlockFor(q){
+  const lines=[q.custName].concat(custAddrLinesFor(q));
+  if(q.custEmail) lines.push(q.custEmail);
+  return lines.map(x=>(x||'').trim()).filter(Boolean).map(esc).join('<br>')||'—';
+}
+function sheetTableFor(q,totalLabel){
+  const {T,items}=quoteItemsForQ(q);
+  const rows=items.map(it=>`<tr><td><div class="il">${esc(it.label)}</div>${it.detail?`<div class="id">${esc(it.detail)}</div>`:''}</td><td class="amt">${money(it.amount)}</td></tr>`).join('');
+  let taxRows='';
+  if(T.hasSWT) taxRows+=`<tr><td>Solid Waste Tax <span class="mut">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td class="amt">${money(T.swt)}</td></tr>`;
+  if(T.env>0) taxRows+=`<tr><td>Environmental Tax</td><td class="amt">${money(T.env)}</td></tr>`;
+  return `<table><thead><tr><th>Description</th><th class="amt">Amount</th></tr></thead>
+    <tbody>${rows||'<tr><td class="mut">No line items</td><td></td></tr>'}</tbody>
+    <tfoot>${taxRows}<tr class="tot"><td>${esc(totalLabel||'Total')}</td><td class="amt">${money(T.total)}</td></tr></tfoot></table>`;
+}
+function quoteSheetHtmlFor(q){
+  const {T}=quoteItemsForQ(q);
+  const site=(q.haul&&q.haul.dest)?esc(q.haul.dest):'';
+  const taxClass=(q.customer==='commercial'?'Commercial':'Residential');
+  const days=validDaysFor(q);
+  return headHtml('Quote — '+(q.custName||COMPANY.name))
+    +`<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
+    <img class="lh" src="${logoUrl()}" alt="${esc(COMPANY.name)}">
+    <div class="qrow"><div class="qt">QUOTE</div><div class="qd">${q.quoteNo?('<b>'+esc(q.quoteNo)+'</b><br>'):''}${today()}</div></div>
+    <div class="meta">
+      <div><h3>Prepared for</h3><div class="blk">${custBlockFor(q)}</div></div>
+      ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
+      <div><h3>Tax class</h3><div class="blk">${taxClass} · SWT ${pct(T.rate)}</div></div>
+    </div>
+    ${sheetTableFor(q,'Total')}
+    <div class="foot">This quote is good for ${days} day${days==1?'':'s'}. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
+    </body></html>`;
+}
+function combinedSheetHtml(list){
+  const c0=list[0]||{};
+  const site=(c0.haul&&c0.haul.dest)?esc(c0.haul.dest):'';
+  const days=validDaysFor(c0);
+  const sumRows=list.map((q,i)=>{const {T}=quoteItemsForQ(q);
+    const lbl=esc(optionTitle(q,i))+(q.quoteNo?' <span class="mut">'+esc(q.quoteNo)+'</span>':'');
+    return `<tr><td>${lbl}</td><td class="amt">${money(T.total)}</td></tr>`;}).join('');
+  const sections=list.map((q,i)=>{
+    const head=esc(optionTitle(q,i))+(q.quoteNo?'<span class="qn">'+esc(q.quoteNo)+'</span>':'');
+    return `<div class="opt"><h3 class="oh">${head}</h3>${sheetTableFor(q,'Option total')}</div>`;}).join('');
+  return headHtml('Quote options — '+(c0.custName||COMPANY.name))
+    +`<div class="pbar"><button onclick="window.print()">Print / Save as PDF</button></div>
+    <img class="lh" src="${logoUrl()}" alt="${esc(COMPANY.name)}">
+    <div class="qrow"><div class="qt">QUOTE OPTIONS</div><div class="qd">${today()}</div></div>
+    <div class="meta">
+      <div><h3>Prepared for</h3><div class="blk">${custBlockFor(c0)}</div></div>
+      ${site?`<div><h3>Site address</h3><div class="blk">${site}</div></div>`:''}
+    </div>
+    <table class="sumtab"><thead><tr><th>Options at a glance</th><th class="amt">Total</th></tr></thead><tbody>${sumRows}</tbody></table>
+    ${sections}
+    <div class="foot">These quotes are good for ${days} day${days==1?'':'s'}. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.</div>
+    </body></html>`;
+}
+function openWin(html){
+  const w=window.open('','_blank'); if(!w){ notify('Allow pop-ups to open the quote sheet'); return false; }
+  w.document.write(html); w.document.close(); return true;
+}
+function openSheet(){
+  const {T}=quoteItems();
+  if(T.total<=0){ notify('Build a quote first'); return; }
+  openWin(quoteSheetHtmlFor(Q));
+}
+/* the itemized body for one quote (optionally headed by an option label) */
+function emailItemsFor(q,optionLabel){
+  const {T,items}=quoteItemsForQ(q);
+  const pad=(s,amt)=>{ s=String(s); const w=Math.max(2,40-s.length); return s+' '.repeat(w)+amt; };
+  const L=[];
+  if(optionLabel) L.push('— '+optionLabel+' —');
+  items.forEach(it=>L.push(pad(it.label+(it.detail?' ('+it.detail+')':''),money(it.amount))));
+  if(T.hasSWT) L.push(pad('Solid Waste Tax ('+pct(T.rate)+' on '+money(T.swtBase)+')',money(T.swt)));
+  if(T.env>0) L.push(pad('Environmental Tax',money(T.env)));
+  L.push(pad(optionLabel?'Option total':'TOTAL',money(T.total)));
+  return L.join('\n');
+}
+/* "Option 2 — 30 yd + demo" */
+function optionTitle(q,i){ return 'Option '+(i+1)+(q.label?(' — '+q.label):''); }
+/* email subject for one quote: "Steve's Sanitation — Quote Q-2026-0004 for Acme" */
+function quoteSubject(q){
+  const name=(q&&q.custName)||'';
+  return COMPANY.name+' — '+(q&&q.quoteNo?('Quote '+q.quoteNo):'Roll-Off Quote')+(name?(' for '+name):'');
+}
+function emailTextFor(q){
+  const L=[];
+  L.push(COMPANY.name+" — Roll-Off Quote");
+  if(q.quoteNo) L.push('Quote #: '+q.quoteNo);
+  L.push('Date: '+new Date().toLocaleDateString('en-US'));
+  L.push('');
+  if(q.custName) L.push('Prepared for: '+q.custName);
+  custAddrLinesFor(q).forEach(a=>L.push(a));
+  if(q.haul&&q.haul.dest){ L.push(''); L.push('Site address: '+q.haul.dest); }
+  L.push(''); L.push('------------------------------------------------');
+  L.push(emailItemsFor(q));
+  L.push('------------------------------------------------');
+  const days=validDaysFor(q);
+  L.push(''); L.push('This quote is good for '+days+' day'+(days==1?'':'s')+'.');
+  signOffLines().forEach(x=>L.push(x));
+  return L.join('\n');
+}
+/* the sign-off at the bottom of a quote email */
+function signOffLines(){
+  const L=['','Thank you,'];
+  if(USE_GMAIL_SIG) return L;                 // Gmail inserts the (logo) signature itself
+  const sig=emailSignature();
+  if(sig) L.push(sig);
+  else { L.push(COMPANY.name); L.push(COMPANY.addr.join(', ')); L.push('Phone '+COMPANY.phone+' · '+COMPANY.web); }
+  return L;
+}
+/* per-login email prefs (signature text, "let Gmail sign"), synced via Firestore with local fallback */
+let SIGNATURE='', USE_GMAIL_SIG=true, USE_RICH=true, EMAIL_MODE='draft';   // defaults: Gmail signature; formatted copies; Email builds a draft
+function emailSignature(){ return (SIGNATURE||'').trim(); }
+function sigKey(){ return 'rq_sig_'+(currentEmail()||'local'); }
+function applyPrefsToUI(){
+  if(el('emailSig')) el('emailSig').value=SIGNATURE;
+  if(el('useGmailSig')) el('useGmailSig').checked=!!USE_GMAIL_SIG;
+  if(el('useRichCopy')) el('useRichCopy').checked=!!USE_RICH;
+  document.querySelectorAll('input[name=emailMode]').forEach(r=>{ r.checked=(r.value===EMAIL_MODE); });
+  const w=el('textSigWrap'); if(w) w.style.opacity=USE_GMAIL_SIG?'.45':'1';
+}
+function loadUserPrefs(){
+  try{ SIGNATURE = store.get(sigKey()) || store.get('rq_signature') || '';
+       const gm=store.get(sigKey()+'_gm'); USE_GMAIL_SIG = (gm==null) ? true : gm==='1';
+       const rc=store.get(sigKey()+'_rich'); USE_RICH = (rc==null) ? true : rc==='1';
+       const em=store.get(sigKey()+'_mode'); EMAIL_MODE = (em==='clipboard') ? 'clipboard' : 'draft'; }catch(e){}
+  applyPrefsToUI();
+  const email=currentEmail();
+  if(db && email){
+    db.collection('userprefs').doc(email).get().then(doc=>{
+      if(doc && doc.exists){ const d=doc.data()||{};
+        SIGNATURE=d.signature||''; USE_GMAIL_SIG=(d.useGmailSig==null) ? true : !!d.useGmailSig;
+        USE_RICH=(d.richCopy==null) ? true : !!d.richCopy;
+        EMAIL_MODE=(d.emailMode==='clipboard') ? 'clipboard' : 'draft';
+        try{ store.set(sigKey(),SIGNATURE); store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0'); store.set(sigKey()+'_rich',USE_RICH?'1':'0'); store.set(sigKey()+'_mode',EMAIL_MODE); }catch(e){}
+        applyPrefsToUI(); }
+    }).catch(e=>{ /* offline — keep local copy */ });
+  }
+}
+function saveUserPref(patch,msg){
+  if('signature' in patch){ SIGNATURE=patch.signature; try{store.set(sigKey(),SIGNATURE);}catch(e){} }
+  if('useGmailSig' in patch){ USE_GMAIL_SIG=!!patch.useGmailSig; try{store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0');}catch(e){} }
+  if('richCopy' in patch){ USE_RICH=!!patch.richCopy; try{store.set(sigKey()+'_rich',USE_RICH?'1':'0');}catch(e){} }
+  if('emailMode' in patch){ EMAIL_MODE=(patch.emailMode==='clipboard')?'clipboard':'draft'; try{store.set(sigKey()+'_mode',EMAIL_MODE);}catch(e){} }
+  const email=currentEmail();
+  if(db && email){ db.collection('userprefs').doc(email).set(Object.assign({updatedTs:Date.now()},patch),{merge:true})
+    .then(()=>notify(msg||'Saved')).catch(e=>{ console.error('pref save failed',e); notify('Saved on this device — sync failed'); }); }
+}
+function saveSignature(v){ saveUserPref({signature:v},'Signature saved'); }
+function emailText(){ return emailTextFor(Q); }
+function combinedEmailText(list){
+  const c0=list[0]||{};
+  const L=[];
+  L.push(COMPANY.name+" — Roll-Off Quote Options");
+  L.push('Date: '+new Date().toLocaleDateString('en-US'));
+  L.push('');
+  if(c0.custName) L.push('Prepared for: '+c0.custName);
+  custAddrLinesFor(c0).forEach(a=>L.push(a));
+  if(c0.haul&&c0.haul.dest){ L.push(''); L.push('Site address: '+c0.haul.dest); }
+  L.push(''); L.push('OPTIONS AT A GLANCE');
+  list.forEach((q,i)=>{const {T}=quoteItemsForQ(q);
+    L.push('  '+optionTitle(q,i)+(q.quoteNo?(' ('+q.quoteNo+')'):'')+': '+money(T.total));});
+  L.push('');
+  list.forEach((q,i)=>{
+    L.push('------------------------------------------------');
+    L.push(emailItemsFor(q,optionTitle(q,i)+(q.quoteNo?(' · '+q.quoteNo):'')));
+    L.push('');
+  });
+  const days=validDaysFor(c0);
+  L.push('These quotes are good for '+days+' day'+(days==1?'':'s')+'.');
+  signOffLines().forEach(x=>L.push(x));
+  return L.join('\n');
+}
+/* ===== the formatted (HTML) quote that goes on the clipboard =====
+   Email-safe markup: tables + inline styles only, nothing Gmail strips. Pasted into
+   Gmail / Google Docs it looks like the quote sheet; plain-text fields get the text. */
+const EH={font:'font-family:Arial,Helvetica,sans-serif;'};
+function ehWrap(inner){ return '<div style="'+EH.font+'color:#1d201a;font-size:14px;line-height:1.45;max-width:600px">'+inner+'</div>'; }
+function ehHead(q,titleWord){
+  return `<img src="${logoUrl()}" width="600" height="129" alt="${esc(COMPANY.name)}" style="display:block;width:100%;max-width:600px;height:auto;border:0">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:8px;${EH.font}"><tr>
+<td style="font-size:22px;font-weight:bold;letter-spacing:2px;color:#2f6b41;vertical-align:bottom;padding:0">${esc(titleWord)}</td>
+<td style="text-align:right;font-size:13px;color:#6c7065;vertical-align:bottom;padding:0">${q.quoteNo?('<b style="color:#2c5d86;font-family:Consolas,Menlo,monospace;font-size:13.5px">'+esc(q.quoteNo)+'</b><br>'):''}${today()}</td>
+</tr></table>`;
+}
+function ehMeta(q,withTax){
+  const cell='vertical-align:top;padding:16px 26px 0 0;font-size:13.5px;color:#1d201a;'+EH.font;
+  const h3='font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;padding-bottom:3px;';
+  const site=(q.haul&&q.haul.dest)?esc(q.haul.dest):'';
+  const {T}=quoteItemsForQ(q);
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;${EH.font}"><tr>
+<td style="${cell}"><div style="${h3}">Prepared for</div>${custBlockFor(q)}</td>
+${site?`<td style="${cell}"><div style="${h3}">Site address</div>${site}</td>`:''}
+${withTax?`<td style="${cell}"><div style="${h3}">Tax class</div>${q.customer==='commercial'?'Commercial':'Residential'} · SWT ${pct(T.rate)}</td>`:''}
+</tr></table>`;
+}
+function ehTable(q,totalLabel){
+  const {T,items}=quoteItemsForQ(q);
+  const td='padding:8px 4px;border-bottom:1px solid #eeeeee;vertical-align:top;font-size:14px;color:#1d201a;'+EH.font;
+  const amt=td+'text-align:right;white-space:nowrap;';
+  const th='text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;border-bottom:2px solid #e2ded2;padding:6px 4px;'+EH.font;
+  const tx='padding:5px 4px;font-size:14px;color:#1d201a;'+EH.font;
+  const tot='border-top:2px solid #cdc8b8;font-size:17px;font-weight:bold;color:#2f6b41;padding:10px 4px 4px;'+EH.font;
+  const rows=items.map(it=>`<tr><td style="${td}"><b>${esc(it.label)}</b>${it.detail?('<br><span style="font-size:11.5px;color:#6c7065">'+esc(it.detail)+'</span>'):''}</td><td style="${amt}">${money(it.amount)}</td></tr>`).join('');
+  let tax='';
+  if(T.hasSWT) tax+=`<tr><td style="${tx}">Solid Waste Tax <span style="color:#6c7065;font-size:12px">(${pct(T.rate)} on ${money(T.swtBase)})</span></td><td style="${tx}text-align:right">${money(T.swt)}</td></tr>`;
+  if(T.env>0) tax+=`<tr><td style="${tx}">Environmental Tax</td><td style="${tx}text-align:right">${money(T.env)}</td></tr>`;
+  return `<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:12px;${EH.font}">
+<tr><td style="${th}">Description</td><td style="${th}text-align:right">Amount</td></tr>
+${rows||('<tr><td style="'+td+'color:#6c7065">No line items</td><td style="'+td+'"></td></tr>')}
+${tax}
+<tr><td style="${tot}">${esc(totalLabel||'Total')}</td><td style="${tot}text-align:right">${money(T.total)}</td></tr>
+</table>`;
+}
+function ehFoot(text){ return '<div style="margin-top:20px;padding-top:10px;border-top:1px solid #e2ded2;font-size:11.5px;color:#6c7065;'+EH.font+'">'+esc(text)+'</div>'; }
+function ehSignoff(){ return '<div style="margin-top:16px;font-size:14px;color:#1d201a;'+EH.font+'">'+signOffLines().slice(1).map(esc).join('<br>')+'</div>'; }
+function emailHtmlFor(q){
+  const days=validDaysFor(q);
+  return ehWrap(ehHead(q,'QUOTE')+ehMeta(q,true)+ehTable(q,'Total')
+    +ehFoot('This quote is good for '+days+' day'+(days==1?'':'s')+'. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.')
+    +ehSignoff());
+}
+function combinedEmailHtml(list){
+  const c0=list[0]||{}; const days=validDaysFor(c0);
+  const td='padding:8px 4px;border-bottom:1px solid #eeeeee;font-size:14px;color:#1d201a;'+EH.font;
+  const th='text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:#6c7065;font-weight:bold;border-bottom:2px solid #e2ded2;padding:6px 4px;'+EH.font;
+  const sum=list.map((q,i)=>{ const {T}=quoteItemsForQ(q);
+    return `<tr><td style="${td}">${esc(optionTitle(q,i))}${q.quoteNo?(' <span style="color:#6c7065;font-size:12px">'+esc(q.quoteNo)+'</span>'):''}</td><td style="${td}text-align:right;font-weight:bold;color:#2f6b41">${money(T.total)}</td></tr>`; }).join('');
+  const sections=list.map((q,i)=>`<div style="margin-top:22px"><div style="background:#eef3ef;border-radius:6px;padding:8px 11px;font-size:15px;font-weight:bold;color:#234e30;${EH.font}">${esc(optionTitle(q,i))}${q.quoteNo?('<span style="font-weight:normal;color:#6c7065;font-size:12.5px;margin-left:8px">'+esc(q.quoteNo)+'</span>'):''}</div>${ehTable(q,'Option total')}</div>`).join('');
+  return ehWrap(ehHead(Object.assign({},c0,{quoteNo:null}),'QUOTE OPTIONS')+ehMeta(c0,false)
+    +`<table width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-collapse:collapse;margin-top:16px;${EH.font}"><tr><td style="${th}">Options at a glance</td><td style="${th}text-align:right">Total</td></tr>${sum}</table>`
+    +sections
+    +ehFoot('These quotes are good for '+days+' day'+(days==1?'':'s')+'. Taxes shown per Minnesota solid-waste and environmental rules. Thank you for your business.')
+    +ehSignoff());
+}
+/* put BOTH flavors on the clipboard: formatted for Gmail / Docs, plain text elsewhere */
+function copyRich(html,text,msg){
+  const done=()=>notify(msg||'Copied to clipboard');
+  const legacy=()=>{
+    // older route: a copy event lets us hand over both flavors at once
+    const h=e=>{ try{ e.clipboardData.setData('text/html',html); e.clipboardData.setData('text/plain',text); e.preventDefault(); }catch(err){} };
+    try{
+      const ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+      ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta); ta.select();
+      document.addEventListener('copy',h);
+      const ok=document.execCommand('copy');
+      document.removeEventListener('copy',h); document.body.removeChild(ta);
+      if(ok) done(); else fallbackCopy(text,msg);
+    }catch(e){ document.removeEventListener('copy',h); fallbackCopy(text,msg); }
+  };
+  if(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem){
+    try{
+      const item=new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})});
+      navigator.clipboard.write([item]).then(done).catch(legacy);
+    }catch(e){ legacy(); }
+  } else legacy();
+}
+/* copy a quote the way this login prefers: formatted (default) or plain text */
+function copyOut(text,html,msg){
+  if(USE_RICH && html) copyRich(html,text,msg); else copyText(text,msg);
+}
+/* Open a Gmail compose window prefilled. Account targeting (number → /u/N/,
+   email → ?authuser) from Settings → Email sending. Falls back to mailto:. */
+function openGmail(to,subj,body){
+  const sel=(store.get('rq_gmail_u')||'').trim();
+  let base='https://mail.google.com/mail/', auth='';
+  if(/^\d+$/.test(sel)) base='https://mail.google.com/mail/u/'+sel+'/';
+  else if(sel.indexOf('@')>0) auth='authuser='+encodeURIComponent(sel)+'&';
+  // No body param when blank — Gmail only auto-inserts the signature into a BLANK message.
+  const gmail=base+'?'+auth+'view=cm&fs=1&tf=1'
+    +'&to='+encodeURIComponent(to||'')
+    +'&su='+encodeURIComponent(subj)
+    +(body?('&body='+encodeURIComponent(body)):'');
+  const w=window.open(gmail,'_blank','noopener');
+  if(!w){ location.href='mailto:'+encodeURIComponent(to||'')
+    +'?subject='+encodeURIComponent(subj)+(body?('&body='+encodeURIComponent(body)):''); }
+}
+/* Send a quote the copy-and-paste way. With "Use my Gmail signature" ON: open a BLANK
+   message (so Gmail drops in the real signature, logo and all) and put the quote on
+   the clipboard — one Ctrl+V pastes it in above the signature. OFF: pre-fill the body. */
+function sendQuoteEmail(to,subj,body,html,note){
+  if(USE_GMAIL_SIG){
+    copyOut(body,html,(note?(note+' — using copy & paste: quote copied, '):'Quote copied — ')+'press Ctrl+V in the email to paste it above your signature');
+    openGmail(to,subj,'');
+  }else{
+    if(note) notify(note+' — opening Gmail with the quote filled in',5000);
+    openGmail(to,subj,body);
+  }
+}
+
+/* ===== Gmail drafts — the Email button builds the whole message in the user's Gmail
+   (Gmail API, Google sign-in once per login) and opens it ready to send. ===== */
+const GMAIL_CLIENT_ID='296200517083-5dc23u7f3prk536vvhhinli2f8elinbm.apps.googleusercontent.com';
+const GMAIL_SCOPES='https://www.googleapis.com/auth/gmail.compose https://www.googleapis.com/auth/gmail.settings.basic';
+const GMAIL_API='https://gmail.googleapis.com/gmail/v1/users/me/';
+let gmailTok=null, gmailTokExp=0, gmailClient=null, lastDraft=null;
+function gmailAvailable(){
+  return !!(GMAIL_CLIENT_ID && window.google && google.accounts && google.accounts.oauth2 && navigator.onLine!==false);
+}
+/* an access token for the Gmail API — Google's popup the first time (and if the hour-long
+   token has lapsed), silent after that. Must start from a click so the popup isn't blocked. */
+function getGmailToken(){
+  return new Promise((resolve,reject)=>{
+    if(gmailTok && Date.now()<gmailTokExp-60000) return resolve(gmailTok);
+    if(!gmailAvailable()) return reject(new Error('gsi-unavailable'));
+    if(!gmailClient){
+      gmailClient=google.accounts.oauth2.initTokenClient({ client_id:GMAIL_CLIENT_ID, scope:GMAIL_SCOPES, callback:()=>{} });
+    }
+    gmailClient.callback=r=>{
+      if(r && r.access_token){ gmailTok=r.access_token; gmailTokExp=Date.now()+((+r.expires_in||3600)*1000); resolve(gmailTok); }
+      else reject(new Error((r&&r.error)||'token'));
+    };
+    gmailClient.error_callback=e=>reject(new Error((e&&e.type)||'popup_closed'));
+    const cfg={ prompt:'' };
+    const me=currentEmail(); if(me) cfg.hint=me;
+    gmailClient.requestAccessToken(cfg);
+  });
+}
+async function gmailApi(path,opts,retried){
+  const tok=await getGmailToken();
+  const headers=Object.assign({ Authorization:'Bearer '+tok }, (opts&&opts.headers)||{});
+  const res=await fetch(GMAIL_API+path, Object.assign({}, opts||{}, { headers }));
+  if(res.status===401 && !retried){ gmailTok=null; return gmailApi(path,opts,true); }
+  let json=null; try{ json=await res.json(); }catch(e){}
+  if(!res.ok){ const er=(json&&json.error)||{}; const err=new Error(er.message||('HTTP '+res.status)); err.status=res.status; throw err; }
+  return json||{};
+}
+/* the user's Gmail signature (HTML) and the address the draft will sit in */
+async function gmailSignature(){
+  const d=await gmailApi('settings/sendAs');
+  const list=(d&&d.sendAs)||[];
+  const me=(currentEmail()||'').toLowerCase();
+  const pick=list.find(x=>x.isPrimary)||list.find(x=>String(x.sendAsEmail||'').toLowerCase()===me)||list[0]||{};
+  return { email:pick.sendAsEmail||'', html:pick.signature||'' };
+}
+function utf8b64(str){ const b=new TextEncoder().encode(str); let bin=''; for(let i=0;i<b.length;i++) bin+=String.fromCharCode(b[i]); return btoa(bin); }
+function b64url(str){ return utf8b64(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function mimeWord(s){ return /^[\x20-\x7e]*$/.test(s) ? s : ('=?UTF-8?B?'+utf8b64(s)+'?='); }
+function wrap76(s){ return s.replace(/(.{76})/g,'$1\r\n'); }
+function htmlToText(h){
+  return String(h||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|div|tr|li|h\d)>/gi,'\n').replace(/<[^>]+>/g,'')
+    .replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function companyBlockHtml(){ return '<div style="'+EH.font+'font-size:14px;color:#1d201a">'+esc(COMPANY.name)+'<br>'+esc(COMPANY.addr.join(', '))+'<br>Phone '+esc(COMPANY.phone)+' · '+esc(COMPANY.web)+'</div>'; }
+/* a multipart (text + HTML) message, base64url-encoded the way the Gmail API wants it */
+function rfc822(to,subject,text,html){
+  const b='=_roq_'+Date.now().toString(36);
+  const L=[];
+  if(to) L.push('To: '+to);
+  L.push('Subject: '+mimeWord(subject));
+  L.push('MIME-Version: 1.0');
+  L.push('Content-Type: multipart/alternative; boundary="'+b+'"');
+  L.push('');
+  L.push('--'+b);
+  L.push('Content-Type: text/plain; charset="UTF-8"');
+  L.push('Content-Transfer-Encoding: base64');
+  L.push('');
+  L.push(wrap76(utf8b64(text)));
+  L.push('--'+b);
+  L.push('Content-Type: text/html; charset="UTF-8"');
+  L.push('Content-Transfer-Encoding: base64');
+  L.push('');
+  L.push(wrap76(utf8b64(html)));
+  L.push('--'+b+'--');
+  return L.join('\r\n');
+}
+/* create the draft: quote (text + formatted) with the signature under it */
+async function createGmailDraft(to,subject,text,html){
+  let sigHtml='', email='';
+  if(USE_GMAIL_SIG){ const s=await gmailSignature(); email=s.email; sigHtml=s.html||companyBlockHtml(); }
+  const fullHtml = html + (sigHtml ? ('<br>'+sigHtml) : '');
+  const fullText = text + (sigHtml ? ('\n'+htmlToText(sigHtml)) : '');
+  const d=await gmailApi('drafts',{ method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ message:{ raw:b64url(rfc822(to,subject,fullText,fullHtml)) } }) });
+  const msg=(d&&d.message)||{};
+  return { draftId:d&&d.id, threadId:msg.threadId||msg.id||'', email };
+}
+function draftUrl(d){
+  const sel=(store.get('rq_gmail_u')||'').trim();
+  let base='https://mail.google.com/mail/';
+  if(/^\d+$/.test(sel)) base+='u/'+sel+'/';
+  else if(d.email) base+='?authuser='+encodeURIComponent(d.email);
+  return base+'#drafts/'+encodeURIComponent(d.threadId||'');
+}
+function showDraftBar(d){
+  lastDraft=d; const bar=el('draftBar'); if(!bar) return;
+  bar.classList.add('on');
+  clearTimeout(window._draftBarT); window._draftBarT=setTimeout(()=>bar.classList.remove('on'),60000);
+}
+function openLastDraft(){ if(lastDraft){ const w=window.open(draftUrl(lastDraft),'_blank'); if(!w) notify('Allow pop-ups for this site to open Gmail'); } }
+function gmailErrMsg(e){
+  const m=String((e&&e.message)||'');
+  if(/gsi-unavailable/.test(m)) return 'Google sign-in didn’t load (offline?)';
+  if(/popup_closed|popup_failed_to_open|popup/.test(m)) return 'Google sign-in was closed or blocked';
+  if(/access_denied|interaction_required/.test(m)) return 'Gmail access wasn’t allowed';
+  if(/has not been used|is disabled|not enabled/i.test(m)) return 'The Gmail API isn’t enabled in the Google project';
+  if(e&&e.status===403) return 'Gmail permission missing — allow both permissions when Google asks';
+  return m ? ('Gmail: '+m) : 'Gmail draft failed';
+}
+/* The draft route: get the token (the click is needed for Google's popup), save the
+   quote (so it has its number), build the draft, open it. Any failure drops back
+   to the copy-and-paste route so the quote still goes out. */
+function emailViaDraft(build, opts){
+  opts=opts||{};
+  const tokP=getGmailToken();
+  const saveP=opts.save ? saveQuoteAsync().catch(e=>{ console.warn('save before email failed',e); return null; }) : Promise.resolve(null);
+  notify('Building your email in Gmail…',6000);
+  let m=null;
+  Promise.all([tokP,saveP]).then(()=>{ m=build(); return createGmailDraft(m.to,m.subj,m.text,m.html); })
+    .then(d=>{
+      if(opts.onDone) opts.onDone();
+      showDraftBar(d);
+      const w=window.open(draftUrl(d),'_blank');
+      notify(w ? 'Draft ready in Gmail — check it over and press Send' : 'Draft ready — tap “Open draft” (pop-up was blocked)', 5000);
+    })
+    .catch(e=>{
+      console.error('gmail draft failed',e);
+      if(!m) m=build();
+      if(opts.onDone) opts.onDone();
+      sendQuoteEmail(m.to,m.subj,m.text,m.html,gmailErrMsg(e));
+    });
+}
+/* Email the on-screen quote. Draft mode builds it in Gmail; otherwise it's saved first
+   (so it carries its quote number) and sent the copy-and-paste way — a slow or missing
+   connection never holds the email up: after 2.5 s it goes out as-is. */
+function emailQuote(){
+  const {T}=quoteItems();
+  if(T.total<=0){ notify('Build a quote first'); return; }
+  if(EMAIL_MODE==='draft' && gmailAvailable()){
+    emailViaDraft(()=>({ to:(Q.custEmail||'').trim(), subj:quoteSubject(Q), text:emailText(), html:emailHtmlFor(Q) }),
+                  { save:!!db, onDone:()=>markSentAfterEmail(Q.savedId) });
+    return;
+  }
+  let fired=false;
+  const send=()=>{ if(fired) return; fired=true; sendQuoteEmail((Q.custEmail||'').trim(), quoteSubject(Q), emailText(), emailHtmlFor(Q)); };
+  if(!db){ send(); return; }
+  const t=setTimeout(send,2500);
+  saveQuoteAsync()
+    .then(()=>{ clearTimeout(t); send(); return markSentAfterEmail(Q.savedId); })
+    .catch(e=>{ clearTimeout(t); send(); console.warn('save before email failed',e); notify('Couldn’t save the quote — the email went out without a quote number'); });
+}
+/* copy the quote text to the clipboard, paste anywhere */
+function fallbackCopy(t,msg){
+  try{ const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly','');
+    ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta); notify(msg||'Copied to clipboard'); }
+  catch(e){ notify('Couldn’t copy — select the text manually'); }
+}
+function copyText(t,msg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>notify(msg||'Copied to clipboard')).catch(()=>fallbackCopy(t,msg));
+  } else { fallbackCopy(t,msg); }
+}
+function copyQuote(){
+  const {T}=quoteItems();
+  if(T.total<=0){ notify('Build a quote first'); return; }
+  copyOut(emailText(), emailHtmlFor(Q), USE_RICH?'Quote copied — paste into Gmail or Docs for the formatted version':'Quote copied to clipboard');
+}
+function combineCopy(){
+  const list=selectedSavedQuotes();
+  if(!list.length){ notify('Tick one or more quotes first'); return; }
+  const one=list.length===1;
+  copyOut(one?emailTextFor(list[0]):combinedEmailText(list), one?emailHtmlFor(list[0]):combinedEmailHtml(list),
+    USE_RICH?'Copied — paste into Gmail or Docs for the formatted version':'Copied to clipboard');
+}
+
+/* ideas — synced via Firestore (local fallback when offline) */
+function loadIdeas(){try{const a=JSON.parse(store.get('rq_ideas')||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}}
+function currentEmail(){try{return fbReady&&firebase.auth().currentUser?firebase.auth().currentUser.email:'';}catch(e){return '';}}
+function submitIdea(){
+  const t=el('ideaText').value.trim();if(!t){notify('Type an idea first');return;}
+  const rec={text:t,ts:Date.now(),by:currentEmail(),status:'open'};
+  if(db){
+    db.collection('ideas').add(rec)
+      .then(()=>{el('ideaText').value='';notify('Idea sent — thanks!');})
+      .catch(e=>{console.error('idea save failed',e);
+        const a=loadIdeas();a.unshift(rec);store.set('rq_ideas',JSON.stringify(a.slice(0,200)));
+        el('ideaText').value='';notify('Saved on this device — sync failed');});
+  }else{
+    const a=loadIdeas();a.unshift(rec);store.set('rq_ideas',JSON.stringify(a.slice(0,200)));
+    el('ideaText').value='';notify('Saved on this device (offline)');
+  }
+}
+/* new-idea badge on the Ideas card */
+function ideaSeen(){ try{ return parseInt(store.get('rq_ideas_seen')||'0',10)||0; }catch(e){ return 0; } }
+function updateIdeaBadge(n){ const b=el('ideaBadge'); if(!b)return; if(n>0){ b.textContent=n+' new'; b.style.display=''; } else { b.style.display='none'; } }
+function markIdeasSeen(){ try{ store.set('rq_ideas_seen', String(Date.now())); }catch(e){} updateIdeaBadge(0); }
+function checkNewIdeas(){
+  if(!db){ updateIdeaBadge(0); return; }
+  const seen=ideaSeen();
+  db.collection('ideas').where('ts','>',seen).get()
+    .then(snap=>updateIdeaBadge(snap.size))
+    .catch(e=>{ /* offline / index — just skip the badge */ });
+}
+
+/* ideas manager — view, mark done or cancelled (synced) */
+const IDEA_ST={open:'Open',done:'Done',cancelled:'Cancelled'};
+function openIdeas(){ el('ideasScreen').classList.add('open'); renderIdeasList(); markIdeasSeen(); }
+function closeIdeas(){ el('ideasScreen').classList.remove('open'); }
+function setIdeaStatus(id,status){
+  if(!db){ notify('Needs a connection to update'); return; }
+  db.collection('ideas').doc(id).set({status:status},{merge:true})
+    .then(()=>{ renderIdeasList(); notify('Marked '+(IDEA_ST[status]||status)); })
+    .catch(e=>{ console.error('idea status failed',e); notify('Update failed'); });
+}
+function ideaRowHtml(o){
+  const st=o.status||'open';
+  const when=new Date(o.ts||Date.now()).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  const struck=(st==='done'||st==='cancelled')?' struck':'';
+  const sub=[esc(o.by||''),when].filter(Boolean).join(' · ');
+  let btns='';
+  if(o.id){
+    if(st!=='done')      btns+='<button class="btn btn-ghost btn-sm" data-done="'+esc(o.id)+'">Done</button>';
+    if(st!=='cancelled') btns+='<button class="btn btn-ghost btn-sm" data-cancel="'+esc(o.id)+'">Cancel</button>';
+    if(st!=='open')      btns+='<button class="btn btn-ghost btn-sm" data-reopen="'+esc(o.id)+'">Reopen</button>';
+  }
+  return '<div class="idea-row '+st+'">'
+    +'<div class="ir-main"><div class="ir-text'+struck+'">'+esc(o.text)+'</div><div class="ir-sub">'+sub+'</div></div>'
+    +'<div class="ir-btns"><span class="st-badge st-'+st+'">'+(IDEA_ST[st]||st)+'</span>'+btns+'</div></div>';
+}
+let ideaRows=[];
+function openIdeasList(a){
+  ideaRows=a;
+  const openCount=a.filter(o=>(o.status||'open')==='open').length;
+  const box=el('ideasList');
+  box.innerHTML='<div class="saved-bar"><span class="card-sub" id="openCount">'+openCount+' open</span>'
+    +'<span style="flex:1"></span>'
+    +'<button class="btn btn-ghost btn-sm" id="copyOpenBtn">Copy open ideas</button></div>'
+    + a.map(ideaRowHtml).join('');
+  el('copyOpenBtn').addEventListener('click',copyOpenIdeas);
+  box.querySelectorAll('[data-done]').forEach(b=>b.addEventListener('click',()=>setIdeaStatus(b.dataset.done,'done')));
+  box.querySelectorAll('[data-cancel]').forEach(b=>b.addEventListener('click',()=>setIdeaStatus(b.dataset.cancel,'cancelled')));
+  box.querySelectorAll('[data-reopen]').forEach(b=>b.addEventListener('click',()=>setIdeaStatus(b.dataset.reopen,'open')));
+}
+function copyOpenIdeas(){
+  const open=ideaRows.filter(o=>(o.status||'open')==='open');
+  if(!open.length){ notify('No open ideas to copy'); return; }
+  const L=[COMPANY.name+' — Open ideas / requests ('+open.length+')',
+    new Date().toLocaleDateString('en-US'),''];
+  open.forEach((o,i)=>{
+    L.push((i+1)+'. '+o.text);
+    const meta=[o.by||'', new Date(o.ts||Date.now()).toLocaleDateString('en-US')].filter(Boolean).join(' · ');
+    if(meta) L.push('   — '+meta);
+    L.push('');
+  });
+  copyText(L.join('\n'));
+}
+function renderIdeasList(){
+  const box=el('ideasList');
+  if(!db){
+    const a=loadIdeas();
+    if(!a.length){ box.innerHTML='<div class="card-sub">No ideas saved on this device.</div>'; return; }
+    openIdeasList(a); return;
+  }
+  box.innerHTML='<div class="card-sub">Loading…</div>';
+  db.collection('ideas').orderBy('ts','desc').limit(300).get().then(snap=>{
+    const a=[]; snap.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
+    if(!a.length){ box.innerHTML='<div class="card-sub">No ideas yet. Submit one from the main screen.</div>'; return; }
+    openIdeasList(a);
+  }).catch(e=>{ console.error('ideas load failed',e); box.innerHTML='<div class="card-sub">Couldn’t load ideas — check your connection.</div>'; });
+}
+
+function renderChangelog(){el('changelog').innerHTML=CHANGELOG.map(c=>
+  `<div class="cl-entry"><div class="cl-v">${c.v} <span class="cl-d">· ${c.d}</span></div>
+   <ul>${c.items.map(i=>'<li>'+esc(i)+'</li>').join('')}</ul></div>`).join('');}
+
+/* boot */
+/* ---- static wiring (safe to run before sign-in; the app is hidden) ---- */
+let appStarted=false;
+(function wireStatic(){
+  el('buildBadge').textContent=APP_VERSION;
+  renderChangelog();
+
+  document.querySelectorAll('#custSeg button').forEach(bn=>bn.addEventListener('click',()=>setCustomer(bn.dataset.cust,true)));
+  el('custName').addEventListener('input',()=>{Q.custName=el('custName').value;saveState();});
+  el('custStreet').addEventListener('input',()=>{Q.custStreet=el('custStreet').value;saveState();});
+  el('custCity').addEventListener('input',()=>{Q.custCity=el('custCity').value;saveState();});
+  el('custState').addEventListener('input',()=>{Q.custState=el('custState').value.toUpperCase();saveState();});
+  el('custEmail').addEventListener('input',()=>{Q.custEmail=el('custEmail').value;saveState();});
+  el('custZip').addEventListener('input',()=>{
+    Q.custZip=el('custZip').value; saveState();
+    clearTimeout(window._zipTimer);
+    window._zipTimer=setTimeout(()=>zipLookup(el('custZip').value),450);   // debounce
+  });
+  el('rSize').addEventListener('change',()=>{Q.rental.size=el('rSize').value;recompute();});
+  el('rDays').addEventListener('input',()=>{let v=parseInt(el('rDays').value,10);Q.rental.days=isFinite(v)&&v>=0?v:0;recompute();});
+  el('dAdd').addEventListener('click',addDisposal);
+  el('dSearch').addEventListener('input',()=>{ dPick=null; dActiveIdx=-1; renderMenu(); });
+  el('dSearch').addEventListener('focus',renderMenu);
+  el('dSearch').addEventListener('click',renderMenu);   // re-open after Escape, or after changing the county without leaving the box
+  el('dSearch').addEventListener('keydown',comboKey);
+  el('dSearch').addEventListener('blur',()=>setTimeout(hideMenu,150));
+  window.addEventListener('scroll',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); }, true);
+  window.addEventListener('resize',()=>{ if(el('dMenu')&&el('dMenu').classList.contains('on')) positionMenu(); });
+  el('customToggle').addEventListener('click',()=>toggleCustom());
+  el('cAdd').addEventListener('click',addCustom);
+  el('cCancel').addEventListener('click',()=>toggleCustom(false));
+  document.querySelectorAll('#custModal [data-pick]').forEach(b=>b.addEventListener('click',()=>{setCustomer(b.dataset.pick,true);closeCustModal();}));
+  el('ideaSend').addEventListener('click',submitIdea);
+  el('ideaView').addEventListener('click',openIdeas);
+  el('ideasClose').addEventListener('click',closeIdeas);
+  el('settingsBtn').addEventListener('click',openSettings);
+  el('setClose').addEventListener('click',closeSettings);
+  el('ncAdd').addEventListener('click',addNewCode);
+  el('saveRatesBtn').addEventListener('click',saveRates);
+  el('saveHaulRatesBtn').addEventListener('click',saveHaulRates);
+  el('adminAddBtn').addEventListener('click',addAdmin);
+  el('adminNew').addEventListener('keydown',e=>{if(e.key==='Enter')addAdmin();});
+  el('setSearch').addEventListener('input',renderCodeList);
+  el('ncCode').addEventListener('keydown',e=>{if(e.key==='Enter')el('ncDesc').focus();});
+  el('saveQuoteBtn').addEventListener('click',saveQuote);
+  el('savedQuotesBtn').addEventListener('click',openSaved);
+  el('sheetBtn').addEventListener('click',openSheet);
+  el('emailBtn').addEventListener('click',emailQuote);
+  el('copyBtn').addEventListener('click',copyQuote);
+  el('validDays').addEventListener('input',()=>{
+    let v=parseInt(el('validDays').value,10); Q.validDays=(isFinite(v)&&v>=0)?v:30; saveState(); });
+  el('qLabel').addEventListener('input',()=>{ Q.label=el('qLabel').value; saveState(); });
+  el('gmailUser').value=(store.get('rq_gmail_u')||'');
+  el('gmailUser').addEventListener('input',()=>{
+    const v=el('gmailUser').value.trim();
+    const ok=/^\d+$/.test(v) || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
+    store.set('rq_gmail_u', ok?v:''); });
+  el('emailSig').addEventListener('input',()=>{
+    clearTimeout(window._sigTimer);
+    window._sigTimer=setTimeout(()=>saveSignature(el('emailSig').value), 600);   // debounce
+  });
+  el('useGmailSig').addEventListener('change',()=>{
+    saveUserPref({useGmailSig:el('useGmailSig').checked}, el('useGmailSig').checked?'Gmail will add your signature':'Using the signature typed here');
+    applyPrefsToUI();
+  });
+  el('useRichCopy').addEventListener('change',()=>{
+    saveUserPref({richCopy:el('useRichCopy').checked}, el('useRichCopy').checked?'Copies will be formatted':'Copies will be plain text');
+  });
+  document.querySelectorAll('input[name=emailMode]').forEach(r=>r.addEventListener('change',()=>{
+    if(r.checked) saveUserPref({emailMode:r.value}, r.value==='draft'?'Email will build a Gmail draft':'Email will use copy & paste');
+  }));
+  el('draftOpen').addEventListener('click',openLastDraft);
+  el('draftX').addEventListener('click',()=>el('draftBar').classList.remove('on'));
+  el('savedTopBtn').addEventListener('click',openSaved);
+  el('savedClose').addEventListener('click',closeSaved);
+  el('savedSearch').addEventListener('input',()=>{ clearTimeout(window._svTimer); window._svTimer=setTimeout(drawSavedRows,120); });
+  el('savedFilter').addEventListener('change',drawSavedRows);
+  el('exportCsv').addEventListener('click',exportCsv);
+  el('combineSheet').addEventListener('click',combineSheet);
+  el('combineCopy').addEventListener('click',combineCopy);
+  el('combineEmail').addEventListener('click',combineEmail);
+  el('helpBtn').addEventListener('click',()=>el('helpScreen').classList.add('open'));
+  el('helpClose').addEventListener('click',()=>el('helpScreen').classList.remove('open'));
+  el('dupBtn').addEventListener('click',()=>{
+    if(!confirm('Duplicate this quote? A new quote starts with only the customer name & address kept.'))return;
+    const keep={name:Q.custName,street:Q.custStreet,city:Q.custCity,state:Q.custState,zip:Q.custZip};
+    Q=freshQuote();Q.custName=keep.name;Q.custStreet=keep.street;Q.custCity=keep.city;Q.custState=keep.state;Q.custZip=keep.zip;
+    saveState();location.href=location.pathname;});
+  el('clearBtn').addEventListener('click',()=>{
+    if(!confirm('Start a new quote? This clears everything, including the hauling line.'))return;
+    Q=freshQuote();saveState();location.href=location.pathname;});
+
+  // login handlers
+  el('loginBtn').addEventListener('click',doLogin);
+  el('loginPin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  el('loginEmail').addEventListener('keydown',e=>{if(e.key==='Enter')el('loginPin').focus();});
+  el('signoutBtn').addEventListener('click',()=>{ if(fbReady) firebase.auth().signOut(); });
+})();
+
+function doLogin(){
+  const email=el('loginEmail').value.trim(), pin=el('loginPin').value;
+  if(!email||!pin){ el('loginErr').textContent='Enter your email and PIN.'; return; }
+  if(!fbReady){ el('loginErr').textContent='Can’t reach the sign-in service. Check your internet and reload.'; return; }
+  el('loginBtn').disabled=true; el('loginErr').textContent='Signing in…';
+  firebase.auth().signInWithEmailAndPassword(email,pin)
+    .then(()=>{ el('loginErr').textContent=''; })           // onAuthStateChanged reveals the app
+    .catch(e=>{ el('loginErr').textContent=friendlyAuthErr(e); el('loginBtn').disabled=false; });
+}
+
+/* ---- the data-dependent startup, run once after sign-in ---- */
+function startApp(){
+  if(appStarted) return; appStarted=true;
+  loadCodes().then(loadRates).then(loadAdmins).then(loadHaulRates).then(()=>{
+    refreshRateLabels();
+    loadState();
+    const ho=readHandoff();
+    if(ho){
+      const curDest=Q.haul?Q.haul.dest:'';
+      const sameAddr=curDest && curDest===ho.dest;
+      if(quoteHasContent() && !sameAddr){
+        // an in-progress quote exists for a different address — ask before replacing
+        if(confirm('Start a NEW quote for:\n'+(ho.dest||'this address')+' ?\n\nOK = new quote (clears the current one).\nCancel = keep your current quote.')){
+          Q=freshQuote(); Q.haul=ho; fillCustFromDest(ho.dest);
+        } // Cancel: keep current quote, ignore the incoming haul
+      }else{
+        Q.haul=ho;
+        if(!quoteHasContent()||!curDest) fillCustFromDest(ho.dest);  // fresh quote → fill address
+      }
+    }
+    if(!Q.haul) Q.haul={dest:'',county:'',miles:null,total:0,basis:'Manual entry',manual:true};
+    saveState();
+    setCustomer(Q.customer||'commercial',false);
+    el('custName').value=Q.custName||'';
+    el('custStreet').value=Q.custStreet||''; el('custCity').value=Q.custCity||'';
+    el('custState').value=Q.custState||'';  el('custZip').value=Q.custZip||'';
+    el('custEmail').value=Q.custEmail||'';
+    el('validDays').value=(Q.validDays!=null?Q.validDays:30);
+    el('qLabel').value=Q.label||'';
+    el('rSize').value=Q.rental.size||'';el('rDays').value=Q.rental.days||0;
+    buildCatalog();renderHaul();renderDisposal();recompute();syncSaveBtn();
+    checkNewIdeas();
+  });
+}
+
+/* ---- auth gate ---- */
+if(fbReady){
+  firebase.auth().onAuthStateChanged(user=>{
+    if(user){ document.body.classList.add('authed'); el('loginBtn').disabled=false; startApp(); loadUserPrefs(); }
+    else{ document.body.classList.remove('authed'); }
+  });
+}else{
+  el('loginErr').textContent='Can’t reach the sign-in service. Check your internet and reload.';
+}
+
+/* PWA */
+(function(){if(!('serviceWorker' in navigator))return;const bar=el('updateBar');let reloading=false;
+  function show(w){if(!bar)return;bar.classList.add('on');
+    el('updateGo').onclick=()=>{if(w)w.postMessage({type:'SKIP_WAITING'});setTimeout(()=>{if(!reloading){reloading=true;location.reload();}},400);};
+    el('updateX').onclick=()=>bar.classList.remove('on');}
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(reg=>{
+    if(reg.waiting&&navigator.serviceWorker.controller)show(reg.waiting);
+    reg.addEventListener('updatefound',()=>{const nw=reg.installing;if(!nw)return;
+      nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller)show(nw);});});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload();});});
+})();
+</script>
+</body>
+</html>
