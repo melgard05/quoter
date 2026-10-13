@@ -122,6 +122,12 @@
   .update-bar button{flex:none;font-family:inherit;font-weight:800;font-size:13px;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
   .update-bar .ub-go{background:#1d3b26;color:#fff}
   .update-bar .ub-x{background:rgba(35,20,2,.14);color:#231402;padding:8px 11px}
+  .update-bar.draft{background:linear-gradient(100deg,#2f6b41,#234e30);color:#fff;border-color:#ffffff33}
+  .update-bar.draft .ub-go{background:#fff;color:#234e30}
+  .update-bar.draft .ub-x{background:rgba(255,255,255,.18);color:#fff}
+  .radio-row{display:flex;align-items:flex-start;gap:10px;margin-top:9px;cursor:pointer;font-size:13.5px;line-height:1.5}
+  .radio-row input{width:18px;height:18px;accent-color:var(--pine);flex:none;margin-top:2px}
+  .radio-row b{font-weight:800}
 
   /* ---- login gate ---- */
   #loginScreen{position:fixed;inset:0;z-index:500;background:linear-gradient(135deg,var(--pine),var(--pine-dk));
@@ -285,6 +291,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<!-- Google sign-in: lets the Email button create a ready-to-send draft in the user's Gmail -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -497,14 +505,20 @@
           <b>If work &amp; personal are in separate Chrome profiles,</b> the sure fix is to open this quoter
           in your <b>work</b> Chrome profile (or install it there) — the Email button always opens Gmail in that same profile.
           Saved on this device only.</div>
+        <label class="fld" style="margin-top:18px">How the Email button works</label>
+        <label class="radio-row"><input type="radio" name="emailMode" value="draft">
+          <span><b>Build a ready-to-send draft in Gmail</b> (recommended) — the quote, the letterhead and your Gmail signature are already in it;
+            Gmail opens on the draft and you just press Send. Google asks you to <b>Allow</b> once per login (choose your work account).</span></label>
+        <label class="radio-row"><input type="radio" name="emailMode" value="clipboard">
+          <span><b>Open a blank Gmail message and copy the quote</b> — press <b>Ctrl+V</b> to paste it in above your signature (the previous way; also the automatic fallback if Google can’t be reached).</span></label>
+
         <label style="display:flex;align-items:center;gap:10px;margin-top:18px;cursor:pointer;font-size:13.5px;font-weight:800">
           <input type="checkbox" id="useGmailSig" style="width:18px;height:18px;accent-color:var(--pine);flex:none">
-          Let Gmail add my signature (with the company logo)
+          Use my Gmail signature (with the company logo)
         </label>
         <div class="card-sub" style="margin-top:6px;line-height:1.55"><b>On by default.</b> Your existing Gmail signature is used as-is — nothing to set up.
-          Gmail only adds a signature to a <i>blank</i> message, so with this on the <b>Email</b> button opens a blank message
-          (your signature already in it) and puts the quote on your clipboard — <b>press Ctrl+V</b> once to paste the quote in above it.
-          Turn this off to have the quote pre-filled instead (no Gmail signature).</div>
+          With drafts it’s read straight from your Gmail settings and placed under the quote; with the copy method Gmail adds it to the blank message itself.
+          Turn this off to sign with the plain-text signature typed below instead.</div>
 
         <label style="display:flex;align-items:center;gap:10px;margin-top:16px;cursor:pointer;font-size:13.5px;font-weight:800">
           <input type="checkbox" id="useRichCopy" style="width:18px;height:18px;accent-color:var(--pine);flex:none">
@@ -704,7 +718,8 @@
       <li><b>Quote good for __ days</b> (default 30) and an optional <b>Label this option</b> show on the sheet/email.</li>
       <li><b>Save quote</b> stores it in the cloud for everyone and gives it a <b>quote number</b> (Q-2026-0101, Q-2026-0102…) that shows on the sheet, in the email subject and in the Saved list. Re-saving a loaded quote updates it and keeps its number.</li>
       <li><b>Quote sheet</b> opens a printable quote — use its <b>Print / Save as PDF</b> button.</li>
-      <li><b>Email</b> saves the quote (so it has a number), marks it <b>Sent</b>, and opens a Gmail message to the customer with your signature in it and the quote on your clipboard — press <b>Ctrl+V</b> to paste the quote in, review, and send. The paste is the <b>formatted quote</b> — letterhead, quote number and an itemized table, just like the sheet.</li>
+      <li><b>Email</b> saves the quote (so it has a number), marks it <b>Sent</b>, and builds the message in your Gmail: the formatted quote — letterhead, quote number, itemized table — with your Gmail signature under it, addressed to the customer. Gmail opens on the draft; look it over and press <b>Send</b>. The first time, Google asks you to <b>Allow</b> the quoter to create drafts and read your signature — pick your <b>work</b> account. Pop-up blocked? Tap <b>Open draft</b> on the green bar.</li>
+      <li>Prefer the old way, or Google can’t be reached? Settings → Email sending → <b>Open a blank Gmail message and copy the quote</b>: Gmail opens blank with your signature and the quote is on your clipboard — press <b>Ctrl+V</b>.</li>
       <li><b>New quote</b> clears everything; <b>Duplicate</b> keeps the customer + address to start a variation (it gets its own number when saved).</li>
     </ul>
 
@@ -740,11 +755,10 @@
     </ul>
 
     <h4><span class="hn">✎</span>Your Gmail signature &amp; the logo</h4>
-    <p><b>Your existing Gmail signature is used</b> — nothing to set up. Gmail only adds a signature to a <i>blank</i> message,
-      so <b>Email</b> opens a blank message with your signature already in it and copies the quote to your clipboard.
-      <b>Press Ctrl+V</b> once (the cursor is already above the signature) and the quote drops in. Then send.</p>
-    <p>Prefer the quote pre-filled with no paste? Turn off <b>Let Gmail add my signature</b> in Settings — the email then ends with
-      the default company sign-off or your typed plain-text signature instead.</p>
+    <p><b>Your existing Gmail signature is used</b> — nothing to set up. With Gmail drafts it’s read straight from your Gmail settings and
+      placed under the quote. With the copy method, Gmail adds it to the blank message itself and you paste the quote above it with <b>Ctrl+V</b>.</p>
+    <p>Prefer a plain sign-off? Turn off <b>Use my Gmail signature</b> in Settings — the email then ends with the default company sign-off
+      or your typed plain-text signature instead.</p>
     <p>To add the <b>company logo</b> to your signature (optional, one time, in Gmail):</p>
     <ul>
       <li>Gmail → gear ⚙ → <b>See all settings</b> → <b>General</b> → scroll to <b>Signature</b> → click your signature to edit it.</li>
@@ -769,14 +783,21 @@
 
 <div class="notif" id="notif"></div>
 
+<div class="update-bar draft" id="draftBar" role="status">
+  <span class="ub-txt" id="draftTxt"><b>Draft ready in Gmail</b> — quote and signature are in it.</span>
+  <button class="ub-go" id="draftOpen">Open draft</button><button class="ub-x" id="draftX">✕</button></div>
 <div class="update-bar" id="updateBar" role="alert">
   <span class="ub-txt"><b>New version available</b> — refresh to update.</span>
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.30 (2026-10-12)';
+const APP_VERSION='v0.31 (2026-10-13)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.31',d:'Oct 13, 2026',items:[
+    'Email now builds a ready-to-send draft in your Gmail — quote, letterhead and your Gmail signature already in it, addressed to the customer — and opens it. No more Ctrl+V. Google asks you to Allow once per login (use your work account)',
+    'Settings → Email sending: choose the Gmail-draft way (default) or the old blank-message + paste way; the paste way is also the automatic fallback'
+  ]},
   {v:'v0.30',d:'Oct 12, 2026',items:[
     'Disposal items print without the county: “CLEAN DEMO - OT” shows on the quote, sheet and email as “Clean Demo” (admins can set the wording per code in Settings)',
     'The Disposal county on the Hauling card now picks which facility’s items are listed — switch it to Otter Tail to run Becker waste through Perham',
@@ -1411,7 +1432,7 @@ function setCustomer(c,byUser){
 function openCustModal(){el('custModal').classList.add('open');}
 function closeCustModal(){el('custModal').classList.remove('open');}
 
-function notify(m){const n=el('notif');n.textContent=m;n.classList.add('on');clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('on'),2600);}
+function notify(m,ms){const n=el('notif');n.textContent=m;n.classList.add('on');clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('on'),ms||Math.max(2600,Math.min(7000,String(m).length*45)));}
 
 /* ===== settings — billing codes (synced via Firestore) ===== */
 function TAXOPTS(){ return [['None','No tax'],['SWT','Solid Waste Tax'],['ENV-YD','Environmental — '+envYdLbl()],['ENV-TON','Environmental — '+envTonLbl()]]; }
@@ -1742,9 +1763,12 @@ function combineEmail(){
   const list=selectedSavedQuotes(), ids=selectedSavedIds();
   if(!list.length){ notify('Tick one or more quotes first'); return; }
   const c0=list[0], name=c0.custName||'', to=(c0.custEmail||'').trim();
-  if(list.length===1) sendQuoteEmail(to, quoteSubject(c0), emailTextFor(c0), emailHtmlFor(c0));
-  else sendQuoteEmail(to, COMPANY.name+' — Quote options'+(name?(' for '+name):''), combinedEmailText(list), combinedEmailHtml(list));
-  Promise.all(ids.map(markSentAfterEmail)).then(drawSavedRows);
+  const one=list.length===1;
+  const build=()=>({ to, subj: one ? quoteSubject(c0) : (COMPANY.name+' — Quote options'+(name?(' for '+name):'')),
+                     text: one ? emailTextFor(c0) : combinedEmailText(list), html: one ? emailHtmlFor(c0) : combinedEmailHtml(list) });
+  const done=()=>Promise.all(ids.map(markSentAfterEmail)).then(drawSavedRows);
+  if(EMAIL_MODE==='draft' && gmailAvailable()){ emailViaDraft(build,{ save:false, onDone:done }); return; }
+  const m=build(); sendQuoteEmail(m.to,m.subj,m.text,m.html); done();
 }
 /* does a saved row match the search box + status filter? */
 function savedMatches(r,q,st){
@@ -2039,19 +2063,21 @@ function signOffLines(){
   return L;
 }
 /* per-login email prefs (signature text, "let Gmail sign"), synced via Firestore with local fallback */
-let SIGNATURE='', USE_GMAIL_SIG=true, USE_RICH=true;   // defaults: Gmail adds the signature; copies are formatted
+let SIGNATURE='', USE_GMAIL_SIG=true, USE_RICH=true, EMAIL_MODE='draft';   // defaults: Gmail signature; formatted copies; Email builds a draft
 function emailSignature(){ return (SIGNATURE||'').trim(); }
 function sigKey(){ return 'rq_sig_'+(currentEmail()||'local'); }
 function applyPrefsToUI(){
   if(el('emailSig')) el('emailSig').value=SIGNATURE;
   if(el('useGmailSig')) el('useGmailSig').checked=!!USE_GMAIL_SIG;
   if(el('useRichCopy')) el('useRichCopy').checked=!!USE_RICH;
+  document.querySelectorAll('input[name=emailMode]').forEach(r=>{ r.checked=(r.value===EMAIL_MODE); });
   const w=el('textSigWrap'); if(w) w.style.opacity=USE_GMAIL_SIG?'.45':'1';
 }
 function loadUserPrefs(){
   try{ SIGNATURE = store.get(sigKey()) || store.get('rq_signature') || '';
        const gm=store.get(sigKey()+'_gm'); USE_GMAIL_SIG = (gm==null) ? true : gm==='1';
-       const rc=store.get(sigKey()+'_rich'); USE_RICH = (rc==null) ? true : rc==='1'; }catch(e){}
+       const rc=store.get(sigKey()+'_rich'); USE_RICH = (rc==null) ? true : rc==='1';
+       const em=store.get(sigKey()+'_mode'); EMAIL_MODE = (em==='clipboard') ? 'clipboard' : 'draft'; }catch(e){}
   applyPrefsToUI();
   const email=currentEmail();
   if(db && email){
@@ -2059,7 +2085,8 @@ function loadUserPrefs(){
       if(doc && doc.exists){ const d=doc.data()||{};
         SIGNATURE=d.signature||''; USE_GMAIL_SIG=(d.useGmailSig==null) ? true : !!d.useGmailSig;
         USE_RICH=(d.richCopy==null) ? true : !!d.richCopy;
-        try{ store.set(sigKey(),SIGNATURE); store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0'); store.set(sigKey()+'_rich',USE_RICH?'1':'0'); }catch(e){}
+        EMAIL_MODE=(d.emailMode==='clipboard') ? 'clipboard' : 'draft';
+        try{ store.set(sigKey(),SIGNATURE); store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0'); store.set(sigKey()+'_rich',USE_RICH?'1':'0'); store.set(sigKey()+'_mode',EMAIL_MODE); }catch(e){}
         applyPrefsToUI(); }
     }).catch(e=>{ /* offline — keep local copy */ });
   }
@@ -2068,6 +2095,7 @@ function saveUserPref(patch,msg){
   if('signature' in patch){ SIGNATURE=patch.signature; try{store.set(sigKey(),SIGNATURE);}catch(e){} }
   if('useGmailSig' in patch){ USE_GMAIL_SIG=!!patch.useGmailSig; try{store.set(sigKey()+'_gm',USE_GMAIL_SIG?'1':'0');}catch(e){} }
   if('richCopy' in patch){ USE_RICH=!!patch.richCopy; try{store.set(sigKey()+'_rich',USE_RICH?'1':'0');}catch(e){} }
+  if('emailMode' in patch){ EMAIL_MODE=(patch.emailMode==='clipboard')?'clipboard':'draft'; try{store.set(sigKey()+'_mode',EMAIL_MODE);}catch(e){} }
   const email=currentEmail();
   if(db && email){ db.collection('userprefs').doc(email).set(Object.assign({updatedTs:Date.now()},patch),{merge:true})
     .then(()=>notify(msg||'Saved')).catch(e=>{ console.error('pref save failed',e); notify('Saved on this device — sync failed'); }); }
@@ -2201,23 +2229,163 @@ function openGmail(to,subj,body){
   if(!w){ location.href='mailto:'+encodeURIComponent(to||'')
     +'?subject='+encodeURIComponent(subj)+(body?('&body='+encodeURIComponent(body)):''); }
 }
-/* Send a quote. With "Let Gmail add my signature" ON: open a BLANK message (so Gmail
-   drops in the real signature, logo and all) and put the quote on the clipboard —
-   one Ctrl+V pastes it in above the signature. OFF: pre-fill the body as before. */
-function sendQuoteEmail(to,subj,body,html){
+/* Send a quote the copy-and-paste way. With "Use my Gmail signature" ON: open a BLANK
+   message (so Gmail drops in the real signature, logo and all) and put the quote on
+   the clipboard — one Ctrl+V pastes it in above the signature. OFF: pre-fill the body. */
+function sendQuoteEmail(to,subj,body,html,note){
   if(USE_GMAIL_SIG){
-    copyOut(body,html,'Quote copied — press Ctrl+V in the email to paste it above your signature');
+    copyOut(body,html,(note?(note+' — using copy & paste: quote copied, '):'Quote copied — ')+'press Ctrl+V in the email to paste it above your signature');
     openGmail(to,subj,'');
   }else{
+    if(note) notify(note+' — opening Gmail with the quote filled in',5000);
     openGmail(to,subj,body);
   }
 }
-/* Email the on-screen quote. It's saved first (so it carries its quote number) and
-   then marked Sent — but a slow or missing connection never holds the email up:
-   after 2.5 s it goes out as-is and the save finishes in the background. */
+
+/* ===== Gmail drafts — the Email button builds the whole message in the user's Gmail
+   (Gmail API, Google sign-in once per login) and opens it ready to send. ===== */
+const GMAIL_CLIENT_ID='296200517083-5dc23u7f3prk536vvhhinli2f8elinbm.apps.googleusercontent.com';
+const GMAIL_SCOPES='https://www.googleapis.com/auth/gmail.compose https://www.googleapis.com/auth/gmail.settings.basic';
+const GMAIL_API='https://gmail.googleapis.com/gmail/v1/users/me/';
+let gmailTok=null, gmailTokExp=0, gmailClient=null, lastDraft=null;
+function gmailAvailable(){
+  return !!(GMAIL_CLIENT_ID && window.google && google.accounts && google.accounts.oauth2 && navigator.onLine!==false);
+}
+/* an access token for the Gmail API — Google's popup the first time (and if the hour-long
+   token has lapsed), silent after that. Must start from a click so the popup isn't blocked. */
+function getGmailToken(){
+  return new Promise((resolve,reject)=>{
+    if(gmailTok && Date.now()<gmailTokExp-60000) return resolve(gmailTok);
+    if(!gmailAvailable()) return reject(new Error('gsi-unavailable'));
+    if(!gmailClient){
+      gmailClient=google.accounts.oauth2.initTokenClient({ client_id:GMAIL_CLIENT_ID, scope:GMAIL_SCOPES, callback:()=>{} });
+    }
+    gmailClient.callback=r=>{
+      if(r && r.access_token){ gmailTok=r.access_token; gmailTokExp=Date.now()+((+r.expires_in||3600)*1000); resolve(gmailTok); }
+      else reject(new Error((r&&r.error)||'token'));
+    };
+    gmailClient.error_callback=e=>reject(new Error((e&&e.type)||'popup_closed'));
+    const cfg={ prompt:'' };
+    const me=currentEmail(); if(me) cfg.hint=me;
+    gmailClient.requestAccessToken(cfg);
+  });
+}
+async function gmailApi(path,opts,retried){
+  const tok=await getGmailToken();
+  const headers=Object.assign({ Authorization:'Bearer '+tok }, (opts&&opts.headers)||{});
+  const res=await fetch(GMAIL_API+path, Object.assign({}, opts||{}, { headers }));
+  if(res.status===401 && !retried){ gmailTok=null; return gmailApi(path,opts,true); }
+  let json=null; try{ json=await res.json(); }catch(e){}
+  if(!res.ok){ const er=(json&&json.error)||{}; const err=new Error(er.message||('HTTP '+res.status)); err.status=res.status; throw err; }
+  return json||{};
+}
+/* the user's Gmail signature (HTML) and the address the draft will sit in */
+async function gmailSignature(){
+  const d=await gmailApi('settings/sendAs');
+  const list=(d&&d.sendAs)||[];
+  const me=(currentEmail()||'').toLowerCase();
+  const pick=list.find(x=>x.isPrimary)||list.find(x=>String(x.sendAsEmail||'').toLowerCase()===me)||list[0]||{};
+  return { email:pick.sendAsEmail||'', html:pick.signature||'' };
+}
+function utf8b64(str){ const b=new TextEncoder().encode(str); let bin=''; for(let i=0;i<b.length;i++) bin+=String.fromCharCode(b[i]); return btoa(bin); }
+function b64url(str){ return utf8b64(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function mimeWord(s){ return /^[\x20-\x7e]*$/.test(s) ? s : ('=?UTF-8?B?'+utf8b64(s)+'?='); }
+function wrap76(s){ return s.replace(/(.{76})/g,'$1\r\n'); }
+function htmlToText(h){
+  return String(h||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|div|tr|li|h\d)>/gi,'\n').replace(/<[^>]+>/g,'')
+    .replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function companyBlockHtml(){ return '<div style="'+EH.font+'font-size:14px;color:#1d201a">'+esc(COMPANY.name)+'<br>'+esc(COMPANY.addr.join(', '))+'<br>Phone '+esc(COMPANY.phone)+' · '+esc(COMPANY.web)+'</div>'; }
+/* a multipart (text + HTML) message, base64url-encoded the way the Gmail API wants it */
+function rfc822(to,subject,text,html){
+  const b='=_roq_'+Date.now().toString(36);
+  const L=[];
+  if(to) L.push('To: '+to);
+  L.push('Subject: '+mimeWord(subject));
+  L.push('MIME-Version: 1.0');
+  L.push('Content-Type: multipart/alternative; boundary="'+b+'"');
+  L.push('');
+  L.push('--'+b);
+  L.push('Content-Type: text/plain; charset="UTF-8"');
+  L.push('Content-Transfer-Encoding: base64');
+  L.push('');
+  L.push(wrap76(utf8b64(text)));
+  L.push('--'+b);
+  L.push('Content-Type: text/html; charset="UTF-8"');
+  L.push('Content-Transfer-Encoding: base64');
+  L.push('');
+  L.push(wrap76(utf8b64(html)));
+  L.push('--'+b+'--');
+  return L.join('\r\n');
+}
+/* create the draft: quote (text + formatted) with the signature under it */
+async function createGmailDraft(to,subject,text,html){
+  let sigHtml='', email='';
+  if(USE_GMAIL_SIG){ const s=await gmailSignature(); email=s.email; sigHtml=s.html||companyBlockHtml(); }
+  const fullHtml = html + (sigHtml ? ('<br>'+sigHtml) : '');
+  const fullText = text + (sigHtml ? ('\n'+htmlToText(sigHtml)) : '');
+  const d=await gmailApi('drafts',{ method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ message:{ raw:b64url(rfc822(to,subject,fullText,fullHtml)) } }) });
+  const msg=(d&&d.message)||{};
+  return { draftId:d&&d.id, threadId:msg.threadId||msg.id||'', email };
+}
+function draftUrl(d){
+  const sel=(store.get('rq_gmail_u')||'').trim();
+  let base='https://mail.google.com/mail/';
+  if(/^\d+$/.test(sel)) base+='u/'+sel+'/';
+  else if(d.email) base+='?authuser='+encodeURIComponent(d.email);
+  return base+'#drafts/'+encodeURIComponent(d.threadId||'');
+}
+function showDraftBar(d){
+  lastDraft=d; const bar=el('draftBar'); if(!bar) return;
+  bar.classList.add('on');
+  clearTimeout(window._draftBarT); window._draftBarT=setTimeout(()=>bar.classList.remove('on'),60000);
+}
+function openLastDraft(){ if(lastDraft){ const w=window.open(draftUrl(lastDraft),'_blank'); if(!w) notify('Allow pop-ups for this site to open Gmail'); } }
+function gmailErrMsg(e){
+  const m=String((e&&e.message)||'');
+  if(/gsi-unavailable/.test(m)) return 'Google sign-in didn’t load (offline?)';
+  if(/popup_closed|popup_failed_to_open|popup/.test(m)) return 'Google sign-in was closed or blocked';
+  if(/access_denied|interaction_required/.test(m)) return 'Gmail access wasn’t allowed';
+  if(/has not been used|is disabled|not enabled/i.test(m)) return 'The Gmail API isn’t enabled in the Google project';
+  if(e&&e.status===403) return 'Gmail permission missing — allow both permissions when Google asks';
+  return m ? ('Gmail: '+m) : 'Gmail draft failed';
+}
+/* The draft route: get the token (the click is needed for Google's popup), save the
+   quote (so it has its number), build the draft, open it. Any failure drops back
+   to the copy-and-paste route so the quote still goes out. */
+function emailViaDraft(build, opts){
+  opts=opts||{};
+  const tokP=getGmailToken();
+  const saveP=opts.save ? saveQuoteAsync().catch(e=>{ console.warn('save before email failed',e); return null; }) : Promise.resolve(null);
+  notify('Building your email in Gmail…',6000);
+  let m=null;
+  Promise.all([tokP,saveP]).then(()=>{ m=build(); return createGmailDraft(m.to,m.subj,m.text,m.html); })
+    .then(d=>{
+      if(opts.onDone) opts.onDone();
+      showDraftBar(d);
+      const w=window.open(draftUrl(d),'_blank');
+      notify(w ? 'Draft ready in Gmail — check it over and press Send' : 'Draft ready — tap “Open draft” (pop-up was blocked)', 5000);
+    })
+    .catch(e=>{
+      console.error('gmail draft failed',e);
+      if(!m) m=build();
+      if(opts.onDone) opts.onDone();
+      sendQuoteEmail(m.to,m.subj,m.text,m.html,gmailErrMsg(e));
+    });
+}
+/* Email the on-screen quote. Draft mode builds it in Gmail; otherwise it's saved first
+   (so it carries its quote number) and sent the copy-and-paste way — a slow or missing
+   connection never holds the email up: after 2.5 s it goes out as-is. */
 function emailQuote(){
   const {T}=quoteItems();
   if(T.total<=0){ notify('Build a quote first'); return; }
+  if(EMAIL_MODE==='draft' && gmailAvailable()){
+    emailViaDraft(()=>({ to:(Q.custEmail||'').trim(), subj:quoteSubject(Q), text:emailText(), html:emailHtmlFor(Q) }),
+                  { save:!!db, onDone:()=>markSentAfterEmail(Q.savedId) });
+    return;
+  }
   let fired=false;
   const send=()=>{ if(fired) return; fired=true; sendQuoteEmail((Q.custEmail||'').trim(), quoteSubject(Q), emailText(), emailHtmlFor(Q)); };
   if(!db){ send(); return; }
@@ -2419,6 +2587,11 @@ let appStarted=false;
   el('useRichCopy').addEventListener('change',()=>{
     saveUserPref({richCopy:el('useRichCopy').checked}, el('useRichCopy').checked?'Copies will be formatted':'Copies will be plain text');
   });
+  document.querySelectorAll('input[name=emailMode]').forEach(r=>r.addEventListener('change',()=>{
+    if(r.checked) saveUserPref({emailMode:r.value}, r.value==='draft'?'Email will build a Gmail draft':'Email will use copy & paste');
+  }));
+  el('draftOpen').addEventListener('click',openLastDraft);
+  el('draftX').addEventListener('click',()=>el('draftBar').classList.remove('on'));
   el('savedTopBtn').addEventListener('click',openSaved);
   el('savedClose').addEventListener('click',closeSaved);
   el('savedSearch').addEventListener('input',()=>{ clearTimeout(window._svTimer); window._svTimer=setTimeout(drawSavedRows,120); });
