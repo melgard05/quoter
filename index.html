@@ -746,8 +746,8 @@
     <input type="text" id="mswSearch" placeholder="Search MSW codes by code, description, county or period…" spellcheck="false" style="margin-bottom:11px">
     <div id="mswList"></div>
     <div class="card-sub" style="margin-top:10px;line-height:1.5">Front-load dumpsters, carts, rent, recycling, cardboard and one-time extras for MSW quotes. The billing period
-      decides which quotes a code is offered on; the county limits it to that county’s jobs (blank = both). Recycling and cardboard default to no tax,
-      everything else to Solid Waste Tax — change it here if that’s wrong. <b>Shows on quote as</b> is the customer wording (“2YD 1/WEEK” → “2 yd dumpster — weekly pickup”).</div>
+      decides which quotes a code is offered on; the county limits it to that county’s jobs (blank = both). Everything is Solid Waste Tax except recycling and
+      cardboard dumpster rental (CB) — change it here if a code is wrong. S-codes are the seasonal rates. <b>Shows on quote as</b> is the customer wording (“2YD 1/WEEK” → “2 yd dumpster — weekly pickup”).</div>
   </div>
 </div>
 
@@ -819,10 +819,10 @@
     <ul>
       <li><b>Delivery &amp; Hauling:</b> the mileage app’s MSW rate (temporary or permanent). Tick <b>No delivery charge</b> when it’s included — it prints as “no charge”.</li>
       <li><b>Service Period Fees:</b> pick the <b>billing period</b> (monthly, quarterly, semi-annual, annual), then type the container and pickup — “2 yd weekly”, “95 gal every other” — and <b>Add</b>.
-        The list shows that period’s codes for the service county, grouped: service, container rent, recycling, cardboard, one-time extras (key, cart cleaning, extra dumps).
+        The list shows that period’s codes for the service county in bill-code order — the numbered service codes first, then the lettered ones (rental, recycling, cardboard, key, cart cleaning, extra dumps).
         Changing the period re-prices lines that have a code for it.</li>
       <li><b>What the customer sees:</b> two parts — <b>one-time charges</b> (delivery, extras, their tax) and <b>service charges per period</b> (fees, rent, recycling, their tax) — each with its own total. The big number on your screen is the per-period amount; the one-time total sits under it.</li>
-      <li><b>Taxes:</b> Solid Waste Tax applies to delivery, extras and MSW service fees; recycling and cardboard are exempt. Residential vs commercial still sets the rate.</li>
+      <li><b>Taxes:</b> Solid Waste Tax applies to everything except recycling and cardboard dumpster rental. Residential vs commercial still sets the rate.</li>
       <li><b>Codes:</b> admins keep the MSW code list in Settings — rate, billing period, county, tax, and the customer wording.</li>
     </ul>
 
@@ -911,9 +911,13 @@
   <button class="ub-go" id="updateGo">Refresh</button><button class="ub-x" id="updateX">Later</button></div>
 
 <script>
-const APP_VERSION='v0.32 (2026-10-13)';
+const APP_VERSION='v0.33 (2026-10-13)';
 const DATA={"rental":[{"size":"10/20 yd","rate":3.3,"codeNon":"R1020","codeTax":"R1020T"},{"size":"30/40 yd","rate":5.0,"codeNon":"R3040","codeTax":"R3040T"}],"env":{"perYard":0.6,"perTon":2.0},"swt":{"commercial":0.17,"residential":0.0975},"disposal":[{"code":"AC","desc":"A/C UNIT","rate":5.0,"taxType":"None"},{"code":"APPL","desc":"APPLIANCE","rate":7.0,"taxType":"None"},{"code":"APPL-F","desc":"APPLIANCE W/FREON","rate":12.0,"taxType":"None"},{"code":"BATT","desc":"BATTERIES","rate":1.0,"taxType":"None"},{"code":"BCL","desc":"BECKER LOOSE GARB","rate":22.0,"taxType":"SWT"},{"code":"BCMSW","desc":"BECKER MSW BY TON","rate":155.0,"taxType":"SWT"},{"code":"BD","desc":"BURNER DISPOSAL","rate":155.0,"taxType":"SWT"},{"code":"CC","desc":"CLEAN CONCRETE","rate":10.0,"taxType":"None"},{"code":"CC-BEC","desc":"CLN CONCRETE BECK","rate":18.0,"taxType":"None"},{"code":"CDB","desc":"CLEAN DEMO - BECK","rate":21.0,"taxType":"ENV-YD"},{"code":"CDHAW","desc":"C & D HAWICK","rate":50.0,"taxType":"ENV-TON"},{"code":"CDO","desc":"CLEAN DEMO - OT","rate":30.0,"taxType":"ENV-YD"},{"code":"CHAIR","desc":"STUFFED CHAIR","rate":12.0,"taxType":"SWT"},{"code":"COMP","desc":"CPU/LAPTOP","rate":7.0,"taxType":"None"},{"code":"COUCH","desc":"COUCH","rate":18.0,"taxType":"SWT"},{"code":"CSHI","desc":"CLEAN SHINGLES","rate":21.0,"taxType":"None"},{"code":"DEMCON","desc":"DEMCON DISPOSAL","rate":50.0,"taxType":"ENV-TON"},{"code":"DEMRRT","desc":"HAWICK RR TIES","rate":65.0,"taxType":"ENV-TON"},{"code":"ELECT","desc":"PRINTER/DVD/VCR","rate":6.0,"taxType":"None"},{"code":"GD","desc":"GWINNER DISPOSAL","rate":120.0,"taxType":"SWT"},{"code":"HABED","desc":"HIDE-A-BED COUCH","rate":25.0,"taxType":"SWT"},{"code":"LIN","desc":"LINER","rate":55.0,"taxType":"SWT"},{"code":"MATT","desc":"MATTRESS ANY SIZE","rate":25.0,"taxType":"SWT"},{"code":"MD","desc":"MIXED DEMO","rate":35.4,"taxType":"ENV-YD"},{"code":"METAL","desc":"METAL","rate":5.0,"taxType":"None"},{"code":"MICRO","desc":"MICROWAVE","rate":9.0,"taxType":"None"},{"code":"MSWMX1","desc":"MIXED MSW OTTER-T","rate":30.0,"taxType":"SWT"},{"code":"MSWMX2","desc":"MIXED MSW BECKER","rate":31.0,"taxType":"SWT"},{"code":"MSWTON","desc":"MUNICIPAL S/W","rate":0.0,"taxType":"SWT"},{"code":"OCL","desc":"OT LOOSE GARBAGE","rate":22.0,"taxType":"SWT"},{"code":"PLANK","desc":"PLANKS UNDER BIN","rate":10.0,"taxType":"None"},{"code":"PROFEE","desc":"WM PROFILE FEE","rate":250.0,"taxType":"SWT"},{"code":"STUMPS","desc":"STUMPS","rate":5.0,"taxType":"None"},{"code":"TV","desc":"TV/MONITOR","rate":23.0,"taxType":"None"},{"code":"WCL","desc":"WA LOOSE GARBAGE","rate":23.0,"taxType":"SWT"},{"code":"WD","desc":"WADENA DISPOSAL","rate":145.0,"taxType":"SWT"}]};
 const CHANGELOG=[
+  {v:'v0.33',d:'Oct 13, 2026',items:[
+    'MSW service list is in bill-code order: numbered service codes first, lettered codes (rental, recycling, cardboard, extras) after',
+    'MSW wording: “dumpster rental”, “cardboard dumpster rental” (no tax), “cart rental”, and S-codes show as seasonal'
+  ]},
   {v:'v0.32',d:'Oct 13, 2026',items:[
     'MSW quotes: switch at the top for Roll-Off / MSW Temporary / MSW Permanent. Temporary keeps the roll-off layout with a Service Period Fees card in place of daily rental; Permanent drops disposal and lets you waive delivery',
     'Service Period Fees: pick the billing period, type the container and pickup (e.g. “2 yd weekly”), and the office bill codes price it — county-aware, with rent, recycling, cardboard and one-time extras',
@@ -1140,12 +1144,12 @@ function billedLabel(per){ return ({Monthly:'billed monthly',Quarterly:'billed q
 function mswAutoLabel(desc){
   let s=String(desc||'').toUpperCase().replace(/\s+/g,' ').trim();
   s=s.replace(/\bBECKER\b|\bOTTER TAIL\b|\bOT\b|\bDL\b/g,'').replace(/RECYCLIING/,'RECYCLING').replace(/\bGALL\b/,'GAL').replace(/\s+/g,' ').trim();
-  const NUM=['','one','two','three','four','five'];
+  const NUM=['','One','Two','Three','Four','Five'];
   // special groups first
-  if(/CARDBOARD/.test(s)){ const m=s.match(/^(\d+(?:\.\d+)?)\s*YD/); return m ? (m[1]+' yd cardboard bin') : 'Cardboard bin'; }
+  if(/CARDBOARD/.test(s)){ const m=s.match(/^(\d+(?:\.\d+)?)\s*YD/); return m ? (m[1]+' yd cardboard dumpster rental') : 'Cardboard dumpster rental'; }
   if(/RECYCLING/.test(s)) return 'Recycling';
-  if(/TOTER RENT/.test(s)) return 'Cart rent';
-  if(/RENT/.test(s)){ const m=s.match(/^(\d+(?:\.\d+)?)\s*YD/); return (m?m[1]+' yd ':'')+'dumpster rent'; }
+  if(/TOTER RENT/.test(s)) return 'Cart rental';
+  if(/RENT/.test(s)){ const m=s.match(/^(\d+(?:\.\d+)?)\s*YD/); return (m?m[1]+' yd ':'')+'dumpster rental'; }
   if(/^DUMPED/.test(s)){ const m=s.match(/(2ND )?(\d+) GAL/); return 'Extra dump — '+(m?((m[1]?'2nd ':'')+m[2]+' gal cart'):'cart'); }
   if(/REQUIRES KEY/.test(s)) return 'Key service';
   if(/CLN CHARGE/.test(s)) return 'Cart cleaning';
@@ -1185,7 +1189,9 @@ function mswGroup(c){
   return 'service';
 }
 function mswDefaultTax(c){ const g=mswGroup(c); return (g==='recycling'||g==='cardboard')?'None':'SWT'; }
-function mswLabel(c){ return ((c&&c.label)||'').trim() || mswAutoLabel(c&&c.desc); }
+/* S-prefixed service codes (S101…) are the seasonal rates */
+function mswAutoLabelFor(c){ const l=mswAutoLabel(c&&c.desc); return (c && /^S\d/.test(String(c.code||'')) && !/seasonal/i.test(l)) ? (l+' (seasonal)') : l; }
+function mswLabel(c){ return ((c&&c.label)||'').trim() || mswAutoLabelFor(c); }
 /* sort keys: container size, then pickup frequency */
 function mswSize(c){ const d=String((c&&c.desc)||'').toUpperCase(); const extra=/^2ND /.test(d)?0.0005:(/^(\d)\//.test(d)?0.0003*(+d[0]):0);
   let m=d.match(/(\d+(?:\.\d+)?)\s*YD/); if(m) return +m[1]+extra; m=d.match(/(\d+)\s*GAL/); if(m) return 100+(+m[1])/1000+extra; return 999; }
@@ -1599,9 +1605,11 @@ function mswVisible(c){
   const per=Q.period||'Monthly';
   return c.per===per || c.per==='Other';
 }
-const MSW_GROUP_ORDER={service:0,rent:1,recycling:2,cardboard:3,extra:4};
+/* list order = bill-code order: the numbered service codes first (101, 101A, … 955WBM),
+   then the lettered service/extra codes (BR…, CB…, D…, DR…, KEY, S…, T…) alphabetically */
 function mswSorted(list){
-  return list.slice().sort((a,b)=>(MSW_GROUP_ORDER[mswGroup(a)]-MSW_GROUP_ORDER[mswGroup(b)])||(mswSize(a)-mswSize(b))||(mswFreq(a)-mswFreq(b))||((a.rate||0)-(b.rate||0))||String(a.code).localeCompare(String(b.code)));
+  const k=c=>String(c.code||'').toUpperCase();
+  return list.slice().sort((a,b)=>{ const A=k(a), B=k(b); return A<B?-1:(A>B?1:0); });
 }
 /* search: the typed words have to appear in the customer label in that order ("2 yd weekly"
    → "2 yd dumpster — weekly pickup"; a bare number must match a word exactly so "2 yd"
@@ -1639,9 +1647,9 @@ function renderMswMenu(){
   const jc=jobCounty(), per=Q.period||'Monthly';
   const hint=(jc?esc(jc)+' County pricing · ':'')+esc(per)+' rates + one-time extras';
   if(!mFiltered.length){ menu.innerHTML='<div class="combo-hint">'+hint+'</div><div class="combo-empty">No matches for this county / billing period — try another period, or <b>＋ Custom charge</b>.</div>'; menu.classList.add('on'); positionMenuFor(inp,menu); return; }
-  let lastG='';
+  let lettered=false;
   menu.innerHTML='<div class="combo-hint">'+hint+'</div>'+mFiltered.map((c,i)=>{
-    const g=mswGroup(c); const head=(g!==lastG)?('<div class="combo-group">'+({service:'Service',rent:'Container rent',recycling:'Recycling',cardboard:'Cardboard',extra:'One-time extras'})[g]+'</div>'):''; lastG=g;
+    let head=''; if(!lettered && /^[A-Z]/i.test(String(c.code||''))){ lettered=true; if(i>0) head='<div class="combo-group">Rental, recycling, cardboard, seasonal &amp; extras</div>'; }
     return head+`<div class="combo-opt${i===mActiveIdx?' hi':''}" data-mi="${i}">
     <span class="co-desc">${esc(mswLabel(c))}</span><span class="co-code mono">${esc(c.code)}</span>${(!jc&&c.county)?'<span class="tag t-cty">'+esc(c.county)+'</span>':''}<span class="co-rate mono">${money(c.rate)}</span>
     <span class="co-tax"><span class="tag t-per">${esc(c.per==='Other'?'one-time':perShort(c.per).replace('/',''))}</span>${TTAG[c.taxType]||''}</span></div>`; }).join('');
@@ -1944,7 +1952,7 @@ function renderMswList(){
       +'<div class="cr-cty">'+sel('mper',c.code,c.per||'Monthly',[['Monthly','Monthly'],['Quarterly','Quarterly'],['Semi-Annual','Semi-Annual'],['Annual','Annual'],['Other','One-time']])+'</div>'
       +'<div class="cr-cty">'+sel('mcty',c.code,c.county||'',[['','Both counties'],['Otter Tail','Otter Tail'],['Becker','Becker']])+'</div>'
       +'<div class="cr-cty">'+sel('mtax',c.code,c.taxType||mswDefaultTax(c),[['SWT','Solid Waste Tax'],['None','No tax']])+'</div>'
-      +'<div class="cr-label"><span>Shows on quote as</span><input type="text" data-mlabel="'+esc(c.code)+'" value="'+esc((c.label||'').trim())+'" placeholder="'+esc(mswAutoLabel(c.desc))+'"'+dis+'></div></div>';
+      +'<div class="cr-label"><span>Shows on quote as</span><input type="text" data-mlabel="'+esc(c.code)+'" value="'+esc((c.label||'').trim())+'" placeholder="'+esc(mswAutoLabelFor(c))+'"'+dis+'></div></div>';
   }).join('');
   const find=code=>MSWCODES.find(x=>x.code===code);
   box.querySelectorAll('[data-mact]').forEach(inp=>inp.addEventListener('change',()=>{ const c=find(inp.dataset.mact); if(!c)return; persistMswCode(mswRec(c,{active:inp.checked})); inp.closest('.code-row').classList.toggle('off',!inp.checked); }));
@@ -2383,7 +2391,7 @@ function quoteItemsForQ(q){
     if(l.per==='Other') items.push(it); else recItems.push(it); });
   return {T,items,recItems,haul};
 }
-function mswLineLabel(l){ if(!l) return ''; if(l.custom) return l.desc||''; return (l.label||'').trim()||mswAutoLabel(l.desc); }
+function mswLineLabel(l){ if(!l) return ''; if(l.custom) return l.desc||''; return (l.label||'').trim()||mswAutoLabelFor(l); }
 function quoteItems(){ return quoteItemsForQ(Q); }
 function custAddrLinesFor(q){
   return [q.custStreet,[q.custCity,q.custState].filter(Boolean).join(', ')+(q.custZip?' '+q.custZip:'')]
