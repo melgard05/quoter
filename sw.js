@@ -1,6 +1,6 @@
 /* Roll-Off Quoter service worker. BUMP CACHE on every deploy (keep in step
    with APP_VERSION in index.html) so the update banner fires. */
-const CACHE = 'roq-v0.36';
+const CACHE = 'roq-v0.37';
 const SHELL = './';
 
 self.addEventListener('install', e => { /* wait, don't auto-skip — banner handles it */ });
@@ -24,9 +24,15 @@ self.addEventListener('fetch', e => {
   e.respondWith((async () => {
     try {
       const fresh = await fetch(req);
-      const c = await caches.open(CACHE);
-      c.put(req, fresh.clone());
-      return fresh;
+      if (fresh && fresh.ok) {                 // only a good answer replaces the cached copy
+        const c = await caches.open(CACHE);
+        c.put(req, fresh.clone());
+        return fresh;
+      }
+      // the site answered but not with the file (e.g. a 404 while GitHub Pages is
+      // mid-deploy or down): keep running from the last good copy if we have one
+      const cached = await caches.match(req);
+      return cached || fresh;
     } catch (err) {
       const cached = await caches.match(req);
       return cached || caches.match(SHELL);
